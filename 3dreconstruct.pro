@@ -1,8 +1,12 @@
 QT       += core gui opengl
 
-HEADERS       = glwidget.h \
-                window.h \
+HEADERS  = GLWidget.h \
+    Window.h \
+    DicomUtil.h
 
-SOURCES       = glwidget.cpp \
-                main.cpp \
-                window.cpp
+SOURCES       = GLWidget.cpp \
+                Window.cpp \
+                DicomUtil.cpp\
+                main.cpp
+
+LIBS += -lGL -lGLU

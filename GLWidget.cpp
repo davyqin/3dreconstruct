@@ -3,13 +3,19 @@
 
 #include <math.h>
 
-#include "glwidget.h"
-#include <GL/glaux.h>
-//#include "qtlogo.h"
+#include "GLWidget.h"
+#include <GL/glut.h>
+//#include <GL/glaux.h>
+
+#include <iostream>
 
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE  0x809D
 #endif
+
+namespace {
+  unsigned char* pData = 0;
+}
 
 //! [0]
 GLWidget::GLWidget(QWidget *parent)
@@ -18,12 +24,16 @@ GLWidget::GLWidget(QWidget *parent)
     qtRed = QColor::fromRgb(255,0,0);
     qtDark = QColor::fromRgb(0,0,0);
     qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
+
+    dicomUtil.setFileName("/local_workspace/3dreconstruct/ct.dcm");
+    pData = dicomUtil.pixel();
 }
 //! [0]
 
 //! [1]
 GLWidget::~GLWidget()
 {
+  delete [] pData;
 }
 //! [1]
 
@@ -47,7 +57,7 @@ QSize GLWidget::sizeHint() const
 void GLWidget::initializeGL()
 {
     qglClearColor(qtPurple);
-    qglColor(qtRed); /* draw in red */
+//    qglColor(qtRed); /* draw in red */
 
 //    glEnable(GL_DEPTH_TEST);
 //    glShadeModel(GL_SMOOTH);
@@ -60,6 +70,8 @@ void GLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+
+    //glDrawPixels(dicomUtil.imageWidth(), dicomUtil.imageHeight(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pData);
  #if 0
     qglColor(qtRed); /* draw in red */
 

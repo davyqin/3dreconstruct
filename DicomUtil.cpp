@@ -1,8 +1,9 @@
-#include "dicomimage.h"
+#include "DicomUtil.h"
 
 #include <fstream>
 #include <iostream>
 #include <memory.h>
+#include <string.h>
 
 using namespace std;
 
@@ -13,8 +14,8 @@ namespace {
 
   enum DATA_ENDIAN
   {
-    LITTLE_ENDIAN,
-    BIG_ENDIAN
+    LITTLE_ENDIAN_DATA,
+    BIG_ENDIAN_DATA
   };
 
   enum COMPRESSION_MODE
@@ -71,7 +72,7 @@ namespace {
     int lVal = 0;
     pcf.seekg(4, ios::cur);
     pcf.read((char *)&lVal, sizeof(long));
-    if(nDataEndian==BIG_ENDIAN) {
+    if(nDataEndian == BIG_ENDIAN_DATA) {
       SwapDWord((char *) &lVal, 1);
     }
     return lVal;
@@ -82,7 +83,7 @@ namespace {
     int lVal = 0;
     fseek(pcf, 4, SEEK_CUR);
     fread(&lVal,sizeof(long),1,pcf);
-    if(nDataEndian==BIG_ENDIAN) {
+    if(nDataEndian==BIG_ENDIAN_DATA) {
       SwapDWord((char *) &lVal, 1);
     }
     return lVal;
@@ -96,14 +97,14 @@ namespace {
     if (bImplicitVR)
     {
       pcf.read((char *)&nValLength, sizeof(long));
-      if (nDataEndian == BIG_ENDIAN)
+      if (nDataEndian == BIG_ENDIAN_DATA)
         SwapDWord((char *) &nValLength, 1);
     }
     else
     {
       pcf.seekg(2,ios::cur);
       pcf.read((char*)&nsLength, sizeof(short));
-      if (nDataEndian == BIG_ENDIAN)
+      if (nDataEndian == BIG_ENDIAN_DATA)
         SwapWord((char *) &nsLength, 1);
       nValLength = nsLength;
     }
@@ -161,7 +162,7 @@ namespace {
     unsigned short nVal;
     pcf.seekg(4,ios::cur);
     pcf.read((char*)&nVal, sizeof(short)); // read the unsigned short value
-    if (nDataEndian == BIG_ENDIAN)
+    if (nDataEndian == BIG_ENDIAN_DATA)
       SwapWord((char *) &nVal, 1);
 
     return (int) nVal;
@@ -197,25 +198,25 @@ namespace {
   }
 } // annonymouse namespace
 
-dicomImage::dicomImage()
+DicomUtil::DicomUtil()
   :_pData(0),_pDataOld(0)
 {
 }
 
 
-dicomImage::dicomImage(const string& filename)
+DicomUtil::DicomUtil(const string& filename)
   :_fileName(filename),_pData(0),_pDataOld(0) {}
 
-dicomImage::~dicomImage() {
+DicomUtil::~DicomUtil() {
   delete [] _pData;
   delete [] _pDataOld;
 }
 
-void dicomImage::setFileName(const string& filename) {
+void DicomUtil::setFileName(const string& filename) {
   _fileName = filename;
 }
 
-unsigned char* dicomImage::pixel() {
+unsigned char* DicomUtil::pixel() {
   if (_fileName.empty()) {
     return 0;
   }
@@ -230,20 +231,20 @@ unsigned char* dicomImage::pixel() {
   }
 }
 
-int dicomImage::pixelLength() const {
+int DicomUtil::pixelLength() const {
   return nLength;
 }
 
-int dicomImage::imageHeight() const {
+int DicomUtil::imageHeight() const {
   return nRows;
 }
 
-int dicomImage::imageWidth() const {
+int DicomUtil::imageWidth() const {
   return nCols;
 }
 
 unsigned char*
-    dicomImage::convertTo8Bit(unsigned char* _pData, unsigned long nNumPixels,
+    DicomUtil::convertTo8Bit(unsigned char* _pData, unsigned long nNumPixels,
                               bool bIsSigned, short nHighBit,
                               float fRescaleSlope, float fRescaleIntercept,
                               float fWindowCenter, float fWindowWidth)
@@ -443,7 +444,7 @@ unsigned char*
   return (unsigned char* )pNewData;
 }
 
-void dicomImage::readImage()
+void DicomUtil::readImage()
 {
   short int nBitsAllocated, nSamplesPerPixel = 1;
   short int nHighBit = 0;
@@ -452,8 +453,8 @@ void dicomImage::readImage()
   bool bIsSigned = false;
   bool bImplicitVR = true;
   COMPRESSION_MODE nCompressionMode = COMPRESS_NONE;
-  DATA_ENDIAN nDataEndian = LITTLE_ENDIAN;
-  double nThickness = 0.0;
+  DATA_ENDIAN nDataEndian = LITTLE_ENDIAN_DATA;
+  double nThickness;
   short int gTag, eTag;
   int nNumFrames = 1;
   bool bPixelData = false;
@@ -475,12 +476,12 @@ void dicomImage::readImage()
 
     fp.read((char *)&gTag, sizeof(short));
 
-    if (nDataEndian == BIG_ENDIAN) {
+    if (nDataEndian == BIG_ENDIAN_DATA) {
       SwapWord((char *) &gTag, 1);
     }
 
     fp.read((char *)&eTag, sizeof(short));
-    if (nDataEndian == BIG_ENDIAN) {
+    if (nDataEndian == BIG_ENDIAN_DATA) {
       SwapWord((char *)&eTag, 1);
     }
 
@@ -512,13 +513,13 @@ void dicomImage::readImage()
           }
         case 0x0010: //Transfer Syntax UID UI
           {
-            if (ReadString(fp, szTransferSyntaxUID, LITTLE_ENDIAN, false) != 0)
+            if (ReadString(fp, szTransferSyntaxUID, LITTLE_ENDIAN_DATA, false) != 0)
               break;
 
             if (!strcmp(szTransferSyntaxUID, "1.2.840.10008.1.2.2")) // Explicit VR Big Endian
-              nDataEndian = BIG_ENDIAN; // Big Endian
+              nDataEndian = BIG_ENDIAN_DATA; // Big Endian
             else
-              nDataEndian = LITTLE_ENDIAN; // Little Endian
+              nDataEndian = LITTLE_ENDIAN_DATA; // Little Endian
 
             // Check if it is implicit VR or Explicit VR
             if (!strcmp(szTransferSyntaxUID, "1.2.840.10008.1.2")) // Implicit VR Little Endian
@@ -825,13 +826,13 @@ void dicomImage::readImage()
           }
         case 0x0032: //Image Position (Patient) DS
           {
-            //不合Dicom2006标准
+            //????Dicom2006????
             WriteToString(fp,&sHeader,"0020,0032 Image Position (Patient): ",nDataEndian,bImplicitVR);
             break;
           }
         case 0x0037: //Image Orientation (Patient) DS
           {
-            //不合Dicom2006标准
+            //????Dicom2006????
             WriteToString(fp,&sHeader,"0020,0037 Image Orientation (Patient): ",nDataEndian,bImplicitVR);
             break;
           }
@@ -1007,7 +1008,7 @@ void dicomImage::readImage()
     if (_pData) // Have we got the pixel data?
     {
         // Need to do byte swap?
-        if (nDataEndian == BIG_ENDIAN)
+        if (nDataEndian == BIG_ENDIAN_DATA)
         {
             if (nBitsAllocated > 8)
                 SwapWord((char *)_pData, nLength/2);

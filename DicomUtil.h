@@ -1,16 +1,16 @@
-#ifndef DICOMIMAGE_H
-#define DICOMIMAGE_H
+#ifndef DICOMUTIL_H
+#define DICOMUTIL_H
 
 #include <string>
 
-class dicomImage
+class DicomUtil
 {
 public:
-    dicomImage();
+    DicomUtil();
 
-    dicomImage(const std::string& filename);
+    DicomUtil(const std::string& filename);
 
-    ~dicomImage();
+    ~DicomUtil();
 
     void setFileName(const std::string& filename);
 
@@ -36,4 +36,4 @@ private:
     unsigned char* _pDataOld;
 };
 
-#endif // DICOMIMAGE_H
+#endif // DicomUtil_H
