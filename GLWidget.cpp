@@ -4,8 +4,8 @@
 #include <math.h>
 
 #include "GLWidget.h"
-#include <GL/glut.h>
-//#include <GL/glaux.h>
+//#include <GL/glut.h>
+#include <GL/glaux.h>
 
 #include <iostream>
 
@@ -25,7 +25,7 @@ GLWidget::GLWidget(QWidget *parent)
     qtDark = QColor::fromRgb(0,0,0);
     qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 
-    dicomUtil.setFileName("/local_workspace/3dreconstruct/ct.dcm");
+    dicomUtil.setFileName("C:/Project/3dreconstruct/ct.dcm");
     pData = dicomUtil.pixel();
 }
 //! [0]
@@ -71,7 +71,7 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    //glDrawPixels(dicomUtil.imageWidth(), dicomUtil.imageHeight(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pData);
+    glDrawPixels(dicomUtil.imageWidth(), dicomUtil.imageHeight(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pData);
  #if 0
     qglColor(qtRed); /* draw in red */
 
