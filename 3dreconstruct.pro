@@ -6,6 +6,7 @@ TEMPLATE = app
 TARGET = 3dreconstruct
 INCLUDEPATH += . gui util
 QT += core gui opengl
+CONFIG += c++11
 
 # Input
 HEADERS += gui/GLWidget.h gui/Window.h util/DicomUtil.h

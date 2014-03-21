@@ -1,11 +1,12 @@
 #include <QtGui>
 #include <QtOpenGL>
 
-#include <math.h>
-
 #include "GLWidget.h"
+#include "util/DicomUtil.h"
+
+
+#include <math.h>
 #include <GL/glu.h>
-//#include <GL/glut.h>
 
 #include <iostream>
 
@@ -13,16 +14,26 @@ namespace {
   unsigned char* pData = 0;
 }
 
+class GLWidget::Pimpl {
+public:
+  Pimpl()
+  : qtRed(QColor::fromRgb(255,0,0))
+  , qtDark(QColor::fromRgb(0,0,0))
+  , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0)) {}
+
+  QColor qtRed;
+  QColor qtDark;
+  QColor qtPurple;
+  DicomUtil dicomUtil;
+};
+
 //! [0]
 GLWidget::GLWidget(QWidget *parent)
-    : QGLWidget(QGLFormat(QGL::DoubleBuffer), parent)
+  : QGLWidget(QGLFormat(QGL::DoubleBuffer), parent)
+  , _pimpl(new Pimpl())
 {
-    qtRed = QColor::fromRgb(255,0,0);
-    qtDark = QColor::fromRgb(0,0,0);
-    qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
-
-    dicomUtil.setFileName("./ct.dcm");
-    pData = dicomUtil.pixel();
+  _pimpl->dicomUtil.setFileName("./ct.dcm");
+  pData = _pimpl->dicomUtil.pixel();
 }
 //! [0]
 
@@ -52,7 +63,7 @@ QSize GLWidget::sizeHint() const
 //! [6]
 void GLWidget::initializeGL()
 {
-    qglClearColor(qtPurple);
+    qglClearColor(_pimpl->qtPurple);
 //    qglColor(qtRed); /* draw in red */
 
 //    glEnable(GL_DEPTH_TEST);
@@ -67,7 +78,7 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    glDrawPixels(dicomUtil.imageWidth(), dicomUtil.imageHeight(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pData);
+    glDrawPixels(_pimpl->dicomUtil.imageWidth(), _pimpl->dicomUtil.imageHeight(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pData);
  #if 0
     qglColor(qtRed); /* draw in red */
 

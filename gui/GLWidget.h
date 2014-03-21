@@ -3,7 +3,7 @@
 
 #include <QGLWidget>
 
-#include "util/DicomUtil.h"
+#include <memory>
 
 //! [0]
 class GLWidget : public QGLWidget
@@ -41,11 +41,8 @@ protected:
 
 //! [3]
 private:
-    QColor qtRed;
-    QColor qtDark;
-    QColor qtPurple;
-
-    DicomUtil dicomUtil;
+    class Pimpl;
+    std::unique_ptr<Pimpl> _pimpl;
 };
 //! [3]
 

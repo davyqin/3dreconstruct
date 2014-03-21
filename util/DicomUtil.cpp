@@ -66,7 +66,7 @@ namespace {
     }
   }
 
-  int ReadUL(fstream& pcf, DATA_ENDIAN nDataEndian, bool bImplicitVR)
+  int ReadUL(fstream& pcf, DATA_ENDIAN nDataEndian, bool /*bImplicitVR*/)
   {
     int lVal = 0;
     pcf.seekg(4, ios::cur);
@@ -164,7 +164,7 @@ namespace {
     return 1;
   }
 
-  int WriteToString(string* Text, string pszTitle, int nContent)
+  int WriteToString(string* /*Text*/, string /*pszTitle*/, int /*nContent*/)
   {
     return 1;
   }
@@ -442,7 +442,7 @@ void DicomUtil::readImage()
   bool bImplicitVR = true;
   COMPRESSION_MODE nCompressionMode = COMPRESS_NONE;
   DATA_ENDIAN nDataEndian = LITTLE_ENDIAN_DATA;
-  double nThickness;
+  //double nThickness = 0.0;
   short int gTag, eTag;
   int nNumFrames = 1;
   bool bPixelData = false;
@@ -691,7 +691,8 @@ void DicomUtil::readImage()
         case 0x0050: //Slice Thickness DS
           {
             //                        string sTemp;
-            nThickness = ReadDS(fp, nDataEndian, bImplicitVR);
+            //double nThickness =
+            ReadDS(fp, nDataEndian, bImplicitVR);
             break;
           }
         case 0x0060: //KVP [Peak KV] DS
