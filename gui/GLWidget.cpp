@@ -5,7 +5,7 @@
 
 #include "GLWidget.h"
 #include <GL/glu.h>
-//#include <GL/glaux.h>
+#include <GL/glut.h>
 
 #include <iostream>
 
@@ -123,7 +123,8 @@ void GLWidget::resizeGL(int width, int height)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    gluOrtho2D(0.0, 500.0, 0.0, 500.0);
+    //gluOrtho2D(0.0, 500.0, 0.0, 500.0);
+    glOrtho(0.0, 500.0, 0.0, 500.0, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
 #endif
 }

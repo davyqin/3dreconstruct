@@ -3,7 +3,7 @@
 
 #include <QGLWidget>
 
-#include "DicomUtil.h"
+#include "util/DicomUtil.h"
 
 //! [0]
 class GLWidget : public QGLWidget
