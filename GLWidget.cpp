@@ -4,8 +4,8 @@
 #include <math.h>
 
 #include "GLWidget.h"
-//#include <GL/glut.h>
-#include <GL/glaux.h>
+#include <GL/glu.h>
+//#include <GL/glaux.h>
 
 #include <iostream>
 
@@ -25,7 +25,7 @@ GLWidget::GLWidget(QWidget *parent)
     qtDark = QColor::fromRgb(0,0,0);
     qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 
-    dicomUtil.setFileName("C:/Project/3dreconstruct/ct.dcm");
+    dicomUtil.setFileName("./ct.dcm");
     pData = dicomUtil.pixel();
 }
 //! [0]

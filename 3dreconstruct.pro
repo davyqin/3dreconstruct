@@ -9,4 +9,4 @@ SOURCES       = GLWidget.cpp \
                 DicomUtil.cpp\
                 main.cpp
 
-#LIBS += -lGL -lGLU
+LIBS += -lGL -lGLU

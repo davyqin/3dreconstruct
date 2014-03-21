@@ -3,7 +3,6 @@
 #include <fstream>
 #include <iostream>
 #include <memory.h>
-#include <string.h>
 
 using namespace std;
 
@@ -71,19 +70,8 @@ namespace {
   {
     int lVal = 0;
     pcf.seekg(4, ios::cur);
-    pcf.read((char *)&lVal, sizeof(long));
+    pcf.read((char *)&lVal, sizeof(int));
     if(nDataEndian == BIG_ENDIAN_DATA) {
-      SwapDWord((char *) &lVal, 1);
-    }
-    return lVal;
-  }
-
-  int ReadUL(FILE *pcf, DATA_ENDIAN nDataEndian, bool bImplicitVR)
-  {
-    int lVal = 0;
-    fseek(pcf, 4, SEEK_CUR);
-    fread(&lVal,sizeof(long),1,pcf);
-    if(nDataEndian==BIG_ENDIAN_DATA) {
       SwapDWord((char *) &lVal, 1);
     }
     return lVal;
@@ -96,7 +84,7 @@ namespace {
 
     if (bImplicitVR)
     {
-      pcf.read((char *)&nValLength, sizeof(long));
+      pcf.read((char *)&nValLength, sizeof(int));
       if (nDataEndian == BIG_ENDIAN_DATA)
         SwapDWord((char *) &nValLength, 1);
     }
@@ -493,7 +481,7 @@ void DicomUtil::readImage()
         {
         case 0x0000: //File Meta Elements Group Length UL
           {
-            ReadUL(fp,nDataEndian,false);
+            ReadUL(fp, nDataEndian, false);
             break;
           }
         case 0x0001: //File Meta Info Version OB
