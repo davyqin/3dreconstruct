@@ -5,13 +5,9 @@
 
 #include "GLWidget.h"
 #include <GL/glu.h>
-#include <GL/glut.h>
+//#include <GL/glut.h>
 
 #include <iostream>
-
-#ifndef GL_MULTISAMPLE
-#define GL_MULTISAMPLE  0x809D
-#endif
 
 namespace {
   unsigned char* pData = 0;

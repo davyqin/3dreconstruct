@@ -504,27 +504,27 @@ void DicomUtil::readImage()
             if (ReadString(fp, szTransferSyntaxUID, LITTLE_ENDIAN_DATA, false) != 0)
               break;
 
-            if (!strcmp(szTransferSyntaxUID, "1.2.840.10008.1.2.2")) // Explicit VR Big Endian
+            if (string(szTransferSyntaxUID) == "1.2.840.10008.1.2.2") // Explicit VR Big Endian
               nDataEndian = BIG_ENDIAN_DATA; // Big Endian
-            else
+            else 
               nDataEndian = LITTLE_ENDIAN_DATA; // Little Endian
 
             // Check if it is implicit VR or Explicit VR
-            if (!strcmp(szTransferSyntaxUID, "1.2.840.10008.1.2")) // Implicit VR Little Endian
+            if (string(szTransferSyntaxUID) == "1.2.840.10008.1.2") // Implicit VR Little Endian
               bImplicitVR = true; // Implicit VR
             else
               bImplicitVR = false; // Explicit VR
 
             // Parse the encapsulation/compression
-            if (!strcmp(szTransferSyntaxUID, "1.2.840.10008.1.2.4.50")) // JPEG lossy
+            if (string(szTransferSyntaxUID) == "1.2.840.10008.1.2.4.50") // JPEG lossy
               nCompressionMode = COMPRESS_JPEGLOSSY;
-            else if (!strcmp(szTransferSyntaxUID, "1.2.840.10008.1.2.4.51")) // JPEG lossy 12bit
+            else if (string(szTransferSyntaxUID) == "1.2.840.10008.1.2.4.51") // JPEG lossy 12bit
               nCompressionMode = COMPRESS_JPEGLOSSY12BIT;
-            else if (!strcmp(szTransferSyntaxUID, "1.2.840.10008.1.2.4.70")) // JPEG lossless first order prediction
+            else if (string(szTransferSyntaxUID) == "1.2.840.10008.1.2.4.70") // JPEG lossless first order prediction
               nCompressionMode = COMPRESS_JPEGLOSSLESS;
-            else if (!strcmp(szTransferSyntaxUID, "1.2.840.10008.1.2.4.57")) // JPEG lossless process 14
+            else if (string(szTransferSyntaxUID) == "1.2.840.10008.1.2.4.57") // JPEG lossless process 14
               nCompressionMode = COMPRESS_JPEGLOSSLESS2;
-            else if (!strcmp(szTransferSyntaxUID, "1.2.840.10008.1.2.5")) // RLE
+            else if (string(szTransferSyntaxUID) == "1.2.840.10008.1.2.5") // RLE
               nCompressionMode = COMPRESS_RLE;
 
             break;
