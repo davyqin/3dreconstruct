@@ -204,19 +204,18 @@ void DicomUtil::setFileName(const string& filename) {
   _fileName = filename;
 }
 
-unsigned char* DicomUtil::pixel() {
+boost::shared_ptr<unsigned char> DicomUtil::pixel() {
   if (_fileName.empty()) {
-    return 0;
+    return boost::shared_ptr<unsigned char>();
   }
-  else {
-    if (!_pData) {
-      readImage();
-    }
 
-    unsigned char* pixel = new unsigned char[nLength];
-    memcpy(pixel, _pData, nLength);
-    return pixel;
+  if (!_pData) {
+    readImage();
   }
+
+  boost::shared_ptr<unsigned char> pixel(new unsigned char[nLength]);
+  memcpy(pixel.get(), _pData, nLength);
+  return pixel;
 }
 
 int DicomUtil::pixelLength() const {

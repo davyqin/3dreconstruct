@@ -8,6 +8,11 @@ INCLUDEPATH += . gui util
 QT += core gui opengl
 CONFIG += c++11
 
+INCLUDEPATH += C:/boost_1_54_0
+
+LIBS += "C:/boost_1_54_0/stage/lib/libboost_system-mgw48-1_54.a"
+#LIBS += "C:/boost_1_54_0/stage/lib/libboost_filesystem-mgw48-1_54.a"
+
 # Input
 HEADERS += gui/GLWidget.h gui/Window.h util/DicomUtil.h
 SOURCES += main.cpp gui/GLWidget.cpp gui/Window.cpp util/DicomUtil.cpp

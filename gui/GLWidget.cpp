@@ -8,10 +8,11 @@
 #include <math.h>
 #include <GL/glu.h>
 
+#include <boost/shared_ptr.hpp>
 #include <iostream>
 
 namespace {
-  unsigned char* pData = 0;
+  //unsigned char* pData = 0;
 }
 
 class GLWidget::Pimpl {
@@ -25,6 +26,7 @@ public:
   QColor qtDark;
   QColor qtPurple;
   DicomUtil dicomUtil;
+  boost::shared_ptr<unsigned char> pixelData;
 };
 
 //! [0]
@@ -33,14 +35,14 @@ GLWidget::GLWidget(QWidget *parent)
   , _pimpl(new Pimpl())
 {
   _pimpl->dicomUtil.setFileName("./ct.dcm");
-  pData = _pimpl->dicomUtil.pixel();
+  _pimpl->pixelData = _pimpl->dicomUtil.pixel();
 }
 //! [0]
 
 //! [1]
 GLWidget::~GLWidget()
 {
-  delete [] pData;
+  //delete [] pData;
 }
 //! [1]
 
@@ -78,7 +80,8 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    glDrawPixels(_pimpl->dicomUtil.imageWidth(), _pimpl->dicomUtil.imageHeight(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pData);
+    glDrawPixels(_pimpl->dicomUtil.imageWidth(), _pimpl->dicomUtil.imageHeight(), GL_LUMINANCE, GL_UNSIGNED_BYTE, _pimpl->pixelData.get());
+
  #if 0
     qglColor(qtRed); /* draw in red */
 

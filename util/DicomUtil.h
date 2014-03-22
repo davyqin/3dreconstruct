@@ -1,6 +1,7 @@
 #ifndef DICOMUTIL_H
 #define DICOMUTIL_H
 
+#include <boost/shared_ptr.hpp>
 #include <string>
 
 class DicomUtil
@@ -14,7 +15,9 @@ public:
 
     void setFileName(const std::string& filename);
 
-    unsigned char* pixel();
+    //unsigned char* pixel();
+
+    boost::shared_ptr<unsigned char> pixel();
 
     int pixelLength() const;
 
