@@ -40,10 +40,7 @@ GLWidget::GLWidget(QWidget *parent)
 //! [0]
 
 //! [1]
-GLWidget::~GLWidget()
-{
-  //delete [] pData;
-}
+GLWidget::~GLWidget() {}
 //! [1]
 
 //! [2]

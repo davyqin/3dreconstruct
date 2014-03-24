@@ -114,14 +114,14 @@ namespace {
     return 0;
   }
 
-  int WriteToString(fstream& pcf, string* Text, string pszTitle, DATA_ENDIAN nDataEndian, bool bImplicitVR)
+  std::string WriteToString(fstream& pcf, string* Text, string pszTitle, DATA_ENDIAN nDataEndian, bool bImplicitVR)
   {
     char szTemp[80]="";
     ReadString(pcf,szTemp,nDataEndian,bImplicitVR);
     *Text += pszTitle;
     *Text += szTemp;
     *Text += "\r\n";
-    return 1;
+    return string(szTemp);
   }
 
   float ReadDS(fstream& pcf, DATA_ENDIAN nDataEndian, bool bImplicitVR)
@@ -815,7 +815,10 @@ void DicomUtil::readImage()
         case 0x0032: //Image Position (Patient) DS
           {
             //????Dicom2006????
-            WriteToString(fp,&sHeader,"0020,0032 Image Position (Patient): ",nDataEndian,bImplicitVR);
+            const string imagePos = WriteToString(fp,&sHeader,"0020,0032 Image Position (Patient): ",nDataEndian,bImplicitVR);
+            std::cout<<"***************************"<<std::endl;
+            std::cout<<imagePos<<std::endl;
+            std::cout<<"***************************"<<std::endl;
             break;
           }
         case 0x0037: //Image Orientation (Patient) DS

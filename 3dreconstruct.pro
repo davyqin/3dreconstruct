@@ -5,8 +5,8 @@
 TEMPLATE = app
 TARGET = 3dreconstruct
 INCLUDEPATH += . gui util
-QT += core gui opengl
-CONFIG += c++11
+QT += core gui opengl 
+CONFIG += c++11 console
 
 win32 {
 INCLUDEPATH += C:/boost_1_54_0
