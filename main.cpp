@@ -1,20 +1,13 @@
 #include <QApplication>
-#include <QDesktopWidget>
 
-#include "gui/Window.h"
+#include "gui/Controller.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    Window window;
-    window.resize(window.sizeHint());
 
-    int desktopArea = QApplication::desktop()->width() *
-                     QApplication::desktop()->height();
-    int widgetArea = window.width() * window.height();
-    if (((float)widgetArea / (float)desktopArea) < 0.75f)
-        window.show();
-    else
-        window.showMaximized();
+    Controller controller;
+    controller.activate();
+
     return app.exec();
 }
