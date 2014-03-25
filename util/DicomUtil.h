@@ -3,6 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <string>
+#include <vector>
 
 class DicomUtil
 {
@@ -14,8 +15,6 @@ public:
     ~DicomUtil();
 
     void setFileName(const std::string& filename);
-
-    //unsigned char* pixel();
 
     boost::shared_ptr<unsigned char> pixel();
 
@@ -37,6 +36,9 @@ private:
     std::string _fileName;
     unsigned char* _pData;
     unsigned char* _pDataOld;
+
+    std::vector<double> _imagePosition;
+    std::vector<double> _pixelSpacing;
 };
 
 #endif // DicomUtil_H

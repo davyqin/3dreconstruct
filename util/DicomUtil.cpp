@@ -4,6 +4,9 @@
 #include <iostream>
 #include <memory.h>
 
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+
 using namespace std;
 
 namespace {
@@ -116,7 +119,8 @@ namespace {
 
   std::string WriteToString(fstream& pcf, string* Text, string pszTitle, DATA_ENDIAN nDataEndian, bool bImplicitVR)
   {
-    char szTemp[80]="";
+    char szTemp[80];
+    memset(szTemp, '0', 80);
     ReadString(pcf,szTemp,nDataEndian,bImplicitVR);
     *Text += pszTitle;
     *Text += szTemp;
@@ -184,6 +188,20 @@ namespace {
     }
     return pNewData-nLength;
   }
+
+  std::vector<double> convertDicomValue(const std::string& dicomValue) {
+    std::vector<std::string> splittedStrings;
+    boost::split(splittedStrings, dicomValue, boost::is_any_of("\\"));
+
+    std::vector<double> result;
+    for (auto item : splittedStrings) {
+      std::cerr<<item<<std::endl;
+//      result.push_back(boost::lexical_cast<double>(item));
+    }
+
+   return result;
+ }
+
 } // annonymouse namespace
 
 DicomUtil::DicomUtil()
@@ -815,10 +833,8 @@ void DicomUtil::readImage()
         case 0x0032: //Image Position (Patient) DS
           {
             //????Dicom2006????
-            const string imagePos = WriteToString(fp,&sHeader,"0020,0032 Image Position (Patient): ",nDataEndian,bImplicitVR);
-            std::cout<<"***************************"<<std::endl;
-            std::cout<<imagePos<<std::endl;
-            std::cout<<"***************************"<<std::endl;
+            const std::string imagePos = WriteToString(fp,&sHeader,"0020,0032 Image Position (Patient): ",nDataEndian,bImplicitVR);
+//            _imagePosition = convertDicomValue(imagePos);
             break;
           }
         case 0x0037: //Image Orientation (Patient) DS
@@ -882,7 +898,9 @@ void DicomUtil::readImage()
           }
         case 0x0030: //Pixel Spacing DS
           {
-            ReadDS(fp, nDataEndian, bImplicitVR);
+            const std::string pixelSpacing = WriteToString(fp,&sHeader,"0028,0030 Pixel Spacing: ", nDataEndian, bImplicitVR);
+            _pixelSpacing = convertDicomValue(pixelSpacing);
+            break;
             break;
           }
         case 0x0100: //Bits Allocated US
@@ -938,6 +956,49 @@ void DicomUtil::readImage()
         default:
           {
             int nVal = ReadLength(fp,nDataEndian,bImplicitVR);
+            fp.seekg(nVal,ios::cur);
+            break;
+          }
+        }
+        break;
+      }
+      case 0x140d:
+      {
+        switch(eTag)
+        {
+        case 0x1000:
+          {
+            WriteToString(&sHeader,"140d,1000 : ", 0);
+            std::cout<<"140d"<<std::endl;
+            fp.seekg(24, ios::cur);
+            break;
+          }
+        default:
+          {
+            int nVal = ReadLength(fp,nDataEndian,bImplicitVR);
+            fp.seekg(nVal,ios::cur);
+            break;
+          }
+        }
+        break;
+      }
+      case 0x160d:
+      {
+        std::cout<<"160d"<<std::endl;
+        switch(eTag)
+        {
+        case 0x1000:
+          {
+            //WriteToString(fp,&sHeader,"160d,1000 : ", nDataEndian, bImplicitVR);
+            WriteToString(&sHeader,"160d,1000 : ", 0);
+            //fp.seekg(24, ios::cur);
+            fp.seekg(538, ios::cur);
+            break;
+          }
+        default:
+          {
+            int nVal = ReadLength(fp,nDataEndian,bImplicitVR);
+            if (nVal == 0) {std::cout<<"160d"<<std::endl;}
             fp.seekg(nVal,ios::cur);
             break;
           }
