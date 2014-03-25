@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory.h>
+#include <vector>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -195,8 +196,8 @@ namespace {
 
     std::vector<double> result;
     for (auto item : splittedStrings) {
-      std::cerr<<item<<std::endl;
-//      result.push_back(boost::lexical_cast<double>(item));
+      result.push_back(atof(item.c_str()));
+      std::cerr<<result.back()<<std::endl;
     }
 
    return result;
@@ -204,26 +205,31 @@ namespace {
 
 } // annonymouse namespace
 
+class DicomUtil::Pimpl {
+public:
+  Pimpl() {}
+
+  /* data */
+  std::string fileName;
+  std::vector<double> pixelSpacing;
+  std::vector<double> imagePosition;
+};
+
 DicomUtil::DicomUtil()
-  :_pData(0),_pDataOld(0)
+  :_pimpl(new Pimpl()), _pData(0)
 {
 }
 
-
-DicomUtil::DicomUtil(const string& filename)
-  :_fileName(filename),_pData(0),_pDataOld(0) {}
-
 DicomUtil::~DicomUtil() {
   delete [] _pData;
-  delete [] _pDataOld;
 }
 
 void DicomUtil::setFileName(const string& filename) {
-  _fileName = filename;
+  _pimpl->fileName = filename;
 }
 
 boost::shared_ptr<unsigned char> DicomUtil::pixel() {
-  if (_fileName.empty()) {
+  if (_pimpl->fileName.empty()) {
     return boost::shared_ptr<unsigned char>();
   }
 
@@ -305,14 +311,6 @@ unsigned char*
     }
 
   }
-  // 2.5 Get _pDataOld for Manipulate Windows
-  nCount = nLength;
-  while(nCount-->0)
-  {
-    *_pDataOld++=*_pData++;
-  }
-  _pDataOld -= nLength;
-  _pData -= nLength;
 
   // 3. Window-level or rescale to 8-bit
   if ((fWindowCenter != 0) || (fWindowWidth != 0))
@@ -378,17 +376,17 @@ unsigned char*
     nCount = nNumPixels;
     pp = (short *)_pData;
 
-    int pixelData = 0;
-    int pixel0024 = 0;
-    int pixel2549 = 0;
-    int pixel5074 = 0;
-    int pixel7599 = 0;
-    int pixel100124 = 0;
-    int pixel125149 = 0;
-    int pixel150174 = 0;
-    int pixel175199 = 0;
-    int pixel200224 = 0;
-    int pixel225255 = 0;
+    // int pixelData = 0;
+    // int pixel0024 = 0;
+    // int pixel2549 = 0;
+    // int pixel5074 = 0;
+    // int pixel7599 = 0;
+    // int pixel100124 = 0;
+    // int pixel125149 = 0;
+    // int pixel150174 = 0;
+    // int pixel175199 = 0;
+    // int pixel200224 = 0;
+    // int pixel225255 = 0;
 
     while (nCount-- > 0)
     {
@@ -399,7 +397,7 @@ unsigned char*
         fValue = 255;
 
       *np ++ = (unsigned char) fValue;
-
+#if 0
       pixelData = (int)fValue;
 
       if (pixelData < 25) {
@@ -432,8 +430,10 @@ unsigned char*
       else {
         pixel225255++;
       }
+      #endif
     }
 
+#if 0
     cout<<"Pixel data between   0 ~  24: "<<pixel0024<<endl;
     cout<<"Pixel data between  25 ~  49: "<<pixel2549<<endl;
     cout<<"Pixel data between  50 ~  74: "<<pixel5074<<endl;
@@ -444,6 +444,7 @@ unsigned char*
     cout<<"Pixel data between 175 ~ 199: "<<pixel175199<<endl;
     cout<<"Pixel data between 200 ~ 224: "<<pixel200224<<endl;
     cout<<"Pixel data between 225 ~ 255: "<<pixel225255<<endl;
+    #endif
   }
 
   return (unsigned char* )pNewData;
@@ -465,7 +466,7 @@ void DicomUtil::readImage()
   bool bPixelData = false;
 
   fstream fp;
-  fp.open(_fileName.c_str(), ios::in|ios::binary);
+  fp.open(_pimpl->fileName.c_str(), ios::in|ios::binary);
   if (fp.bad()) {
     return;
   }
@@ -834,7 +835,7 @@ void DicomUtil::readImage()
           {
             //????Dicom2006????
             const std::string imagePos = WriteToString(fp,&sHeader,"0020,0032 Image Position (Patient): ",nDataEndian,bImplicitVR);
-//            _imagePosition = convertDicomValue(imagePos);
+            _pimpl->imagePosition = convertDicomValue(imagePos);
             break;
           }
         case 0x0037: //Image Orientation (Patient) DS
@@ -899,8 +900,8 @@ void DicomUtil::readImage()
         case 0x0030: //Pixel Spacing DS
           {
             const std::string pixelSpacing = WriteToString(fp,&sHeader,"0028,0030 Pixel Spacing: ", nDataEndian, bImplicitVR);
-            _pixelSpacing = convertDicomValue(pixelSpacing);
-            break;
+             _pimpl->pixelSpacing = convertDicomValue(pixelSpacing);
+            // break;
             break;
           }
         case 0x0100: //Bits Allocated US
@@ -969,7 +970,6 @@ void DicomUtil::readImage()
         case 0x1000:
           {
             WriteToString(&sHeader,"140d,1000 : ", 0);
-            std::cout<<"140d"<<std::endl;
             fp.seekg(24, ios::cur);
             break;
           }
@@ -984,21 +984,19 @@ void DicomUtil::readImage()
       }
       case 0x160d:
       {
-        std::cout<<"160d"<<std::endl;
         switch(eTag)
         {
         case 0x1000:
           {
             //WriteToString(fp,&sHeader,"160d,1000 : ", nDataEndian, bImplicitVR);
             WriteToString(&sHeader,"160d,1000 : ", 0);
-            //fp.seekg(24, ios::cur);
             fp.seekg(538, ios::cur);
             break;
           }
         default:
           {
             int nVal = ReadLength(fp,nDataEndian,bImplicitVR);
-            if (nVal == 0) {std::cout<<"160d"<<std::endl;}
+            if (nVal == 0) {std::cout<<"160d default"<<std::endl;}
             fp.seekg(nVal,ios::cur);
             break;
           }
@@ -1021,7 +1019,6 @@ void DicomUtil::readImage()
             case COMPRESS_NONE:
               {
                 _pData = new unsigned char[nLength + 16];
-                _pDataOld = new unsigned char[nLength + 16];
                 fp.seekg(4,ios::cur);
                 fp.read((char*)_pData, nLength);
                 bPixelData = true;
@@ -1082,7 +1079,6 @@ void DicomUtil::readImage()
                 nBytesP = 1;
                 nFrameSize /= 2;
                 nLength /= 2;
-                //                memcpy(_pDataOld, pNewData, nLength);
             }
         }
 #endif

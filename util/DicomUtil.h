@@ -3,14 +3,12 @@
 
 #include <boost/shared_ptr.hpp>
 #include <string>
-#include <vector>
+#include <memory>
 
 class DicomUtil
 {
 public:
     DicomUtil();
-
-    DicomUtil(const std::string& filename);
 
     ~DicomUtil();
 
@@ -33,12 +31,9 @@ private:
                                  float fRescaleSlope, float fRescaleIntercept,
                                  float fWindowCenter, float fWindowWidth);
 
-    std::string _fileName;
+    class Pimpl;
+    std::unique_ptr<Pimpl> _pimpl;
     unsigned char* _pData;
-    unsigned char* _pDataOld;
-
-    std::vector<double> _imagePosition;
-    std::vector<double> _pixelSpacing;
 };
 
 #endif // DicomUtil_H
