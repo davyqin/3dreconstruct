@@ -11,7 +11,7 @@ CONFIG += c++11 console
 win32 {
 INCLUDEPATH += C:/boost_1_54_0
 LIBS += "C:/boost_1_54_0/stage/lib/libboost_system-mgw48-1_54.a"
-#LIBS += "C:/boost_1_54_0/stage/lib/libboost_filesystem-mgw48-1_54.a"
+LIBS += "C:/boost_1_54_0/stage/lib/libboost_filesystem-mgw48-1_54.a"
 }
 
 unix {

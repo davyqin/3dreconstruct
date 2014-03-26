@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory.h>
 #include <vector>
+#include <limits>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -177,20 +178,21 @@ namespace {
     return 1;
   }
 
-  unsigned char* UpSideDown(unsigned char* _pData)
+  boost::shared_ptr<unsigned char> UpSideDown(boost::shared_ptr<unsigned char> pixelData)
   {
-    int nRowBytes=nCols*nBytesP;
-    unsigned char* cc=_pData + (nRows - 1)*nRowBytes;
-    unsigned char* pNewData=new unsigned char [nLength + 16];
-    for(int i=0; i<nRows; i++)
+    const int nRowBytes = nCols * nBytesP;
+    unsigned char* cc= pixelData.get() + (nRows - 1) * nRowBytes;
+    boost::shared_ptr<unsigned char> pNewData(new unsigned char [nLength + 16]);
+    unsigned char* dd = pNewData.get();
+    for (int i = 0; i < nRows; i++)
     {
-      for(int j=0; j<nRowBytes; j++)
+      for(int j = 0; j < nRowBytes; j++)
       {
-        *(pNewData++)=*(cc+j);
+        *(dd++)=*(cc+j);
       }
       cc -= nRowBytes;
     }
-    return pNewData-nLength;
+    return pNewData;
   }
 
   std::vector<double> convertDicomValue(const std::string& dicomValue) {
@@ -216,16 +218,15 @@ public:
   std::string fileName;
   std::vector<double> pixelSpacing;
   std::vector<double> imagePosition;
+  boost::shared_ptr<unsigned char> pixelData;
 };
 
 DicomUtil::DicomUtil()
-  :_pimpl(new Pimpl()), _pData(0)
+  :_pimpl(new Pimpl())
 {
 }
 
-DicomUtil::~DicomUtil() {
-  delete [] _pData;
-}
+DicomUtil::~DicomUtil() {}
 
 void DicomUtil::setFileName(const string& filename) {
   _pimpl->fileName = filename;
@@ -236,13 +237,15 @@ boost::shared_ptr<unsigned char> DicomUtil::pixel() {
     return boost::shared_ptr<unsigned char>();
   }
 
-  if (!_pData) {
+  if (!_pimpl->pixelData) {
     readImage();
   }
 
-  boost::shared_ptr<unsigned char> pixel(new unsigned char[nLength]);
-  memcpy(pixel.get(), _pData, nLength);
-  return pixel;
+  //boost::shared_ptr<unsigned char> pixel(new unsigned char[nLength]);
+  //memcpy(pixel.get(), _pimpl->pixelData.get(), nLength);
+  //memcpy(pixel.get(), _pData, nLength);
+  //return pixel;
+  return _pimpl->pixelData;
 }
 
 int DicomUtil::pixelLength() const {
@@ -263,7 +266,7 @@ unsigned char*
                               float fRescaleSlope, float fRescaleIntercept,
                               float fWindowCenter, float fWindowWidth)
 {
-  unsigned char* pNewData = 0;
+  //unsigned char* pNewData = 0;
   unsigned long nCount;
   short *pp;
 
@@ -315,15 +318,18 @@ unsigned char*
 
   }
 
+  unsigned char* pNewData = new unsigned char [nNumPixels + 4];
+
+#if 1
   // 3. Window-level or rescale to 8-bit
   if ((fWindowCenter != 0) || (fWindowWidth != 0))
   {
     float fSlope;
     float fShift;
     float fValue;
-    unsigned char* np = new unsigned char [nNumPixels+4];
+    unsigned char* np = pNewData;//new unsigned char [nNumPixels+4];
 
-    pNewData = np;
+    //pNewData = np.get();
 
     // Since we have window level info, we will only map what are
     // within the Window.
@@ -351,9 +357,9 @@ unsigned char*
     float fSlope;
     float fValue;
     int nMin, nMax;
-    unsigned char* np = new unsigned char [nNumPixels+4];
+    unsigned char* np = pNewData;//.get();//new unsigned char [nNumPixels+4];
 
-    pNewData = np;
+    //pNewData = np;
 
     // First compute the min and max.
     nCount = nNumPixels;
@@ -379,18 +385,6 @@ unsigned char*
     nCount = nNumPixels;
     pp = (short *)_pData;
 
-    // int pixelData = 0;
-    // int pixel0024 = 0;
-    // int pixel2549 = 0;
-    // int pixel5074 = 0;
-    // int pixel7599 = 0;
-    // int pixel100124 = 0;
-    // int pixel125149 = 0;
-    // int pixel150174 = 0;
-    // int pixel175199 = 0;
-    // int pixel200224 = 0;
-    // int pixel225255 = 0;
-
     while (nCount-- > 0)
     {
       fValue = ((*pp ++) - nMin) * fSlope;
@@ -400,56 +394,11 @@ unsigned char*
         fValue = 255;
 
       *np ++ = (unsigned char) fValue;
-#if 0
-      pixelData = (int)fValue;
-
-      if (pixelData < 25) {
-        pixel0024++;
-      }
-      else if (pixelData >= 25 && pixelData < 50) {
-        pixel2549++;
-      }
-      else if (pixelData >= 50 && pixelData < 75) {
-        pixel5074++;
-      }
-      else if (pixelData >= 75 && pixelData < 100) {
-        pixel7599++;
-      }
-      else if (pixelData >= 100 && pixelData < 125) {
-        pixel100124++;
-      }
-      else if (pixelData >= 125 && pixelData < 150) {
-        pixel125149++;
-      }
-      else if (pixelData >= 150 && pixelData < 175) {
-        pixel150174++;
-      }
-      else if (pixelData >= 175 && pixelData < 200) {
-        pixel175199++;
-      }
-      else if (pixelData >= 200 && pixelData < 225) {
-        pixel200224++;
-      }
-      else {
-        pixel225255++;
-      }
-      #endif
     }
-
-#if 0
-    cout<<"Pixel data between   0 ~  24: "<<pixel0024<<endl;
-    cout<<"Pixel data between  25 ~  49: "<<pixel2549<<endl;
-    cout<<"Pixel data between  50 ~  74: "<<pixel5074<<endl;
-    cout<<"Pixel data between  75 ~  99: "<<pixel7599<<endl;
-    cout<<"Pixel data between 100 ~ 124: "<<pixel100124<<endl;
-    cout<<"Pixel data between 125 ~ 149: "<<pixel125149<<endl;
-    cout<<"Pixel data between 150 ~ 174: "<<pixel150174<<endl;
-    cout<<"Pixel data between 175 ~ 199: "<<pixel175199<<endl;
-    cout<<"Pixel data between 200 ~ 224: "<<pixel200224<<endl;
-    cout<<"Pixel data between 225 ~ 255: "<<pixel225255<<endl;
-    #endif
   }
+#endif
 
+  //return boost::shared_ptr<unsigned char>(pNewData);
   return (unsigned char* )pNewData;
 }
 
@@ -873,7 +822,7 @@ void DicomUtil::readImage()
         case 0x0002: //Samples Per Pixel US
           {
             nSamplesPerPixel = ReadUS(fp, nDataEndian);
-            //                        WriteToString(&sHeader,"0028,0002 Samples Per Pixel: ",nSamplesPerPixel);
+            WriteToString(&sHeader,"0028,0002 Samples Per Pixel: ",nSamplesPerPixel);
             break;
           }
         case 0x0004: //Photometric Interpretation CS
@@ -950,11 +899,13 @@ void DicomUtil::readImage()
         case 0x1052: //Rescale Intercept DS
           {
             fRescaleIntercept=ReadDS(fp, nDataEndian, bImplicitVR);
+            WriteToString(&sHeader,"0028,1052 Rescale Intercept: ",(int)fRescaleIntercept);
             break;
           }
         case 0x1053: //Rescale Slope DS
           {
             fRescaleSlope=ReadDS(fp, nDataEndian, bImplicitVR);
+            WriteToString(&sHeader,"0028,1053 Rescale Slope: ",(int)fRescaleSlope);
             break;
           }
         default:
@@ -1012,7 +963,7 @@ void DicomUtil::readImage()
         {
         case 0x0010: //Pixel Data OW or OB
           {
-            nBytesP = nSamplesPerPixel*nBitsAllocated/8;
+            nBytesP = nSamplesPerPixel * nBitsAllocated / 8;
             nFrameSize = nCols * nRows * nBytesP;
             nLength = nNumFrames * nFrameSize;
 
@@ -1021,9 +972,9 @@ void DicomUtil::readImage()
             {
             case COMPRESS_NONE:
               {
-                _pData = new unsigned char[nLength + 16];
+                _pimpl->pixelData.reset(new unsigned char[nLength + 16]);
                 fp.seekg(4,ios::cur);
-                fp.read((char*)_pData, nLength);
+                fp.read((char*)_pimpl->pixelData.get(), nLength);
                 bPixelData = true;
                 break;
               }
@@ -1057,33 +1008,40 @@ void DicomUtil::readImage()
 
     fp.close();
 
-    if (_pData) // Have we got the pixel data?
+    std::cout<<std::endl<<sHeader<<std::endl;
+
+    if (_pimpl->pixelData) // Have we got the pixel data?
     {
+
         // Need to do byte swap?
         if (nDataEndian == BIG_ENDIAN_DATA)
         {
-            if (nBitsAllocated > 8)
-                SwapWord((char *)_pData, nLength/2);
+          if (nBitsAllocated > 8)
+            SwapWord((char *)_pimpl->pixelData.get(), nLength/2);
         }
 
-        unsigned char* pNewData=UpSideDown(_pData);
-#if 1
+        //boost::shared_ptr<unsigned char> pNewData = UpSideDown(_pimpl->pixelData);
+        _pimpl->pixelData = UpSideDown(_pimpl->pixelData);
+
         if (nBitsAllocated > 8)
         {
+#if 0
             // We need to convert it to 8-bit.
-            pNewData = convertTo8Bit(pNewData, nLength/2, bIsSigned, nHighBit,
-                                     fRescaleSlope, fRescaleIntercept,
-                                     fWindowCenter, fWindowWidth);
+            // pNewData = 
+            //convertTo8Bit(_pimpl->pixelData.get(), nLength/2, bIsSigned, nHighBit,
+          unsigned char* pNewData = convertTo8Bit(_pimpl->pixelData.get(), nLength, bIsSigned, nHighBit,
+                                            fRescaleSlope, fRescaleIntercept,
+                                            fWindowCenter, fWindowWidth);
             // Use the new 8-bit data.
             if (pNewData)
             {
-                delete [] _pData;
-                _pData = pNewData;
-                nBytesP = 1;
-                nFrameSize /= 2;
-                nLength /= 2;
+                // delete [] _pData;
+                _pimpl->pixelData = boost::shared_ptr<unsigned char>(pNewData);
+                // nBytesP = 1;
+                // nFrameSize /= 2;
+                // nLength /= 2;
             }
+#endif            
         }
-#endif
     }
 }

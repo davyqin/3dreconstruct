@@ -33,7 +33,6 @@ private:
 
     class Pimpl;
     std::unique_ptr<Pimpl> _pimpl;
-    unsigned char* _pData;
 };
 
 #endif // DicomUtil_H
