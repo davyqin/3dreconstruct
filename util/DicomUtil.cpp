@@ -169,8 +169,11 @@ namespace {
     return 1;
   }
 
-  int WriteToString(string* /*Text*/, string /*pszTitle*/, int /*nContent*/)
+  int WriteToString(string* Text, string pszTitle, int nContent)
   {
+    *Text += pszTitle;
+    *Text += boost::lexical_cast<string>(nContent);
+    *Text += "\r\n";
     return 1;
   }
 
