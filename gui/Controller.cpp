@@ -1,6 +1,6 @@
 #include "Controller.h"
 
-#include "Window.cpp"
+#include "ViewDialog.cpp"
 
 #include <QDesktopWidget>
 #include <QApplication>
@@ -39,7 +39,7 @@ std::vector<std::string> findImageFiles(const std::string& path) {
 
 class Controller::Pimpl {
 public:
-  Window dialog;
+  ViewDialog viewDialog;
 };
 
 Controller::Controller(QObject *parent) 
@@ -50,11 +50,14 @@ Controller::Controller(QObject *parent)
 Controller::~Controller() {}
 
 void Controller::activate() {
+  _pimpl->viewDialog.adjustSize();
   const int desktopArea = QApplication::desktop()->width() *  QApplication::desktop()->height();
-  const int widgetArea = _pimpl->dialog.width() * _pimpl->dialog.height();
+  const int widgetArea = _pimpl->viewDialog.width() * _pimpl->viewDialog.height();
   if (((float)widgetArea / (float)desktopArea) < 0.75f)
-    _pimpl->dialog.show();
+    _pimpl->viewDialog.show();
   else
-    _pimpl->dialog.showMaximized();
+    _pimpl->viewDialog.showMaximized();
+
+  //_pimpl->viewDialog.show();
 }
 

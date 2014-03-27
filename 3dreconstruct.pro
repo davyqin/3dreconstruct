@@ -22,14 +22,19 @@ LIBS += -L/opt/boost-1.49.0-gcc-4.8.1-static/lib -lboost_system -lboost_filesyst
 
 # Input
 HEADERS += gui/GLWidget.h \
-           gui/Window.h \
            util/DicomUtil.h \
            model/Image.h \
-           gui/Controller.h
+           gui/Controller.h \
+           gui/ViewDialog.h
 
 SOURCES += main.cpp \
-	       gui/GLWidget.cpp \
-	       gui/Window.cpp \
-	       util/DicomUtil.cpp \
-	       model/Image.cpp \
-	       gui/Controller.cpp
+   	       gui/GLWidget.cpp \
+  	       util/DicomUtil.cpp \
+	         model/Image.cpp \
+	         gui/Controller.cpp \
+           gui/ViewDialog.cpp
+
+MOCABLEHEADERS += gui/ViewDialog.h\
+
+FORMS += \
+    gui/ViewDialog.ui
