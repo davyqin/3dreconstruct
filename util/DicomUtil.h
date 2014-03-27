@@ -26,11 +26,6 @@ private:
 
     void readImage(void);
 
-    // unsigned char* convertTo8Bit(unsigned char* _pData, unsigned long nNumPixels,
-    //                              bool bIsSigned, short nHighBit,
-    //                              float fRescaleSlope, float fRescaleIntercept,
-    //                              float fWindowCenter, float fWindowWidth);
-
     class Pimpl;
     std::unique_ptr<Pimpl> _pimpl;
 };

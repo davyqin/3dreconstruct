@@ -4,16 +4,12 @@
 #include "GLWidget.h"
 #include "util/DicomUtil.h"
 
-
 #include <math.h>
 #include <GL/glu.h>
 
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 
-namespace {
-  //unsigned char* pData = 0;
-}
 
 class GLWidget::Pimpl {
 public:

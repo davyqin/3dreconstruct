@@ -2,9 +2,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <memory.h>
 #include <vector>
-//#include <limits>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -82,7 +80,7 @@ namespace {
   long ReadLength(fstream& pcf, DATA_ENDIAN nDataEndian, bool bImplicitVR)
   {
     long int nValLength = 0;
-    short int nsLength;
+    short int nsLength = 0;
 
     if (bImplicitVR)
     {
@@ -284,6 +282,8 @@ public:
       }
     }
     
+    // 3. Convert to 8bit image
+    pp = (short *)pixelData.get();
     boost::shared_ptr<unsigned char> pNewData(new unsigned char[nLength/2 + 8]);
     unsigned char* np = pNewData.get();
 
@@ -311,7 +311,7 @@ public:
     else
     {
       // We will map the whole dynamic range.
-      float fSlope;
+      float fSlope = 1;;
 
       // First compute the min and max.
       int nCount = nLength / 2;
@@ -925,17 +925,41 @@ void DicomUtil::readImage()
       {
         switch(eTag)
         {
-        case 0x1000:
-          {
-            //WriteToString(fp,&sHeader,"160d,1000 : ", nDataEndian, bImplicitVR);
-            WriteToString(&sHeader,"160d,1000 : ", 0);
-            fp.seekg(538, ios::cur);
-            break;
-          }
         default:
           {
-            int nVal = ReadLength(fp,nDataEndian,bImplicitVR);
-            if (nVal == 0) {std::cout<<"160d default"<<std::endl;}
+            int nVal = 0;
+            fp.seekg(4, ios::cur);
+            fp.read((char*)&nVal, 4);
+            fp.seekg(nVal,ios::cur);
+            break;
+          }
+        }
+        break;
+      }
+      case 0x170d:
+      {
+        switch(eTag)
+        {
+        default:
+          {
+            int nVal = 0;
+            fp.seekg(4, ios::cur);
+            fp.read((char*)&nVal, 4);
+            fp.seekg(nVal,ios::cur);
+            break;
+          }
+        }
+        break;
+      }
+      case 0x7005:
+      {
+        switch(eTag)
+        {
+        default:
+          {
+            int nVal = 0;
+            fp.seekg(4, ios::cur);
+            fp.read((char*)&nVal, 4);
             fp.seekg(nVal,ios::cur);
             break;
           }
@@ -993,7 +1017,7 @@ void DicomUtil::readImage()
 
     fp.close();
 
-    //std::cout<<std::endl<<sHeader<<std::endl;
+//    std::cout<<std::endl<<sHeader<<std::endl;
 
     if (_pimpl->pixelData) // Have we got the pixel data?
     {
