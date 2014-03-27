@@ -4,7 +4,7 @@
 #include <iostream>
 #include <memory.h>
 #include <vector>
-#include <limits>
+//#include <limits>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -12,9 +12,6 @@
 using namespace std;
 
 namespace {
-  short int nCols = 0, nRows = 0;
-  int nBytesP = 0, nFrameSize = 0;
-  long int nLength = 0;
 
   enum DATA_ENDIAN
   {
@@ -178,11 +175,12 @@ namespace {
     return 1;
   }
 
-  boost::shared_ptr<unsigned char> UpSideDown(boost::shared_ptr<unsigned char> pixelData)
+  boost::shared_ptr<unsigned char> UpSideDown(boost::shared_ptr<unsigned char> pixelData,
+                                              int nCols, int nRows, int nBytesP, int pixelLength)
   {
     const int nRowBytes = nCols * nBytesP;
     unsigned char* cc= pixelData.get() + (nRows - 1) * nRowBytes;
-    boost::shared_ptr<unsigned char> pNewData(new unsigned char [nLength + 16]);
+    boost::shared_ptr<unsigned char> pNewData(new unsigned char [pixelLength + 16]);
     unsigned char* dd = pNewData.get();
     for (int i = 0; i < nRows; i++)
     {
@@ -202,7 +200,6 @@ namespace {
     std::vector<double> result;
     for (auto item : splittedStrings) {
       result.push_back(atof(item.c_str()));
-      std::cerr<<result.back()<<std::endl;
     }
 
    return result;
@@ -212,13 +209,152 @@ namespace {
 
 class DicomUtil::Pimpl {
 public:
-  Pimpl() {}
+  Pimpl()
+  :nCols(0),nRows(0),nBytesP(0),nFrameSize(0),nNumFrames(1),nHighBit(0),bIsSigned(false),nBitsAllocated(0)
+  ,fWindowCenter(0.0), fWindowWidth(0.0), fRescaleSlope(1.0), fRescaleIntercept(0),nLength(0) {}
 
   /* data */
-  std::string fileName;
+  int nCols;
+  int nRows;
+  int nBytesP;
+  int nFrameSize;
+  int nNumFrames;
+  int nHighBit;
+  bool bIsSigned;
+  int nBitsAllocated;
+  double fWindowCenter;
+  double fWindowWidth;
+  double fRescaleSlope;
+  double fRescaleIntercept;
+  int nLength;
   std::vector<double> pixelSpacing;
   std::vector<double> imagePosition;
   boost::shared_ptr<unsigned char> pixelData;
+  std::string fileName;
+
+  void imageAdjuestment() {
+    if (nBitsAllocated == 8) 
+      return;
+
+    short* pp = (short *)pixelData.get();
+
+    // 1. Clip the high bits.
+    if (nHighBit < 15)
+    {
+      short nMask;
+      short nSignBit;
+
+      int nCount = nLength / 2;
+
+      if(bIsSigned == 0 ) // Unsigned integer
+      {
+        nMask = 0xffff << (nHighBit + 1);
+
+        while( nCount-- > 0 )
+          *(pp ++) &= ~nMask;
+      }
+      else
+      {
+        // 1's complement representation
+
+        nSignBit = 1 << nHighBit;
+        nMask = 0xffff << (nHighBit + 1);
+        while( nCount -- > 0 )
+        {
+          if ((*pp & nSignBit) != 0)
+            *(pp ++) |= nMask;
+          else
+            *(pp ++) &= ~nMask;
+        }
+      }
+    }
+
+    // 2. Rescale if needed (especially for CT)
+    if ((fRescaleSlope != 1.0f) || (fRescaleIntercept != 0.0f))
+    {
+      float fValue;
+
+      pp = (short *)pixelData.get();
+      int nCount = nLength / 2;
+
+      while( nCount-- > 0 )
+      {
+        fValue = (*pp) * fRescaleSlope + fRescaleIntercept;
+        *pp ++ = (short)fValue;
+      }
+    }
+    
+    boost::shared_ptr<unsigned char> pNewData(new unsigned char[nLength/2 + 8]);
+    unsigned char* np = pNewData.get();
+
+    if ((fWindowCenter != 0) || (fWindowWidth != 0))
+    {
+      // Since we have window level info, we will only map what are within the Window.
+      const float fShift = fWindowCenter - fWindowWidth / 2.0f;
+      const float fSlope = 255.0f / fWindowWidth;
+
+      int nCount = nLength / 2;
+
+      while (nCount-- > 0)
+      {
+        short fValue = ((*pp ++) - fShift) * fSlope;
+        if (fValue < 0) {
+          fValue = 0;
+        }
+        else if (fValue > 255) {
+          fValue = 255;
+        }
+
+        *np ++ = (unsigned char)fValue;
+      }
+    }
+    else
+    {
+      // We will map the whole dynamic range.
+      float fSlope;
+
+      // First compute the min and max.
+      int nCount = nLength / 2;
+      int nMin = *pp;
+      int nMax = *pp;
+      while (nCount-- > 0)
+      {
+        if (*pp < nMin)
+          nMin = *pp;
+
+        if (*pp > nMax)
+          nMax = *pp;
+
+        pp ++;
+      }
+
+      // Calculate the scaling factor.
+      if (nMax != nMin)
+        fSlope = 255.0f / (nMax - nMin);
+      else
+        fSlope = 1.0f;
+
+      nCount = nLength / 2;
+      pp = (short *)pixelData.get();
+
+      while (nCount-- > 0)
+      {
+        float fValue = ((*pp ++) - nMin) * fSlope;
+        if (fValue < 0)
+          fValue = 0;
+        else if (fValue > 255)
+          fValue = 255;
+
+        *np ++ = (unsigned char) fValue;
+      }
+    }
+
+    pixelData = pNewData;
+
+    nBytesP = 1;
+    nFrameSize /= 2;
+    nLength /= 2;
+  }
 };
 
 DicomUtil::DicomUtil()
@@ -241,180 +377,29 @@ boost::shared_ptr<unsigned char> DicomUtil::pixel() {
     readImage();
   }
 
-  //boost::shared_ptr<unsigned char> pixel(new unsigned char[nLength]);
-  //memcpy(pixel.get(), _pimpl->pixelData.get(), nLength);
-  //memcpy(pixel.get(), _pData, nLength);
-  //return pixel;
   return _pimpl->pixelData;
 }
 
 int DicomUtil::pixelLength() const {
-  return nLength;
+  return _pimpl->nLength;
 }
 
 int DicomUtil::imageHeight() const {
-  return nRows;
+  return _pimpl->nRows;
 }
 
 int DicomUtil::imageWidth() const {
-  return nCols;
-}
-
-unsigned char*
-    DicomUtil::convertTo8Bit(unsigned char* _pData, unsigned long nNumPixels,
-                              bool bIsSigned, short nHighBit,
-                              float fRescaleSlope, float fRescaleIntercept,
-                              float fWindowCenter, float fWindowWidth)
-{
-  //unsigned char* pNewData = 0;
-  unsigned long nCount;
-  short *pp;
-
-  // 1. Clip the high bits.
-  if (nHighBit < 15)
-  {
-    short nMask;
-    short nSignBit;
-
-    pp = (short *)_pData;
-    nCount = nNumPixels;
-
-    if(bIsSigned == 0 ) // Unsigned integer
-    {
-      nMask = 0xffff << (nHighBit + 1);
-
-      while( nCount-- > 0 )
-        *(pp ++) &= ~nMask;
-    }
-    else
-    {
-      // 1's complement representation
-
-      nSignBit = 1 << nHighBit;
-      nMask = 0xffff << (nHighBit + 1);
-      while( nCount -- > 0 )
-      {
-        if ((*pp & nSignBit) != 0)
-          *(pp ++) |= nMask;
-        else
-          *(pp ++) &= ~nMask;
-      }
-    }
-  }
-
-  // 2. Rescale if needed (especially for CT)
-  if ((fRescaleSlope != 1.0f) || (fRescaleIntercept != 0.0f))
-  {
-    float fValue;
-
-    pp = (short *)_pData;
-    nCount = nNumPixels;
-
-    while( nCount-- > 0 )
-    {
-      fValue = (*pp) * fRescaleSlope + fRescaleIntercept;
-      *pp ++ = (short)fValue;
-    }
-
-  }
-
-  unsigned char* pNewData = new unsigned char [nNumPixels + 4];
-
-#if 1
-  // 3. Window-level or rescale to 8-bit
-  if ((fWindowCenter != 0) || (fWindowWidth != 0))
-  {
-    float fSlope;
-    float fShift;
-    float fValue;
-    unsigned char* np = pNewData;//new unsigned char [nNumPixels+4];
-
-    //pNewData = np.get();
-
-    // Since we have window level info, we will only map what are
-    // within the Window.
-
-    fShift = fWindowCenter - fWindowWidth / 2.0f;
-    fSlope = 255.0f / fWindowWidth;
-
-    nCount = nNumPixels;
-    pp = (short *)_pData;
-
-    while (nCount-- > 0)
-    {
-      fValue = ((*pp ++) - fShift) * fSlope;
-      if (fValue < 0)
-        fValue = 0;
-      else if (fValue > 255)
-        fValue = 255;
-
-      *np ++ = (unsigned char) fValue;
-    }
-  }
-  else
-  {
-    // We will map the whole dynamic range.
-    float fSlope;
-    float fValue;
-    int nMin, nMax;
-    unsigned char* np = pNewData;//.get();//new unsigned char [nNumPixels+4];
-
-    //pNewData = np;
-
-    // First compute the min and max.
-    nCount = nNumPixels;
-    pp = (short *)_pData;
-    nMin = nMax = *pp;
-    while (nCount-- > 0)
-    {
-      if (*pp < nMin)
-        nMin = *pp;
-
-      if (*pp > nMax)
-        nMax = *pp;
-
-      pp ++;
-    }
-
-    // Calculate the scaling factor.
-    if (nMax != nMin)
-      fSlope = 255.0f / (nMax - nMin);
-    else
-      fSlope = 1.0f;
-
-    nCount = nNumPixels;
-    pp = (short *)_pData;
-
-    while (nCount-- > 0)
-    {
-      fValue = ((*pp ++) - nMin) * fSlope;
-      if (fValue < 0)
-        fValue = 0;
-      else if (fValue > 255)
-        fValue = 255;
-
-      *np ++ = (unsigned char) fValue;
-    }
-  }
-#endif
-
-  //return boost::shared_ptr<unsigned char>(pNewData);
-  return (unsigned char* )pNewData;
+  return _pimpl->nCols;
 }
 
 void DicomUtil::readImage()
 {
-  short int nBitsAllocated, nSamplesPerPixel = 1;
-  short int nHighBit = 0;
+  short int nSamplesPerPixel = 1;
   char szPhotometric[32] = "", szTransferSyntaxUID[80] = "";
-  float fWindowWidth = 0, fWindowCenter = 0, fRescaleSlope = 1, fRescaleIntercept = 0;
-  bool bIsSigned = false;
   bool bImplicitVR = true;
   COMPRESSION_MODE nCompressionMode = COMPRESS_NONE;
   DATA_ENDIAN nDataEndian = LITTLE_ENDIAN_DATA;
-  //double nThickness = 0.0;
   short int gTag, eTag;
-  int nNumFrames = 1;
   bool bPixelData = false;
 
   fstream fp;
@@ -833,20 +818,20 @@ void DicomUtil::readImage()
           }
         case 0x0008: //Number of frames IS
           {
-            nNumFrames=ReadIS(fp,nDataEndian,bImplicitVR);
-            WriteToString(&sHeader,"0028,0008 Number of frames: ",nNumFrames);
+            _pimpl->nNumFrames=ReadIS(fp,nDataEndian,bImplicitVR);
+            WriteToString(&sHeader,"0028,0008 Number of frames: ", _pimpl->nNumFrames);
             break;
           }
         case 0x0010: //Rows US
           {
-            nRows=ReadUS(fp, nDataEndian);
-            WriteToString(&sHeader,"0028,0010 Rows: ",nRows);
+            _pimpl->nRows=ReadUS(fp, nDataEndian);
+            WriteToString(&sHeader,"0028,0010 Rows: ", _pimpl->nRows);
             break;
           }
         case 0x0011: //Columns US
           {
-            nCols=ReadUS(fp, nDataEndian);
-            WriteToString(&sHeader,"0028,0011 Columns: ",nCols);
+            _pimpl->nCols=ReadUS(fp, nDataEndian);
+            WriteToString(&sHeader,"0028,0011 Columns: ", _pimpl->nCols);
             break;
           }
         case 0x0030: //Pixel Spacing DS
@@ -858,8 +843,8 @@ void DicomUtil::readImage()
           }
         case 0x0100: //Bits Allocated US
           {
-            nBitsAllocated=ReadUS(fp, nDataEndian);
-            WriteToString(&sHeader,"0028,0100 Bits Allocated: ",nBitsAllocated);
+            _pimpl->nBitsAllocated=ReadUS(fp, nDataEndian);
+            WriteToString(&sHeader,"0028,0100 Bits Allocated: ", _pimpl->nBitsAllocated);
             break;
           }
         case 0x0101: //Bits Stored US
@@ -869,14 +854,14 @@ void DicomUtil::readImage()
           }
         case 0x0102: //High Bit US
           {
-            nHighBit=ReadUS(fp, nDataEndian);
-            WriteToString(&sHeader,"0028,0102 High Bit: ",nHighBit);
+            _pimpl->nHighBit=ReadUS(fp, nDataEndian);
+            WriteToString(&sHeader,"0028,0102 High Bit: ", _pimpl->nHighBit);
             break;
           }
         case 0x0103: //Pixel Representation US
           {
-            bIsSigned=ReadUS(fp, nDataEndian);
-            WriteToString(&sHeader,"0028,0103 Pixel Representation: ",bIsSigned);
+            _pimpl->bIsSigned=ReadUS(fp, nDataEndian);
+            WriteToString(&sHeader,"0028,0103 Pixel Representation: ", _pimpl->bIsSigned);
             break;
           }
         case 0x0120: //Pixel Padding Value US or SS
@@ -886,26 +871,26 @@ void DicomUtil::readImage()
           }
         case 0x1050: //Window Center DS
           {
-            fWindowCenter=ReadDS(fp, nDataEndian, bImplicitVR);
-            WriteToString(&sHeader,"0028,1050 Window Center: ",(int)fWindowCenter);
+            _pimpl->fWindowCenter=ReadDS(fp, nDataEndian, bImplicitVR);
+            WriteToString(&sHeader,"0028,1050 Window Center: ", (int)_pimpl->fWindowCenter);
             break;
           }
         case 0x1051: //Window Width DS
           {
-            fWindowWidth=ReadDS(fp, nDataEndian, bImplicitVR);
-            WriteToString(&sHeader,"0028,1051 Window Width: ",(int)fWindowWidth);
+            _pimpl->fWindowWidth=ReadDS(fp, nDataEndian, bImplicitVR);
+            WriteToString(&sHeader,"0028,1051 Window Width: ", (int)_pimpl->fWindowWidth);
             break;
           }
         case 0x1052: //Rescale Intercept DS
           {
-            fRescaleIntercept=ReadDS(fp, nDataEndian, bImplicitVR);
-            WriteToString(&sHeader,"0028,1052 Rescale Intercept: ",(int)fRescaleIntercept);
+            _pimpl->fRescaleIntercept=ReadDS(fp, nDataEndian, bImplicitVR);
+            WriteToString(&sHeader,"0028,1052 Rescale Intercept: ",(int)_pimpl->fRescaleIntercept);
             break;
           }
         case 0x1053: //Rescale Slope DS
           {
-            fRescaleSlope=ReadDS(fp, nDataEndian, bImplicitVR);
-            WriteToString(&sHeader,"0028,1053 Rescale Slope: ",(int)fRescaleSlope);
+            _pimpl->fRescaleSlope=ReadDS(fp, nDataEndian, bImplicitVR);
+            WriteToString(&sHeader,"0028,1053 Rescale Slope: ",(int)_pimpl->fRescaleSlope);
             break;
           }
         default:
@@ -963,18 +948,18 @@ void DicomUtil::readImage()
         {
         case 0x0010: //Pixel Data OW or OB
           {
-            nBytesP = nSamplesPerPixel * nBitsAllocated / 8;
-            nFrameSize = nCols * nRows * nBytesP;
-            nLength = nNumFrames * nFrameSize;
+            _pimpl->nBytesP = nSamplesPerPixel * _pimpl->nBitsAllocated / 8;
+            _pimpl->nFrameSize = _pimpl->nCols * _pimpl->nRows * _pimpl->nBytesP;
+            _pimpl->nLength = _pimpl->nNumFrames * _pimpl->nFrameSize;
 
             // Parse pixel data
             switch(nCompressionMode)
             {
             case COMPRESS_NONE:
               {
-                _pimpl->pixelData.reset(new unsigned char[nLength + 16]);
+                _pimpl->pixelData.reset(new unsigned char[_pimpl->nLength + 16]);
                 fp.seekg(4,ios::cur);
-                fp.read((char*)_pimpl->pixelData.get(), nLength);
+                fp.read((char*)_pimpl->pixelData.get(), _pimpl->nLength);
                 bPixelData = true;
                 break;
               }
@@ -1008,40 +993,17 @@ void DicomUtil::readImage()
 
     fp.close();
 
-    std::cout<<std::endl<<sHeader<<std::endl;
+    //std::cout<<std::endl<<sHeader<<std::endl;
 
     if (_pimpl->pixelData) // Have we got the pixel data?
     {
-
         // Need to do byte swap?
-        if (nDataEndian == BIG_ENDIAN_DATA)
-        {
-          if (nBitsAllocated > 8)
-            SwapWord((char *)_pimpl->pixelData.get(), nLength/2);
-        }
+      if (nDataEndian == BIG_ENDIAN_DATA && _pimpl->nBitsAllocated > 8) {
+        SwapWord((char *)_pimpl->pixelData.get(), _pimpl->nLength / 2);
+      }
 
-        //boost::shared_ptr<unsigned char> pNewData = UpSideDown(_pimpl->pixelData);
-        _pimpl->pixelData = UpSideDown(_pimpl->pixelData);
+      _pimpl->pixelData = UpSideDown(_pimpl->pixelData, _pimpl->nCols, _pimpl->nRows, _pimpl->nBytesP, _pimpl->nLength);
 
-        if (nBitsAllocated > 8)
-        {
-#if 0
-            // We need to convert it to 8-bit.
-            // pNewData = 
-            //convertTo8Bit(_pimpl->pixelData.get(), nLength/2, bIsSigned, nHighBit,
-          unsigned char* pNewData = convertTo8Bit(_pimpl->pixelData.get(), nLength, bIsSigned, nHighBit,
-                                            fRescaleSlope, fRescaleIntercept,
-                                            fWindowCenter, fWindowWidth);
-            // Use the new 8-bit data.
-            if (pNewData)
-            {
-                // delete [] _pData;
-                _pimpl->pixelData = boost::shared_ptr<unsigned char>(pNewData);
-                // nBytesP = 1;
-                // nFrameSize /= 2;
-                // nLength /= 2;
-            }
-#endif            
-        }
+      _pimpl->imageAdjuestment();          
     }
 }
