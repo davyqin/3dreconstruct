@@ -16,7 +16,9 @@ public:
 
   void setImageFolder(const std::string& imageFolder);
 
-  boost::shared_ptr<Image> fetchImage(int index);
+  boost::shared_ptr<const Image> fetchImage(int index) const;
+
+  int imageCount() const;
 
 private:
   class Pimpl;

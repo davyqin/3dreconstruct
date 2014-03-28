@@ -5,6 +5,10 @@
 
 #include <memory>
 
+#include <boost/shared_ptr.hpp>
+
+class Image;
+
 class ViewDialog : public QDialog
 {
   Q_OBJECT
@@ -12,8 +16,13 @@ public:
   explicit ViewDialog(QWidget* parent = 0);
   ~ViewDialog();
 
+  void setImageCount(int count);
+
+  void showImage(boost::shared_ptr<const Image> image);
+
 signals:
   void loadImageSignal(const QString& imageFolder);
+  void requestImageSignal(int index);
 
 private slots:
   void onBrowseFolder();

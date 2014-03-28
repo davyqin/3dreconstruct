@@ -1,5 +1,7 @@
 #include "DicomUtil.h"
 
+#include "model/Image.h"
+
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -358,8 +360,27 @@ public:
 };
 
 DicomUtil::DicomUtil()
-  :_pimpl(new Pimpl())
+:_pimpl(new Pimpl())
 {
+}
+
+DicomUtil::DicomUtil(const std::string& fileName) 
+:_pimpl(new Pimpl())
+{
+  _pimpl->fileName = fileName;
+
+  readFile();
+}
+
+boost::shared_ptr<Image> DicomUtil::fetchImage() const {
+  if (!_pimpl->pixelData) {
+    return boost::shared_ptr<Image>();
+  }
+
+  boost::shared_ptr<Image> image(new Image(_pimpl->pixelData, _pimpl->nLength));
+  image->setPosition(_pimpl->imagePosition);
+
+  return image;
 }
 
 DicomUtil::~DicomUtil() {}
@@ -374,7 +395,7 @@ boost::shared_ptr<unsigned char> DicomUtil::pixel() {
   }
 
   if (!_pimpl->pixelData) {
-    readImage();
+    readFile();
   }
 
   return _pimpl->pixelData;
@@ -392,7 +413,11 @@ int DicomUtil::imageWidth() const {
   return _pimpl->nCols;
 }
 
-void DicomUtil::readImage()
+bool DicomUtil::hasPixelData() const {
+  return (_pimpl->pixelData.get() != 0);
+}
+
+void DicomUtil::readFile()
 {
   short int nSamplesPerPixel = 1;
   char szPhotometric[32] = "", szTransferSyntaxUID[80] = "";
@@ -411,7 +436,7 @@ void DicomUtil::readImage()
   fp.seekg(128, ios_base::beg);
   char szDicomFlag[4] = "";
   fp.read((char*)szDicomFlag, 4);
-  if (string(szDicomFlag) != "DICM") {
+  if (string(szDicomFlag) != string("DICM")) {
     return;
   }
 

@@ -2,7 +2,8 @@
 #include <QtOpenGL>
 
 #include "GLWidget.h"
-#include "util/DicomUtil.h"
+//#include "util/DicomUtil.h"
+#include "model/Image.h"
 
 #include <math.h>
 #include <GL/glu.h>
@@ -21,8 +22,9 @@ public:
   QColor qtRed;
   QColor qtDark;
   QColor qtPurple;
-  DicomUtil dicomUtil;
-  boost::shared_ptr<unsigned char> pixelData;
+  //DicomUtil dicomUtil;
+  //boost::shared_ptr<unsigned char> pixelData;
+  boost::shared_ptr<const Image> image;
 };
 
 //! [0]
@@ -73,7 +75,11 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    // glDrawPixels(_pimpl->dicomUtil.imageWidth(), _pimpl->dicomUtil.imageHeight(), GL_LUMINANCE, GL_UNSIGNED_BYTE, _pimpl->pixelData.get());
+    if (_pimpl->image) {
+      const Image& image = *_pimpl->image;
+      const unsigned char* pixel = image.pixelData().get();
+      glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pixel);
+    }
 
  #if 0
     qglColor(qtRed); /* draw in red */
@@ -132,3 +138,8 @@ void GLWidget::resizeGL(int width, int height)
 #endif
 }
 //! [8]
+
+void GLWidget::showImage(boost::shared_ptr<const Image> image) {
+  _pimpl->image = image;
+  paintGL();
+}

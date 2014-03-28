@@ -20,12 +20,11 @@ public:
 
 signals:
 
-public slots:
-
+private slots:
   void onLoadImage(const QString& imageFolder);
+  void onRequestImage(int index);
 
 private:
-
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;
 

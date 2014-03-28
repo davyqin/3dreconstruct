@@ -1,19 +1,28 @@
 #pragma once
 
+#include <boost/shared_ptr.hpp>
 #include <memory>
+#include <vector>
 
 class Image
 {
 public:
-  Image();
+  Image(boost::shared_ptr<unsigned char> pixelData,
+  	    const int pixelLength);
 
   ~Image();
 
+  void setPosition(const std::vector<double> pos);
+
+  void setSize(const int width, const int height);
+
   // int pixelLength() const;
 
-  // int imageHeight() const;
+  int height() const;
 
-  // int imageWidth() const;
+  int width() const;
+  
+  boost::shared_ptr<unsigned char> pixelData() const;
 
 private:
   class Pimpl;

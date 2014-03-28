@@ -20,7 +20,7 @@
       <widget class="GLWidget" name="glWidget" native="true"/>
      </item>
      <item>
-      <widget class="QSlider" name="verticalSlider">
+      <widget class="QSlider" name="imagePosSlider">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>

@@ -4,6 +4,9 @@
 #include <QGLWidget>
 
 #include <memory>
+#include <boost/shared_ptr.hpp>
+
+class Image;
 
 //! [0]
 class GLWidget : public QGLWidget
@@ -16,7 +19,8 @@ public:
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
-//! [0]
+
+    void showImage(boost::shared_ptr<const Image> image);
 
 #if 0
 //! [1]
