@@ -13,8 +13,11 @@ public:
   ~ViewDialog();
 
 signals:
+  void loadImageSignal(const QString& imageFolder);
 
-public slots:
+private slots:
+  void onBrowseFolder();
+  void onLoadImage();
 
 private:
   class Pimpl;

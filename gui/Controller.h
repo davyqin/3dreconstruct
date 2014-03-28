@@ -22,6 +22,8 @@ signals:
 
 public slots:
 
+  void onLoadImage(const QString& imageFolder);
+
 private:
 
   class Pimpl;

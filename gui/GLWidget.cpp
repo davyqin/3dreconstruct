@@ -30,8 +30,8 @@ GLWidget::GLWidget(QWidget *parent)
   : QGLWidget(QGLFormat(QGL::DoubleBuffer), parent)
   , _pimpl(new Pimpl())
 {
-  _pimpl->dicomUtil.setFileName("./ct.dcm");
-  _pimpl->pixelData = _pimpl->dicomUtil.pixel();
+//  _pimpl->dicomUtil.setFileName("./ct.dcm");
+//  _pimpl->pixelData = _pimpl->dicomUtil.pixel();
 }
 //! [0]
 
@@ -73,7 +73,7 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    glDrawPixels(_pimpl->dicomUtil.imageWidth(), _pimpl->dicomUtil.imageHeight(), GL_LUMINANCE, GL_UNSIGNED_BYTE, _pimpl->pixelData.get());
+    // glDrawPixels(_pimpl->dicomUtil.imageWidth(), _pimpl->dicomUtil.imageHeight(), GL_LUMINANCE, GL_UNSIGNED_BYTE, _pimpl->pixelData.get());
 
  #if 0
     qglColor(qtRed); /* draw in red */

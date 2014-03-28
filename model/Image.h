@@ -5,21 +5,17 @@
 class Image
 {
 public:
-    Image();
+  Image();
 
-    ~Image();
+  ~Image();
 
-    // int pixelLength() const;
+  // int pixelLength() const;
 
-    // int imageHeight() const;
+  // int imageHeight() const;
 
-    // int imageWidth() const;
+  // int imageWidth() const;
 
 private:
-
-    class Pimpl;
-
-    std::unique_ptr<Pimpl> _pimpl;
-
-
+  class Pimpl;
+  std::unique_ptr<Pimpl> _pimpl;
 };

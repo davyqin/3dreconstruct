@@ -24,6 +24,7 @@ LIBS += -L/opt/boost-1.49.0-gcc-4.8.1-static/lib -lboost_system -lboost_filesyst
 HEADERS += gui/GLWidget.h \
            util/DicomUtil.h \
            model/Image.h \
+           model/ImageStack.h \
            gui/Controller.h \
            gui/ViewDialog.h
 
@@ -31,6 +32,7 @@ SOURCES += main.cpp \
    	       gui/GLWidget.cpp \
   	       util/DicomUtil.cpp \
 	         model/Image.cpp \
+           model/ImageStack.cpp \
 	         gui/Controller.cpp \
            gui/ViewDialog.cpp
 
