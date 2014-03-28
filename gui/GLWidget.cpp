@@ -2,15 +2,10 @@
 #include <QtOpenGL>
 
 #include "GLWidget.h"
-//#include "util/DicomUtil.h"
 #include "model/Image.h"
 
-#include <math.h>
 #include <GL/glu.h>
-
 #include <boost/shared_ptr.hpp>
-#include <iostream>
-
 
 class GLWidget::Pimpl {
 public:
@@ -22,19 +17,13 @@ public:
   QColor qtRed;
   QColor qtDark;
   QColor qtPurple;
-  //DicomUtil dicomUtil;
-  //boost::shared_ptr<unsigned char> pixelData;
   boost::shared_ptr<const Image> image;
 };
 
 //! [0]
 GLWidget::GLWidget(QWidget *parent)
   : QGLWidget(QGLFormat(QGL::DoubleBuffer), parent)
-  , _pimpl(new Pimpl())
-{
-//  _pimpl->dicomUtil.setFileName("./ct.dcm");
-//  _pimpl->pixelData = _pimpl->dicomUtil.pixel();
-}
+  , _pimpl(new Pimpl()) {}
 //! [0]
 
 //! [1]
@@ -139,7 +128,18 @@ void GLWidget::resizeGL(int width, int height)
 }
 //! [8]
 
-void GLWidget::showImage(boost::shared_ptr<const Image> image) {
+void GLWidget::wheelEvent(QWheelEvent * event) {
+  const QPoint angle = event->angleDelta();
+  event->accept();
+  if (angle.y() > 0) {
+    emit requestNextImage();
+  }
+  else {
+    emit requestPrevImage();
+  }
+
+}
+
+void GLWidget::setImage(boost::shared_ptr<const Image> image) {
   _pimpl->image = image;
-  paintGL();
 }

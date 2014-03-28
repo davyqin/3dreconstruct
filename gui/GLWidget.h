@@ -20,7 +20,11 @@ public:
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
 
-    void showImage(boost::shared_ptr<const Image> image);
+    void setImage(boost::shared_ptr<const Image> image);
+
+signals:
+    void requestNextImage();
+    void requestPrevImage();
 
 #if 0
 //! [1]
@@ -41,6 +45,7 @@ protected:
     void initializeGL();
     void paintGL();
     void resizeGL(int width, int height);
+    void wheelEvent(QWheelEvent * event);
 //! [2]
 
 //! [3]

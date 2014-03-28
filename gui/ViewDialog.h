@@ -22,7 +22,9 @@ public:
 
 signals:
   void loadImageSignal(const QString& imageFolder);
-  void requestImageSignal(int index);
+  void requestImage(int index);
+  void requestNextImage();
+  void requestPrevImage();
 
 private slots:
   void onBrowseFolder();

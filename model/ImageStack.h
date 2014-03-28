@@ -14,9 +14,13 @@ public:
 
   ~ImageStack();
 
-  void setImageFolder(const std::string& imageFolder);
+  void loadImages(const std::string& imageFolder);
 
   boost::shared_ptr<const Image> fetchImage(int index) const;
+
+  boost::shared_ptr<const Image> fetchNextImage() const;
+
+  boost::shared_ptr<const Image> fetchPrevImage() const;
 
   int imageCount() const;
 

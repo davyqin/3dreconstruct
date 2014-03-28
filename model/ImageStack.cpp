@@ -39,24 +39,14 @@ std::vector<std::string> findImageFiles(const std::string& path) {
 class ImageStack::Pimpl
 {
 public:
-  Pimpl() {}
-
-  void loadImages() {
-    const std::vector<std::string> imageFiles = findImageFiles(imageFolder);
-    for (auto imageFile : imageFiles) {
-      std::cout<<imageFile<<std::endl;
-      DicomUtil dicomUtil(imageFile);
-      if (dicomUtil.hasPixelData()) {
-        images.push_back(dicomUtil.fetchImage());
-        std::cout<<imageFile<<std::endl;
-      }
-    }
-  }
+  Pimpl():currentIndex(0) {}
 
   /* data */
   std::vector<boost::shared_ptr<Image> > images;
 
   std::string imageFolder;
+
+  unsigned int currentIndex;
 };
 
 ImageStack::ImageStack()
@@ -64,18 +54,50 @@ ImageStack::ImageStack()
 
 ImageStack::~ImageStack() {}
 
-void ImageStack::setImageFolder(const std::string& imageFolder) {
-  _pimpl->imageFolder = imageFolder;
+void ImageStack::loadImages(const std::string& imageFolder) {
+  _pimpl->imageFolder = imageFolder;  
+  _pimpl->images.clear();
+  const std::vector<std::string> imageFiles = findImageFiles(imageFolder);
+  for (auto imageFile : imageFiles) {
+    DicomUtil dicomUtil(imageFile);
+    if (dicomUtil.hasPixelData()) {
+      _pimpl->images.push_back(dicomUtil.fetchImage());
+    }
+  }
 
-  _pimpl->loadImages();
 }
 
 boost::shared_ptr<const Image> ImageStack::fetchImage(int index) const {
-  if (index > _pimpl->images.size() || index < 0) {
+  if (index >= _pimpl->images.size() || index < 0) {
     return boost::shared_ptr<const Image>();
   }
 
+  _pimpl->currentIndex = index;
   return _pimpl->images.at(index);
+}
+
+boost::shared_ptr<const Image> ImageStack::fetchNextImage() const {
+  if (_pimpl->images.empty()) {
+    return boost::shared_ptr<const Image>();
+  }
+
+  if (_pimpl->currentIndex < _pimpl->images.size() -1) {
+    ++_pimpl->currentIndex; 
+  }
+
+  return _pimpl->images.at(_pimpl->currentIndex);
+}
+
+boost::shared_ptr<const Image> ImageStack::fetchPrevImage() const {
+  if (_pimpl->images.empty()) {
+    return boost::shared_ptr<const Image>();
+  }
+
+  if (_pimpl->currentIndex - 1 > 0) {
+    --_pimpl->currentIndex; 
+  }
+
+  return _pimpl->images.at(_pimpl->currentIndex);
 }
 
 int ImageStack::imageCount() const {

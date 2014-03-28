@@ -28,7 +28,9 @@ ViewDialog::ViewDialog(QWidget *parent)
 
   connect(_pimpl->ui.browseButton, SIGNAL(clicked()), SLOT(onBrowseFolder()));
   connect(_pimpl->ui.loadButton, SIGNAL(clicked()), SLOT(onLoadImage()));
-  connect(_pimpl->ui.imagePosSlider, SIGNAL(valueChanged(int)), SIGNAL(requestImageSignal(int)));
+  connect(_pimpl->ui.imagePosSlider, SIGNAL(valueChanged(int)), SIGNAL(requestImage(int)));
+  connect(_pimpl->ui.glWidget, SIGNAL(requestNextImage()), SIGNAL(requestNextImage()));
+  connect(_pimpl->ui.glWidget, SIGNAL(requestPrevImage()), SIGNAL(requestPrevImage()));
 }
 
 ViewDialog::~ViewDialog() {}
@@ -54,5 +56,6 @@ void ViewDialog::setImageCount(int count) {
 }
 
 void ViewDialog::showImage(boost::shared_ptr<const Image> image) {
-  _pimpl->ui.glWidget->showImage(image);
+  _pimpl->ui.glWidget->setImage(image);
+  _pimpl->ui.glWidget->update();
 }

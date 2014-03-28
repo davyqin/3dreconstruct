@@ -379,7 +379,7 @@ boost::shared_ptr<Image> DicomUtil::fetchImage() const {
 
   boost::shared_ptr<Image> image(new Image(_pimpl->pixelData, _pimpl->nLength));
   image->setPosition(_pimpl->imagePosition);
-
+  image->setSize(_pimpl->nCols, _pimpl->nRows);
   return image;
 }
 
@@ -434,8 +434,9 @@ void DicomUtil::readFile()
   }
 
   fp.seekg(128, ios_base::beg);
-  char szDicomFlag[4] = "";
+  char szDicomFlag[5] = "";
   fp.read((char*)szDicomFlag, 4);
+  szDicomFlag[4] = '\0';
   if (string(szDicomFlag) != string("DICM")) {
     return;
   }
@@ -1060,6 +1061,6 @@ void DicomUtil::readFile()
 
       _pimpl->pixelData = UpSideDown(_pimpl->pixelData, _pimpl->nCols, _pimpl->nRows, _pimpl->nBytesP, _pimpl->nLength);
 
-      _pimpl->imageAdjuestment();          
+      _pimpl->imageAdjuestment();
     }
 }
