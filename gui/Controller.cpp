@@ -21,6 +21,7 @@ Controller::Controller(QObject *parent)
   connect(&_pimpl->viewDialog, SIGNAL(requestImage(int)), SLOT(onRequestImage(int)));
   connect(&_pimpl->viewDialog, SIGNAL(requestNextImage()), SLOT(onRequestNextImage()));
   connect(&_pimpl->viewDialog, SIGNAL(requestPrevImage()), SLOT(onRequestPrevImage()));
+  connect(&_pimpl->viewDialog, SIGNAL(updateWLSignal(int,int)), SLOT(onUpdateWL(int,int)));
 }
 
 Controller::~Controller() {}
@@ -55,4 +56,9 @@ void Controller::onRequestNextImage() {
 
 void Controller::onRequestPrevImage() {
   _pimpl->viewDialog.showImage(_pimpl->imageStack.fetchPrevImage());
+}
+
+void Controller::onUpdateWL(int window, int level) {
+  _pimpl->imageStack.updateWL(window, level);
+  _pimpl->viewDialog.showImage(_pimpl->imageStack.fetchImage());
 }

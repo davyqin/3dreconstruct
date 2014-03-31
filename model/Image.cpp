@@ -15,21 +15,43 @@ const std::vector<double> sagiOri = {0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
 class Image::Pimpl
 {
 public:
-  Pimpl(boost::shared_ptr<unsigned char> pixelData,
+  Pimpl(boost::shared_ptr<unsigned short> pixelData,
   	    const int pixelLength)
   : pixelData(pixelData)
-  , pixelLength(pixelLength) {}
+  , pixelLength(pixelLength)
+  , window(65535)
+  , level(32768)
+  {
+//    computerMinAndMax();
+  }
 
   /* data */
-  boost::shared_ptr<unsigned char> pixelData;
-  const int pixelLength;
+  boost::shared_ptr<unsigned short> pixelData;
+  boost::shared_ptr<unsigned short> outputPixel;
+  const unsigned long pixelLength;
   std::vector<double> position;
   Image::Orientation orientation;
   int width;
   int height;
+  unsigned short minValue;
+  unsigned short maxValue;
+  int window;
+  int level;
+
+  void computerMinAndMax() {
+    minValue = std::numeric_limits<unsigned short>::max();
+    maxValue = std::numeric_limits<unsigned short>::min();
+    unsigned short* p = pixelData.get();
+
+    for (unsigned long i = 0; i < pixelLength; ++i, ++p)
+    {
+      if (*p < minValue) minValue = *p;
+      if (*p > maxValue) maxValue = *p;
+    }
+  }
 };
 
-Image::Image(boost::shared_ptr<unsigned char> pixelData, 
+Image::Image(boost::shared_ptr<unsigned short> pixelData, 
 	           const int pixelLength)
 :_pimpl(new Pimpl(pixelData, pixelLength)) {}
 
@@ -54,8 +76,32 @@ int Image::width() const {
   return _pimpl->width;
 }
 
-boost::shared_ptr<unsigned char> Image::pixelData() const {
-  return _pimpl->pixelData;
+boost::shared_ptr<unsigned short> Image::pixelData() const {
+  if (!_pimpl->outputPixel) {
+    int nCount = _pimpl->pixelLength/2;
+    _pimpl->outputPixel.reset(new unsigned short[_pimpl->pixelLength/2]);
+    unsigned short* np = _pimpl->outputPixel.get();
+    unsigned short* pp = _pimpl->pixelData.get();
+    const unsigned short leftWindow = _pimpl->level - _pimpl->window/2;
+    const unsigned short rightWindow = _pimpl->level + _pimpl->window/2;
+    while (nCount-- > 0) {
+       if (*pp < leftWindow ) {
+           *np = 0;
+           std::cout<<"aaaaaaaaaaaaaaa"<<std::endl;
+       }
+       else if (*pp > rightWindow) {
+           *np = 0;
+           std::cout<<"bbbbbbbbbbbbbbbbb"<<std::endl;
+       }
+       else {
+           *np = *pp ;
+       }
+       ++np;
+       ++pp;
+    }
+  }
+
+  return _pimpl->outputPixel;
 }
 
 void Image::setOrientation(const std::vector<double>& ori) {
@@ -87,4 +133,19 @@ Image::Orientation Image::orientation() const {
 
 std::vector<double> Image::position() const {
   return _pimpl->position;
+}
+
+unsigned short Image::maxValue() const {
+  return _pimpl->maxValue;
+}
+
+unsigned short Image::minValue() const {
+  return _pimpl->minValue;
+}
+
+void Image::updateWL(int window, int level) {
+  _pimpl->window = window;
+  _pimpl->level = level;
+  _pimpl->outputPixel.reset();
+  std::cout<<"Hello"<<std::endl;
 }

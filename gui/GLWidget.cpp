@@ -66,8 +66,8 @@ void GLWidget::paintGL()
 
     if (_pimpl->image) {
       const Image& image = *_pimpl->image;
-      const unsigned char* pixel = image.pixelData().get();
-      glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pixel);
+      const unsigned short* pixel = image.pixelData().get();
+      glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_SHORT, pixel);
     }
 
  #if 0

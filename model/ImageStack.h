@@ -18,11 +18,15 @@ public:
 
   boost::shared_ptr<const Image> fetchImage(int index) const;
 
+  boost::shared_ptr<const Image> fetchImage() const;
+
   boost::shared_ptr<const Image> fetchNextImage() const;
 
   boost::shared_ptr<const Image> fetchPrevImage() const;
 
   int imageCount() const;
+
+  void updateWL(int window, int level);
 
 private:
   class Pimpl;

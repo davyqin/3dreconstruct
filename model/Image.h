@@ -13,8 +13,8 @@ public:
       SAGI
   };
 
-  Image(boost::shared_ptr<unsigned char> pixelData,
-  	    const int pixelLength);
+  Image(boost::shared_ptr<unsigned short> pixelData,
+        const int pixelLength);
 
   ~Image();
 
@@ -28,11 +28,17 @@ public:
 
   int width() const;
   
-  boost::shared_ptr<unsigned char> pixelData() const;
+  boost::shared_ptr<unsigned short> pixelData() const;
 
   Orientation orientation() const;
 
   std::vector<double> position() const;
+
+  unsigned short maxValue() const;
+
+  unsigned short minValue() const;
+
+  void updateWL(int window, int level);
 
 private:
   class Pimpl;

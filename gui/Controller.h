@@ -25,6 +25,7 @@ private slots:
   void onRequestImage(int index);
   void onRequestNextImage();
   void onRequestPrevImage();
+  void onUpdateWL(int window, int level);
 
 private:
   class Pimpl;

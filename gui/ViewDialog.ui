@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>471</width>
-    <height>362</height>
+    <width>433</width>
+    <height>378</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,6 +55,45 @@
       <widget class="QPushButton" name="loadButton">
        <property name="text">
         <string>Load</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Window:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="windowLineEdit">
+       <property name="text">
+        <string>65535</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Level:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="levelLineEdit">
+       <property name="text">
+        <string>32768</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="applyWLButton">
+       <property name="text">
+        <string>Apply W/L</string>
        </property>
       </widget>
      </item>

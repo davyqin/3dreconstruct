@@ -25,10 +25,12 @@ signals:
   void requestImage(int index);
   void requestNextImage();
   void requestPrevImage();
+  void updateWLSignal(int window, int level);
 
 private slots:
   void onBrowseFolder();
   void onLoadImage();
+  void onApplyWL();
 
 private:
   class Pimpl;

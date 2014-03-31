@@ -202,7 +202,34 @@ namespace {
       result.push_back(atof(item.c_str()));
     }
 
-   return result;
+    return result;
+  }
+
+  /**
+ * Converts an unsigned or signed value to an unsigned long by adding
+ * the constant @a makePos.
+ *
+ * @param value - the value to convert
+ * @param mask - mask for the bits containing the value to convert from 
+ *   @a value
+ * @param signMask - mask for the sign bit (if any) in @a value
+ * @param makePos - added to @a value to make it positive
+ * @return the converted value.
+ */
+ template <class T>
+ unsigned long convertToUnsigned(T value,
+                                 unsigned long mask,
+                                 unsigned long signMask,
+                                 unsigned long makePos) {
+                                
+   if (value & signMask) { // if negative
+     // (((value ^ mask) & mask) + 1) gives the 2 complement to value
+     // i.e. (- value)
+     return (makePos - (((value ^ mask) & mask) + 1));
+   }
+   else {
+     return (makePos + (value & mask));
+   }
  }
 
 } // annonymouse namespace
@@ -226,16 +253,15 @@ public:
   double fWindowWidth;
   double fRescaleSlope;
   double fRescaleIntercept;
-  int nLength;
+  unsigned long nLength;
   std::vector<double> pixelSpacing;
   std::vector<double> imagePosition;
   std::vector<double> imageOrientation;
   boost::shared_ptr<unsigned char> pixelData;
+  boost::shared_ptr<unsigned short> pixelData16;
   std::string fileName;
 
   void imageAdjuestment() {
-    if (nBitsAllocated == 8) 
-      return;
 
     short* pp = (short *)pixelData.get();
 
@@ -257,7 +283,6 @@ public:
       else
       {
         // 1's complement representation
-
         nSignBit = 1 << nHighBit;
         nMask = 0xffff << (nHighBit + 1);
         while( nCount -- > 0 )
@@ -284,80 +309,134 @@ public:
         *pp ++ = (short)fValue;
       }
     }
-    
-    // 3. Convert to 8bit image
-    pp = (short *)pixelData.get();
-    boost::shared_ptr<unsigned char> pNewData(new unsigned char[nLength/2 + 8]);
-    unsigned char* np = pNewData.get();
 
-    if ((fWindowCenter != 0) || (fWindowWidth != 0))
-    {
-      // Since we have window level info, we will only map what are within the Window.
-      const float fShift = fWindowCenter - fWindowWidth / 2.0f;
-      const float fSlope = 255.0f / fWindowWidth;
-
-      int nCount = nLength / 2;
-
-      while (nCount-- > 0)
-      {
-        short fValue = ((*pp ++) - fShift) * fSlope;
-        if (fValue < 0) {
-          fValue = 0;
-        }
-        else if (fValue > 255) {
-          fValue = 255;
-        }
-
-        *np ++ = (unsigned char)fValue;
-      }
+    // 3. Convert to unsigned short(16bit)
+    unsigned long mask, signMask, makePos;
+    if (bIsSigned == 1) 
+    {    
+      /* in this case, Signed values must be taken in account */
+      signMask = 1 << nHighBit; /* Mask to find sign */
+      makePos = 1 << (nBitsAllocated-1); /* Addition to make value positive */
     }
-    else
-    {
-      // We will map the whole dynamic range.
-      float fSlope = 1;;
-
-      // First compute the min and max.
-      int nCount = nLength / 2;
-      int nMin = *pp;
-      int nMax = *pp;
-      while (nCount-- > 0)
-      {
-        if (*pp < nMin)
-          nMin = *pp;
-
-        if (*pp > nMax)
-          nMax = *pp;
-
-        pp ++;
-      }
-
-      // Calculate the scaling factor.
-      if (nMax != nMin)
-        fSlope = 255.0f / (nMax - nMin);
-      else
-        fSlope = 1.0f;
-
-      nCount = nLength / 2;
-      pp = (short *)pixelData.get();
-
-      while (nCount-- > 0)
-      {
-        float fValue = ((*pp ++) - nMin) * fSlope;
-        if (fValue < 0)
-          fValue = 0;
-        else if (fValue > 255)
-          fValue = 255;
-
-        *np ++ = (unsigned char) fValue;
-      }
+    else 
+    { /* Unsigned values */
+      signMask = 0;
+      makePos = 0;
     }
 
-    pixelData = pNewData;
+    unsigned short pixelSize;
+    if ( nBitsAllocated <= 8 )
+      pixelSize = 1;
+    else if ( nBitsAllocated <= 16 )
+      pixelSize = 2;
 
-    nBytesP = 1;
-    nFrameSize /= 2;
-    nLength /= 2;
+    pixelData16.reset(new unsigned short[nLength/2 + 16]);
+    unsigned short* data16 = pixelData16.get();
+    const unsigned char* p = (unsigned char*)pixelData.get();
+    int nCount = nLength / 2;
+    switch (nBitsAllocated) 
+    {
+      case 8: // 8 bit images
+      {
+        for (int i = 0; i < nCount; ++i) 
+        {
+          unsigned char value = p[0];
+          p += pixelSize;
+          data16[i] = convertToUnsigned(value, mask, signMask, makePos);
+        }
+        break;
+      }
+      case 16: // 16 bit images
+      {
+        for (int i = 0; i < nCount; ++i) 
+        {
+          unsigned short value = (p[0] | p[1]<<8);
+          p += pixelSize;
+          data16[i] = convertToUnsigned(value, mask, signMask, makePos);
+        }
+        break;
+      }
+      default:
+      {
+        //throw InternalFailure("Invalid bits allocated value");
+        break;
+      }
+    }
   }
+
+
+    // 3. Convert to 8bit image
+    // pp = (short *)pixelData.get();
+    // boost::shared_ptr<unsigned char> pNewData(new unsigned char[nLength/2 + 8]);
+    // unsigned char* np = pNewData.get();
+
+    // if ((fWindowCenter != 0) || (fWindowWidth != 0))
+    // {
+    //   // Since we have window level info, we will only map what are within the Window.
+    //   const float fShift = fWindowCenter - fWindowWidth / 2.0f;
+    //   const float fSlope = 255.0f / fWindowWidth;
+
+    //   int nCount = nLength / 2;
+
+    //   while (nCount-- > 0)
+    //   {
+    //     short fValue = ((*pp ++) - fShift) * fSlope;
+    //     if (fValue < 0) {
+    //       fValue = 0;
+    //     }
+    //     else if (fValue > 255) {
+    //       fValue = 255;
+    //     }
+
+    //     *np ++ = (unsigned char)fValue;
+    //   }
+    // }
+    // else
+    // {
+    //   // We will map the whole dynamic range.
+    //   float fSlope = 1;;
+
+    //   // First compute the min and max.
+    //   int nCount = nLength / 2;
+    //   int nMin = *pp;
+    //   int nMax = *pp;
+    //   while (nCount-- > 0)
+    //   {
+    //     if (*pp < nMin)
+    //       nMin = *pp;
+
+    //     if (*pp > nMax)
+    //       nMax = *pp;
+
+    //     pp ++;
+    //   }
+
+    //   // Calculate the scaling factor.
+    //   if (nMax != nMin)
+    //     fSlope = 255.0f / (nMax - nMin);
+    //   else
+    //     fSlope = 1.0f;
+
+    //   nCount = nLength / 2;
+    //   pp = (short *)pixelData.get();
+
+    //   while (nCount-- > 0)
+    //   {
+    //     float fValue = ((*pp ++) - nMin) * fSlope;
+    //     if (fValue < 0)
+    //       fValue = 0;
+    //     else if (fValue > 255)
+    //       fValue = 255;
+
+    //     *np ++ = (unsigned char) fValue;
+    //   }
+    // }
+
+    // pixelData = pNewData;
+
+    // nBytesP = 1;
+    // nFrameSize /= 2;
+    // nLength /= 2;
 };
 
 DicomUtil::DicomUtil()
@@ -374,11 +453,11 @@ DicomUtil::DicomUtil(const std::string& fileName)
 }
 
 boost::shared_ptr<Image> DicomUtil::fetchImage() const {
-  if (!_pimpl->pixelData) {
+  if (!_pimpl->pixelData16) {
     return boost::shared_ptr<Image>();
   }
 
-  boost::shared_ptr<Image> image(new Image(_pimpl->pixelData, _pimpl->nLength));
+  boost::shared_ptr<Image> image(new Image(_pimpl->pixelData16, _pimpl->nLength));
   image->setPosition(_pimpl->imagePosition);
   image->setSize(_pimpl->nCols, _pimpl->nRows);
   image->setOrientation(_pimpl->imageOrientation);
@@ -391,16 +470,16 @@ void DicomUtil::setFileName(const string& filename) {
   _pimpl->fileName = filename;
 }
 
-boost::shared_ptr<unsigned char> DicomUtil::pixel() {
+boost::shared_ptr<unsigned short> DicomUtil::pixel() {
   if (_pimpl->fileName.empty()) {
-    return boost::shared_ptr<unsigned char>();
+    return boost::shared_ptr<unsigned short>();
   }
 
-  if (!_pimpl->pixelData) {
+  if (!_pimpl->pixelData16) {
     readFile();
   }
 
-  return _pimpl->pixelData;
+  return _pimpl->pixelData16;
 }
 
 int DicomUtil::pixelLength() const {

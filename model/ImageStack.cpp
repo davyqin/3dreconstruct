@@ -69,14 +69,17 @@ bool compareImagePosition(boost::shared_ptr<const Image> image1, boost::shared_p
 class ImageStack::Pimpl
 {
 public:
-  Pimpl():currentIndex(0) {}
+  Pimpl()
+  :currentIndex(0)
+  ,minLevel(std::numeric_limits<int>::max())
+  ,maxLevel(std::numeric_limits<int>::min()) {}
 
   /* data */
   std::vector<boost::shared_ptr<Image> > images;
-
   std::string imageFolder;
-
   unsigned int currentIndex;
+  int minLevel;
+  int maxLevel;
 };
 
 ImageStack::ImageStack()
@@ -92,6 +95,9 @@ void ImageStack::loadImages(const std::string& imageFolder) {
     DicomUtil dicomUtil(imageFile);
     if (dicomUtil.hasPixelData()) {
       _pimpl->images.push_back(dicomUtil.fetchImage());
+      boost::shared_ptr<const Image> image = _pimpl->images.back();
+      _pimpl->minLevel = std::min(int(image->minValue()), _pimpl->minLevel);
+      _pimpl->maxLevel = std::max(int(image->maxValue()), _pimpl->maxLevel); 
     }
   }
 
@@ -105,6 +111,14 @@ boost::shared_ptr<const Image> ImageStack::fetchImage(int index) const {
 
   _pimpl->currentIndex = index;
   return _pimpl->images.at(index);
+}
+
+boost::shared_ptr<const Image> ImageStack::fetchImage() const {
+  if (_pimpl->images.empty()) {
+    return boost::shared_ptr<const Image>();
+  }
+  
+  return _pimpl->images.at(_pimpl->currentIndex);
 }
 
 boost::shared_ptr<const Image> ImageStack::fetchNextImage() const {
@@ -133,4 +147,10 @@ boost::shared_ptr<const Image> ImageStack::fetchPrevImage() const {
 
 int ImageStack::imageCount() const {
   return _pimpl->images.size();
+}
+
+void ImageStack::updateWL(int window, int level) {
+  for (auto image : _pimpl->images) {
+    image->updateWL(window, level);
+  }
 }

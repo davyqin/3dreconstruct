@@ -4,6 +4,7 @@
 #include "ui_ViewDialog.h"
 
 #include <QFileDialog>
+#include <QIntValidator>
 
 
 class ViewDialog::Pimpl
@@ -28,6 +29,11 @@ ViewDialog::ViewDialog(QWidget *parent)
   connect(_pimpl->ui.imagePosSlider, SIGNAL(valueChanged(int)), SIGNAL(requestImage(int)));
   connect(_pimpl->ui.glWidget, SIGNAL(requestNextImage()), SIGNAL(requestNextImage()));
   connect(_pimpl->ui.glWidget, SIGNAL(requestPrevImage()), SIGNAL(requestPrevImage()));
+  connect(_pimpl->ui.applyWLButton, SIGNAL(clicked()), SLOT(onApplyWL()));
+
+  QValidator *validator = new QIntValidator(0, 65535, this);
+  _pimpl->ui.windowLineEdit->setValidator(validator);
+  _pimpl->ui.levelLineEdit->setValidator(validator);
 }
 
 ViewDialog::~ViewDialog() {}
@@ -55,4 +61,9 @@ void ViewDialog::setImageCount(int count) {
 void ViewDialog::showImage(boost::shared_ptr<const Image> image) {
   _pimpl->ui.glWidget->setImage(image);
   _pimpl->ui.glWidget->update();
+}
+
+void ViewDialog::onApplyWL() {
+  emit(updateWLSignal(_pimpl->ui.windowLineEdit->text().toInt(),
+                      _pimpl->ui.levelLineEdit->text().toInt()));
 }
