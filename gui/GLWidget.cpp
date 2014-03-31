@@ -114,17 +114,27 @@ void GLWidget::paintGL()
 //! [8]
 void GLWidget::resizeGL(int width, int height)
 {
-#if 1
-    int side = qMin(width, height);
-    glViewport((width - side) / 2, (height - side) / 2, side, side);
+  int side = qMin(width, height);
+  glViewport((width - side) / 2, (height - side) / 2, side, side);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
 
     //gluOrtho2D(0.0, 500.0, 0.0, 500.0);
-    glOrtho(0.0, 500.0, 0.0, 500.0, -1.0, 1.0);
-    glMatrixMode(GL_MODELVIEW);
-#endif
+  glOrtho(0.0, 500.0, 0.0, 500.0, -1.0, 1.0);
+  glMatrixMode(GL_MODELVIEW);
+
+  if (_pimpl->image) {
+    const Image& image = *_pimpl->image;
+
+    // const QSize widgetSize = size();
+    double zoomSloat = std::min((double)width / (double)image.width(), 
+                                (double)height / (double)image.height());
+    if (zoomSloat > 1.0) {
+      glPixelZoom(zoomSloat, zoomSloat);
+      glFlush();
+    }
+  }
 }
 //! [8]
 

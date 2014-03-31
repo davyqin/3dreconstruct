@@ -457,7 +457,7 @@ boost::shared_ptr<Image> DicomUtil::fetchImage() const {
     return boost::shared_ptr<Image>();
   }
 
-  boost::shared_ptr<Image> image(new Image(_pimpl->pixelData16, _pimpl->nLength));
+  boost::shared_ptr<Image> image(new Image(_pimpl->pixelData16, _pimpl->nLength/2));
   image->setPosition(_pimpl->imagePosition);
   image->setSize(_pimpl->nCols, _pimpl->nRows);
   image->setOrientation(_pimpl->imageOrientation);

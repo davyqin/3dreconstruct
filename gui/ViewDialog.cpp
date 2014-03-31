@@ -4,7 +4,6 @@
 #include "ui_ViewDialog.h"
 
 #include <QFileDialog>
-#include <QIntValidator>
 
 
 class ViewDialog::Pimpl
@@ -18,7 +17,8 @@ public:
 };
 
 ViewDialog::ViewDialog(QWidget *parent) 
-:QDialog(parent), _pimpl(new Pimpl())
+:QDialog(parent, Qt::WindowMinMaxButtonsHint|Qt::WindowCloseButtonHint)
+,_pimpl(new Pimpl())
 {
   _pimpl->ui.setupUi(this);
 
@@ -30,10 +30,6 @@ ViewDialog::ViewDialog(QWidget *parent)
   connect(_pimpl->ui.glWidget, SIGNAL(requestNextImage()), SIGNAL(requestNextImage()));
   connect(_pimpl->ui.glWidget, SIGNAL(requestPrevImage()), SIGNAL(requestPrevImage()));
   connect(_pimpl->ui.applyWLButton, SIGNAL(clicked()), SLOT(onApplyWL()));
-
-  QValidator *validator = new QIntValidator(0, 65535, this);
-  _pimpl->ui.windowLineEdit->setValidator(validator);
-  _pimpl->ui.levelLineEdit->setValidator(validator);
 }
 
 ViewDialog::~ViewDialog() {}
@@ -64,6 +60,6 @@ void ViewDialog::showImage(boost::shared_ptr<const Image> image) {
 }
 
 void ViewDialog::onApplyWL() {
-  emit(updateWLSignal(_pimpl->ui.windowLineEdit->text().toInt(),
-                      _pimpl->ui.levelLineEdit->text().toInt()));
+  emit(updateWLSignal(_pimpl->ui.windowSpinBox->text().toInt(),
+                      _pimpl->ui.levelSpinBox->text().toInt()));
 }

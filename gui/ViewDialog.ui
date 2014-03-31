@@ -56,6 +56,9 @@
        <property name="text">
         <string>Load</string>
        </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
     </layout>
@@ -70,9 +73,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="windowLineEdit">
-       <property name="text">
-        <string>65535</string>
+      <widget class="QSpinBox" name="windowSpinBox">
+       <property name="maximum">
+        <number>65535</number>
+       </property>
+       <property name="value">
+        <number>65535</number>
        </property>
       </widget>
      </item>
@@ -84,9 +90,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="levelLineEdit">
-       <property name="text">
-        <string>32768</string>
+      <widget class="QSpinBox" name="levelSpinBox">
+       <property name="maximum">
+        <number>65535</number>
+       </property>
+       <property name="value">
+        <number>32768</number>
        </property>
       </widget>
      </item>

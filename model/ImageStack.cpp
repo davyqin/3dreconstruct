@@ -88,6 +88,10 @@ ImageStack::ImageStack()
 ImageStack::~ImageStack() {}
 
 void ImageStack::loadImages(const std::string& imageFolder) {
+  if (_pimpl->imageFolder == imageFolder) {
+    return;
+  }
+  
   _pimpl->imageFolder = imageFolder;  
   _pimpl->images.clear();
   const std::vector<std::string> imageFiles = findImageFiles(imageFolder);

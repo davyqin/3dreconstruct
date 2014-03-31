@@ -78,26 +78,28 @@ int Image::width() const {
 
 boost::shared_ptr<unsigned short> Image::pixelData() const {
   if (!_pimpl->outputPixel) {
-    int nCount = _pimpl->pixelLength/2;
-    _pimpl->outputPixel.reset(new unsigned short[_pimpl->pixelLength/2]);
+    int nCount = _pimpl->pixelLength;
+    _pimpl->outputPixel.reset(new unsigned short[_pimpl->pixelLength + 16]);
     unsigned short* np = _pimpl->outputPixel.get();
     unsigned short* pp = _pimpl->pixelData.get();
-    const unsigned short leftWindow = _pimpl->level - _pimpl->window/2;
-    const unsigned short rightWindow = _pimpl->level + _pimpl->window/2;
+
+    const double dSlope = 65535.0f / _pimpl->window;
+    const unsigned short halfWindow = _pimpl->window / 2.0;
+    const unsigned short leftWindow = _pimpl->level >  halfWindow ? _pimpl->level - halfWindow : 0;
+    const unsigned short rightWindow = (65535 - _pimpl->level) > halfWindow ? _pimpl->level + halfWindow : 65535;
+
     while (nCount-- > 0) {
-       if (*pp < leftWindow ) {
-           *np = 0;
-           std::cout<<"aaaaaaaaaaaaaaa"<<std::endl;
-       }
-       else if (*pp > rightWindow) {
-           *np = 0;
-           std::cout<<"bbbbbbbbbbbbbbbbb"<<std::endl;
-       }
-       else {
-           *np = *pp ;
-       }
-       ++np;
-       ++pp;
+      if (*pp <= leftWindow) {
+        *np = 0;
+      }
+      else if (*pp >= rightWindow) {
+        *np = 65535;
+      }
+      else {
+        *np = (*pp - leftWindow) * dSlope;
+      }
+      pp++;
+      np++;       
     }
   }
 
@@ -147,5 +149,4 @@ void Image::updateWL(int window, int level) {
   _pimpl->window = window;
   _pimpl->level = level;
   _pimpl->outputPixel.reset();
-  std::cout<<"Hello"<<std::endl;
 }
