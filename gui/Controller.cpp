@@ -26,13 +26,15 @@ Controller::Controller(QObject *parent)
 Controller::~Controller() {}
 
 void Controller::activate() {
-  _pimpl->viewDialog.adjustSize();
-  const int desktopArea = QApplication::desktop()->width() *  QApplication::desktop()->height();
-  const int widgetArea = _pimpl->viewDialog.width() * _pimpl->viewDialog.height();
-  if (((float)widgetArea / (float)desktopArea) < 0.75f)
+ _pimpl->viewDialog.adjustSize();
+ const int desktopArea = QApplication::desktop()->width() *  QApplication::desktop()->height();
+ const int widgetArea = _pimpl->viewDialog.width() * _pimpl->viewDialog.height();
+ if (((float)widgetArea / (float)desktopArea) < 0.75f)
     _pimpl->viewDialog.show();
-  else
-    _pimpl->viewDialog.showMaximized();
+ else
+   _pimpl->viewDialog.showMaximized();
+
+ _pimpl->viewDialog.update();
 }
 
 void Controller::onLoadImage(const QString& imageFolder) {

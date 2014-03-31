@@ -229,6 +229,7 @@ public:
   int nLength;
   std::vector<double> pixelSpacing;
   std::vector<double> imagePosition;
+  std::vector<double> imageOrientation;
   boost::shared_ptr<unsigned char> pixelData;
   std::string fileName;
 
@@ -380,6 +381,7 @@ boost::shared_ptr<Image> DicomUtil::fetchImage() const {
   boost::shared_ptr<Image> image(new Image(_pimpl->pixelData, _pimpl->nLength));
   image->setPosition(_pimpl->imagePosition);
   image->setSize(_pimpl->nCols, _pimpl->nRows);
+  image->setOrientation(_pimpl->imageOrientation);
   return image;
 }
 
@@ -811,7 +813,8 @@ void DicomUtil::readFile()
         case 0x0037: //Image Orientation (Patient) DS
           {
             //????Dicom2006????
-            WriteToString(fp,&sHeader,"0020,0037 Image Orientation (Patient): ",nDataEndian,bImplicitVR);
+            const std::string imageOri = WriteToString(fp,&sHeader,"0020,0037 Image Orientation (Patient): ",nDataEndian,bImplicitVR);
+            _pimpl->imageOrientation = convertDicomValue(imageOri);
             break;
           }
         case 0x0052: //Frame of Reference UID UI

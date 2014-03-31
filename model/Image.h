@@ -7,22 +7,32 @@
 class Image
 {
 public:
+  enum Orientation {
+      TRAN,
+      CORO,
+      SAGI
+  };
+
   Image(boost::shared_ptr<unsigned char> pixelData,
   	    const int pixelLength);
 
   ~Image();
 
-  void setPosition(const std::vector<double> pos);
+  void setPosition(const std::vector<double>& pos);
+
+  void setOrientation(const std::vector<double>& ori);
 
   void setSize(const int width, const int height);
-
-  // int pixelLength() const;
 
   int height() const;
 
   int width() const;
   
   boost::shared_ptr<unsigned char> pixelData() const;
+
+  Orientation orientation() const;
+
+  std::vector<double> position() const;
 
 private:
   class Pimpl;

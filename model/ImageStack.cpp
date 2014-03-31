@@ -4,6 +4,7 @@
 #include "util/DicomUtil.h"
 
 #include <vector>
+#include <algorithm>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -32,6 +33,35 @@ std::vector<std::string> findImageFiles(const std::string& path) {
   }
 
   return imageFiles;
+}
+
+bool compareImagePosition(boost::shared_ptr<const Image> image1, boost::shared_ptr<const Image> image2) {
+  const Image::Orientation ori = image1->orientation();
+  int index = 0;
+  switch (ori) {
+    case Image::TRAN:
+    {
+      index = 2;
+      break;
+    }
+    case Image::CORO:
+    {
+      index = 1;
+      break;
+    }
+    case Image::SAGI:
+    {
+     index = 0;
+     break;
+    }
+    default:
+    {
+      std::cout<<"No image orientation information!"<<std::endl;
+      return false;
+    }
+  }
+
+  return (image1->position().at(index) > image2->position().at(index));
 }
 
 }
@@ -65,10 +95,11 @@ void ImageStack::loadImages(const std::string& imageFolder) {
     }
   }
 
+  std::sort(_pimpl->images.begin(), _pimpl->images.end(), compareImagePosition);
 }
 
 boost::shared_ptr<const Image> ImageStack::fetchImage(int index) const {
-  if (index >= _pimpl->images.size() || index < 0) {
+  if (static_cast<unsigned int>(index) >= _pimpl->images.size() || index < 0) {
     return boost::shared_ptr<const Image>();
   }
 

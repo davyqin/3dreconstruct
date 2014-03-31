@@ -5,7 +5,6 @@
 
 #include <QFileDialog>
 
-#include <iostream>
 
 class ViewDialog::Pimpl
 {
@@ -22,8 +21,6 @@ ViewDialog::ViewDialog(QWidget *parent)
 {
   _pimpl->ui.setupUi(this);
 
-  // _pimpl->ui.imagePosSlider->setMinimum(0);
-  // _pimpl->ui.imagePosSlider->setValue(0);
   setWindowTitle(tr("3D Reconstruct"));
 
   connect(_pimpl->ui.browseButton, SIGNAL(clicked()), SLOT(onBrowseFolder()));
