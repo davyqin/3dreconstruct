@@ -26,7 +26,8 @@ HEADERS += gui/GLWidget.h \
            model/Image.h \
            model/ImageStack.h \
            gui/Controller.h \
-           gui/ViewDialog.h
+           gui/ViewDialog.h \
+           mc/Cube.h
 
 SOURCES += main.cpp \
    	       gui/GLWidget.cpp \
@@ -34,7 +35,8 @@ SOURCES += main.cpp \
 	         model/Image.cpp \
            model/ImageStack.cpp \
 	         gui/Controller.cpp \
-           gui/ViewDialog.cpp
+           gui/ViewDialog.cpp \
+           mc/Cube.cpp
 
 MOCABLEHEADERS += gui/ViewDialog.h\
 

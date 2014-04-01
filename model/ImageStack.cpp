@@ -126,30 +126,6 @@ boost::shared_ptr<const Image> ImageStack::fetchImage() const {
   return _pimpl->images.at(_pimpl->currentIndex);
 }
 
-boost::shared_ptr<const Image> ImageStack::fetchNextImage() const {
-  if (_pimpl->images.empty()) {
-    return boost::shared_ptr<const Image>();
-  }
-
-  if (_pimpl->currentIndex < _pimpl->images.size() -1) {
-    ++_pimpl->currentIndex; 
-  }
-
-  return _pimpl->images.at(_pimpl->currentIndex);
-}
-
-boost::shared_ptr<const Image> ImageStack::fetchPrevImage() const {
-  if (_pimpl->images.empty()) {
-    return boost::shared_ptr<const Image>();
-  }
-
-  if (_pimpl->currentIndex - 1 > 0) {
-    --_pimpl->currentIndex; 
-  }
-
-  return _pimpl->images.at(_pimpl->currentIndex);
-}
-
 int ImageStack::imageCount() const {
   return _pimpl->images.size();
 }

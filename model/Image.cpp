@@ -1,7 +1,5 @@
 #include "Image.h"
 
-using namespace std;
-
 namespace {
 bool doublesAreEqual(double d1, double d2) {
   return std::fabs(d1 - d2) < std::numeric_limits<double>::epsilon();
@@ -37,6 +35,7 @@ public:
   unsigned short maxValue;
   int window;
   int level;
+  std::vector<double> pixelSpacing;
 
   void computerMinAndMax() {
     minValue = std::numeric_limits<unsigned short>::max();
@@ -59,6 +58,10 @@ Image::~Image() {}
 
 void Image::setPosition(const std::vector<double>& pos) {
   _pimpl->position = pos;
+}
+
+std::vector<double> Image::position() const {
+  return _pimpl->position;
 }
 
 void Image::setSize(const int width, const int height) {
@@ -130,10 +133,6 @@ Image::Orientation Image::orientation() const {
   return _pimpl->orientation;
 }
 
-std::vector<double> Image::position() const {
-  return _pimpl->position;
-}
-
 unsigned short Image::maxValue() const {
   return _pimpl->maxValue;
 }
@@ -146,4 +145,8 @@ void Image::updateWL(int window, int level) {
   _pimpl->window = window;
   _pimpl->level = level;
   _pimpl->outputPixel.reset();
+}
+
+void Image::setPixelSpacing(const std::vector<double>& value) {
+  _pimpl->pixelSpacing = value;
 }

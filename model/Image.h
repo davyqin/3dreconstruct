@@ -24,6 +24,8 @@ public:
 
   void setSize(const int width, const int height);
 
+  void setPixelSpacing(const std::vector<double>& value);
+
   int height() const;
 
   int width() const;
