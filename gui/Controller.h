@@ -23,8 +23,6 @@ signals:
 private slots:
   void onLoadImage(const QString& imageFolder);
   void onRequestImage(int index);
-  void onRequestNextImage();
-  void onRequestPrevImage();
   void onUpdateWL(int window, int level);
 
 private:

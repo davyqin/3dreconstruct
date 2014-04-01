@@ -83,23 +83,20 @@ boost::shared_ptr<unsigned short> Image::pixelData() const {
     unsigned short* np = _pimpl->outputPixel.get();
     unsigned short* pp = _pimpl->pixelData.get();
 
-    const double dSlope = 65535.0f / _pimpl->window;
-    const unsigned short halfWindow = _pimpl->window / 2.0;
-    const unsigned short leftWindow = _pimpl->level >  halfWindow ? _pimpl->level - halfWindow : 0;
-    const unsigned short rightWindow = (65535 - _pimpl->level) > halfWindow ? _pimpl->level + halfWindow : 65535;
+    const double dSlope = 65535.0 / (double)_pimpl->window;
+    const double dShift = (double)_pimpl->level - (double)_pimpl->window / 2.0;
 
     while (nCount-- > 0) {
-      if (*pp <= leftWindow) {
-        *np = 0;
+      int value = ((int)*pp - dShift) * dSlope;
+      if (value <= 0) {
+        value = 0;
       }
-      else if (*pp >= rightWindow) {
-        *np = 65535;
+      else if (value >= 65535) {
+        value = 65535;
       }
-      else {
-        *np = (*pp - leftWindow) * dSlope;
-      }
-      pp++;
-      np++;       
+      
+      *np = static_cast<unsigned short>(value);
+      ++np; ++pp;      
     }
   }
 

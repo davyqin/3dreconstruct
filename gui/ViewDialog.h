@@ -23,14 +23,14 @@ public:
 signals:
   void loadImageSignal(const QString& imageFolder);
   void requestImage(int index);
-  void requestNextImage();
-  void requestPrevImage();
   void updateWLSignal(int window, int level);
 
 private slots:
   void onBrowseFolder();
   void onLoadImage();
   void onApplyWL();
+  void onNextImage();
+  void onPrevImage();
 
 private:
   class Pimpl;

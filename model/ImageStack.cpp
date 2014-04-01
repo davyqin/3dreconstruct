@@ -94,6 +94,7 @@ void ImageStack::loadImages(const std::string& imageFolder) {
   
   _pimpl->imageFolder = imageFolder;  
   _pimpl->images.clear();
+  _pimpl->currentIndex = 0;
   const std::vector<std::string> imageFiles = findImageFiles(imageFolder);
   for (auto imageFile : imageFiles) {
     DicomUtil dicomUtil(imageFile);

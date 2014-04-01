@@ -27,8 +27,8 @@ ViewDialog::ViewDialog(QWidget *parent)
   connect(_pimpl->ui.browseButton, SIGNAL(clicked()), SLOT(onBrowseFolder()));
   connect(_pimpl->ui.loadButton, SIGNAL(clicked()), SLOT(onLoadImage()));
   connect(_pimpl->ui.imagePosSlider, SIGNAL(valueChanged(int)), SIGNAL(requestImage(int)));
-  connect(_pimpl->ui.glWidget, SIGNAL(requestNextImage()), SIGNAL(requestNextImage()));
-  connect(_pimpl->ui.glWidget, SIGNAL(requestPrevImage()), SIGNAL(requestPrevImage()));
+  connect(_pimpl->ui.glWidget, SIGNAL(requestNextImage()), SLOT(onNextImage()));
+  connect(_pimpl->ui.glWidget, SIGNAL(requestPrevImage()), SLOT(onPrevImage()));
   connect(_pimpl->ui.applyWLButton, SIGNAL(clicked()), SLOT(onApplyWL()));
 }
 
@@ -57,6 +57,20 @@ void ViewDialog::setImageCount(int count) {
 void ViewDialog::showImage(boost::shared_ptr<const Image> image) {
   _pimpl->ui.glWidget->setImage(image);
   _pimpl->ui.glWidget->update();
+}
+
+void ViewDialog::onNextImage() {
+  const int currentValue = _pimpl->ui.imagePosSlider->value();
+  if (currentValue < _pimpl->ui.imagePosSlider->maximum()) {
+    _pimpl->ui.imagePosSlider->setValue(currentValue + 1);
+  }
+}
+
+void ViewDialog::onPrevImage() {
+  const int currentValue = _pimpl->ui.imagePosSlider->value();
+  if (currentValue > _pimpl->ui.imagePosSlider->minimum()) {
+    _pimpl->ui.imagePosSlider->setValue(currentValue - 1);
+  }
 }
 
 void ViewDialog::onApplyWL() {

@@ -19,8 +19,6 @@ Controller::Controller(QObject *parent)
 {
   connect(&_pimpl->viewDialog, SIGNAL(loadImageSignal(const QString&)), SLOT(onLoadImage(const QString&)));
   connect(&_pimpl->viewDialog, SIGNAL(requestImage(int)), SLOT(onRequestImage(int)));
-  connect(&_pimpl->viewDialog, SIGNAL(requestNextImage()), SLOT(onRequestNextImage()));
-  connect(&_pimpl->viewDialog, SIGNAL(requestPrevImage()), SLOT(onRequestPrevImage()));
   connect(&_pimpl->viewDialog, SIGNAL(updateWLSignal(int,int)), SLOT(onUpdateWL(int,int)));
 }
 
@@ -41,21 +39,13 @@ void Controller::activate() {
 void Controller::onLoadImage(const QString& imageFolder) {
   _pimpl->imageStack.loadImages(imageFolder.toStdString());
   if (_pimpl->imageStack.imageCount() > 0) {
-    _pimpl->viewDialog.setImageCount(_pimpl->imageStack.imageCount());
+    _pimpl->viewDialog.setImageCount(_pimpl->imageStack.imageCount() - 1);
     onRequestImage(0);
   }
 }
 
 void Controller::onRequestImage(int index) {
   _pimpl->viewDialog.showImage(_pimpl->imageStack.fetchImage(index));
-}
-
-void Controller::onRequestNextImage() {
-  _pimpl->viewDialog.showImage(_pimpl->imageStack.fetchNextImage());
-}
-
-void Controller::onRequestPrevImage() {
-  _pimpl->viewDialog.showImage(_pimpl->imageStack.fetchPrevImage());
 }
 
 void Controller::onUpdateWL(int window, int level) {
