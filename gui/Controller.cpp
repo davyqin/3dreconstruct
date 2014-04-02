@@ -3,10 +3,18 @@
 #include "ViewDialog.cpp"
 #include "model/ImageStack.h"
 
+/**********************************/
+#include "mc/VertexFactory.h"
+#include "mc/Vertex.h"
+#include "model/Image.h"
+/**********************************/
+
 #include <QDesktopWidget>
 #include <QApplication>
 
 #include <boost/shared_ptr.hpp>
+
+using namespace std;
 
 class Controller::Pimpl {
 public:
@@ -44,8 +52,20 @@ void Controller::onLoadImage(const QString& imageFolder) {
   }
 }
 
+namespace {
+  void testVertexFactory(boost::shared_ptr<const Image> image) {
+    VertexFactory vf;
+    vf.setImage(image);
+    const std::vector<Vertex> vertices = vf.vertices();
+    for (auto vertex : vertices) {
+      cout<<vertex.x()<<" "<<vertex.y()<<" "<<vertex.z()<<" "<<vertex.value()<<std::endl;
+    }
+  }
+}
+
 void Controller::onRequestImage(int index) {
   _pimpl->viewDialog.showImage(_pimpl->imageStack.fetchImage(index));
+  testVertexFactory(_pimpl->imageStack.fetchImage(index));
 }
 
 void Controller::onUpdateWL(int window, int level) {

@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+/*This class describes a vetex of an image. It contains the values and positions of 1 pixel on image. */
 class Vertex
 {
 public:

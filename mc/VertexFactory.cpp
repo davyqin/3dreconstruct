@@ -10,7 +10,7 @@ public:
   Pimpl() {}
 
   /* data */
-  boost::shared_ptr<Image> image;
+  boost::shared_ptr<const Image> image;
 };
 
 VertexFactory::VertexFactory()
@@ -18,7 +18,7 @@ VertexFactory::VertexFactory()
 
 VertexFactory::~VertexFactory() {}
 
-void VertexFactory::setImage(boost::shared_ptr<Image> image) {
+void VertexFactory::setImage(boost::shared_ptr<const Image> image) {
   _pimpl->image = image;
 }
 

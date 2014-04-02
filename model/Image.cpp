@@ -146,7 +146,6 @@ unsigned short Image::minValue() const {
 }
 
 unsigned short Image::pixelValue(unsigned int index) const {
-  // unsigned short* _pimpl->pixelData.get();
   return *(_pimpl->pixelData.get() + index);
 }
 
@@ -161,5 +160,5 @@ void Image::setPixelSpacing(const std::vector<double>& value) {
 }
 
 std::vector<double> Image::pixelSpacing() const {
-  _pimpl->pixelSpacing;
+  return _pimpl->pixelSpacing;
 }

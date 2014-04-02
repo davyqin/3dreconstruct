@@ -449,7 +449,6 @@ void DicomUtil::readFile()
     return;
   }
 
-//  fp.seekg(132,ios_base::beg); //Skip dcm header
   string sHeader;
 
   while(!fp.eof()) {

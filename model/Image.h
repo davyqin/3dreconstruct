@@ -44,7 +44,7 @@ public:
 
   unsigned short minValue() const;
 
-  unsigned short pixelValue(unsigned int pos) const;
+  unsigned short pixelValue(unsigned int index) const;
 
   void updateWL(int window, int level);
 

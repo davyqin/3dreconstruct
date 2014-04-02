@@ -15,7 +15,7 @@ public:
 
   ~VertexFactory();
 
-  void setImage(boost::shared_ptr<Image> image);
+  void setImage(boost::shared_ptr<const Image> image);
 
   std::vector<Vertex> vertices() const;
 
