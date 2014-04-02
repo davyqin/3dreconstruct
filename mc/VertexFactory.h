@@ -4,15 +4,20 @@
 #include <memory>
 #include <vector>
 
+class Image;
 class Vertex;
 
-class Cube
+class VertexFactory
 {
 public:
 
-  Cube();
+  VertexFactory();
 
-  ~Cube();
+  ~VertexFactory();
+
+  void setImage(boost::shared_ptr<Image> image);
+
+  std::vector<Vertex> vertices() const;
 
 private:
   class Pimpl;

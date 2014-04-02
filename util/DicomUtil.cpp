@@ -182,9 +182,9 @@ namespace {
     unsigned char* cc= pixelData.get() + (nRows - 1) * nRowBytes;
     boost::shared_ptr<unsigned char> pNewData(new unsigned char [pixelLength + 16]);
     unsigned char* dd = pNewData.get();
-    for (int i = 0; i < nRows; i++)
+    for (int i = 0; i < nRows; ++i)
     {
-      for(int j = 0; j < nRowBytes; j++)
+      for(int j = 0; j < nRowBytes; ++j)
       {
         *(dd++)=*(cc+j);
       }
@@ -363,80 +363,6 @@ public:
       }
     }
   }
-
-
-    // 3. Convert to 8bit image
-    // pp = (short *)pixelData.get();
-    // boost::shared_ptr<unsigned char> pNewData(new unsigned char[nLength/2 + 8]);
-    // unsigned char* np = pNewData.get();
-
-    // if ((fWindowCenter != 0) || (fWindowWidth != 0))
-    // {
-    //   // Since we have window level info, we will only map what are within the Window.
-    //   const float fShift = fWindowCenter - fWindowWidth / 2.0f;
-    //   const float fSlope = 255.0f / fWindowWidth;
-
-    //   int nCount = nLength / 2;
-
-    //   while (nCount-- > 0)
-    //   {
-    //     short fValue = ((*pp ++) - fShift) * fSlope;
-    //     if (fValue < 0) {
-    //       fValue = 0;
-    //     }
-    //     else if (fValue > 255) {
-    //       fValue = 255;
-    //     }
-
-    //     *np ++ = (unsigned char)fValue;
-    //   }
-    // }
-    // else
-    // {
-    //   // We will map the whole dynamic range.
-    //   float fSlope = 1;;
-
-    //   // First compute the min and max.
-    //   int nCount = nLength / 2;
-    //   int nMin = *pp;
-    //   int nMax = *pp;
-    //   while (nCount-- > 0)
-    //   {
-    //     if (*pp < nMin)
-    //       nMin = *pp;
-
-    //     if (*pp > nMax)
-    //       nMax = *pp;
-
-    //     pp ++;
-    //   }
-
-    //   // Calculate the scaling factor.
-    //   if (nMax != nMin)
-    //     fSlope = 255.0f / (nMax - nMin);
-    //   else
-    //     fSlope = 1.0f;
-
-    //   nCount = nLength / 2;
-    //   pp = (short *)pixelData.get();
-
-    //   while (nCount-- > 0)
-    //   {
-    //     float fValue = ((*pp ++) - nMin) * fSlope;
-    //     if (fValue < 0)
-    //       fValue = 0;
-    //     else if (fValue > 255)
-    //       fValue = 255;
-
-    //     *np ++ = (unsigned char) fValue;
-    //   }
-    // }
-
-    // pixelData = pNewData;
-
-    // nBytesP = 1;
-    // nFrameSize /= 2;
-    // nLength /= 2;
 };
 
 DicomUtil::DicomUtil()

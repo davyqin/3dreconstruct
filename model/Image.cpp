@@ -79,6 +79,10 @@ int Image::width() const {
   return _pimpl->width;
 }
 
+int Image::pixelLength() const {
+  return _pimpl->pixelLength;
+}
+
 boost::shared_ptr<unsigned short> Image::pixelData() const {
   if (!_pimpl->outputPixel) {
     int nCount = _pimpl->pixelLength;
@@ -141,6 +145,11 @@ unsigned short Image::minValue() const {
   return _pimpl->minValue;
 }
 
+unsigned short Image::pixelValue(unsigned int index) const {
+  // unsigned short* _pimpl->pixelData.get();
+  return *(_pimpl->pixelData.get() + index);
+}
+
 void Image::updateWL(int window, int level) {
   _pimpl->window = window;
   _pimpl->level = level;
@@ -149,4 +158,8 @@ void Image::updateWL(int window, int level) {
 
 void Image::setPixelSpacing(const std::vector<double>& value) {
   _pimpl->pixelSpacing = value;
+}
+
+std::vector<double> Image::pixelSpacing() const {
+  _pimpl->pixelSpacing;
 }

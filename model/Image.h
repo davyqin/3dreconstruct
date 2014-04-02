@@ -26,9 +26,13 @@ public:
 
   void setPixelSpacing(const std::vector<double>& value);
 
+  std::vector<double> pixelSpacing() const;
+
   int height() const;
 
   int width() const;
+
+  int pixelLength() const;
   
   boost::shared_ptr<unsigned short> pixelData() const;
 
@@ -39,6 +43,8 @@ public:
   unsigned short maxValue() const;
 
   unsigned short minValue() const;
+
+  unsigned short pixelValue(unsigned int pos) const;
 
   void updateWL(int window, int level);
 
