@@ -9,12 +9,18 @@ class VertexFactory::Pimpl
 public:
   Pimpl() {}
 
+  Pimpl(boost::shared_ptr<const Image> image)
+  :image(image) {}
+
   /* data */
   boost::shared_ptr<const Image> image;
 };
 
 VertexFactory::VertexFactory()
 :_pimpl(new Pimpl()) {}
+
+VertexFactory::VertexFactory(boost::shared_ptr<const Image> image)
+:_pimpl(new Pimpl(image)) {}
 
 VertexFactory::~VertexFactory() {}
 
@@ -27,19 +33,19 @@ vector<Vertex> VertexFactory::vertices() const {
     return vector<Vertex>();
   }
 
-  vector<Vertex> vertices;
-
   const double xInc = _pimpl->image->pixelSpacing().at(0);
   const double yInc = _pimpl->image->pixelSpacing().at(1);
   const int cols = _pimpl->image->width();
   const int rows = _pimpl->image->height();
   const vector<double> originPosition = _pimpl->image->position();
   const Image::Orientation orientation = _pimpl->image->orientation();
+  vector<Vertex> vertices;
 
   for (int i = 0; i < rows; ++i) {
   	for (int j = 0; j < cols; ++j) {
-      const double value = _pimpl->image->pixelValue(i * rows + j);
-  	  vector<double> position = originPosition;
+      const unsigned int index = i * rows + j;
+      const double value = (double)(_pimpl->image->pixelValue(index));
+      vector<double> position = originPosition;
   	  switch (orientation)
   	  {
   	  	case (Image::TRAN):

@@ -6,13 +6,14 @@ using namespace std;
 class Grid::Pimpl
 {
 public:
-  Pimpl() {}
+  Pimpl(const std::vector<Cube>& cubes)
+  :cubes(cubes) {}
 
   /* data */
   vector<Cube> cubes;
 };
 
-Grid::Grid()
-:_pimpl(new Pimpl()) {}
+Grid::Grid(const std::vector<Cube>& cubes)
+:_pimpl(new Pimpl(cubes)) {}
 
 Grid::~Grid() {}

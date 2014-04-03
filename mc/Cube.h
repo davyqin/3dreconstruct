@@ -5,7 +5,6 @@
 #include <vector>
 
 class Vertex;
-
 /*This class describes a cube containing 8 vertices. The cube locates between 2 parallel images.
 The vertices of each side contain the pixel values and positions on related image. 
 If the orientation of image is transverse, the vertices are ordered as (x, y, z1), (x+1, y, z1), 
@@ -16,7 +15,17 @@ public:
 
   Cube();
 
+  Cube(const std::vector<Vertex>& vertices);
+
+  Cube(const Cube& other);
+
+  Cube& operator=(const Cube& other);
+
   ~Cube();
+
+  void setVertices(const std::vector<Vertex>& vertices);
+
+  std::vector<Vertex> vertices() const;
 
 private:
   class Pimpl;

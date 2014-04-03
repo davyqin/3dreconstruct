@@ -150,9 +150,18 @@ unsigned short Image::pixelValue(unsigned int index) const {
 }
 
 void Image::updateWL(int window, int level) {
-  _pimpl->window = window;
-  _pimpl->level = level;
-  _pimpl->outputPixel.reset();
+  bool wlChanged = false;
+  if (_pimpl->window != window) {
+    _pimpl->window = window;
+    wlChanged = true;
+  }
+
+  if (_pimpl->level != level) {
+    _pimpl->level = level;
+    wlChanged = true;
+  }
+
+  if (wlChanged) _pimpl->outputPixel.reset();
 }
 
 void Image::setPixelSpacing(const std::vector<double>& value) {

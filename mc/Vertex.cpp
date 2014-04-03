@@ -22,6 +22,15 @@ Vertex::Vertex(const vector<double>& position,
 Vertex::Vertex(const Vertex& vertex)
 :_pimpl(new Pimpl(vertex.position(), vertex.value())) {}
 
+Vertex& Vertex::operator=(const Vertex& vertex)
+{
+  if (this != &vertex) {
+    _pimpl.reset(new Pimpl(vertex.position(), vertex.value()));
+  }
+
+  return *this;
+}
+
 Vertex::~Vertex() {}
 
 double Vertex::x() const {

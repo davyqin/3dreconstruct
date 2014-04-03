@@ -14,6 +14,8 @@ public:
 
   Vertex(const Vertex& vertex);
 
+  Vertex& operator=(const Vertex& vertex);
+
   ~Vertex();
 
   double x() const;

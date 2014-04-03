@@ -4,12 +4,14 @@
 #include <memory>
 #include <vector>
 
+class Cube;
+
 /*This class describes a grid containing some cubes.*/
 class Grid
 {
 public:
 
-  Grid();
+  Grid(const std::vector<Cube>& cubes);
 
   ~Grid();
 

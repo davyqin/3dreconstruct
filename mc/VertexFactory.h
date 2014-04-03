@@ -13,6 +13,8 @@ public:
 
   VertexFactory();
 
+  VertexFactory(boost::shared_ptr<const Image> image);
+
   ~VertexFactory();
 
   void setImage(boost::shared_ptr<const Image> image);

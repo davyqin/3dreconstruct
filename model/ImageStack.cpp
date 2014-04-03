@@ -61,7 +61,7 @@ bool compareImagePosition(boost::shared_ptr<const Image> image1, boost::shared_p
     }
   }
 
-  return (image1->position().at(index) > image2->position().at(index));
+  return (image1->position().at(index) < image2->position().at(index));
 }
 
 }

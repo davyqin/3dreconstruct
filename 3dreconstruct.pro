@@ -15,8 +15,8 @@ LIBS += "C:/boost_1_54_0/stage/lib/libboost_filesystem-mgw48-1_54.a"
 }
 
 unix {
-INCLUDEPATH += /usr/include
-LIBS += -L/usr/lib64 -lboost_system -lboost_filesystem
+INCLUDEPATH += /opt/boost-1.49.0-gcc-4.8.1-static/include
+LIBS += -L/opt/boost-1.49.0-gcc-4.8.1-static/lib -lboost_system -lboost_filesystem
 }
 
 
@@ -29,7 +29,10 @@ HEADERS += gui/GLWidget.h \
            gui/ViewDialog.h \
            mc/Vertex.h \
            mc/VertexFactory.h \
-           mc/Cube.h
+           mc/Cube.h \
+           mc/CubeFactory.h \
+           mc/Grid.h \
+           mc/McFactory.h
 
 SOURCES += main.cpp \
    	       gui/GLWidget.cpp \
@@ -40,7 +43,10 @@ SOURCES += main.cpp \
            gui/ViewDialog.cpp \
            mc/Vertex.cpp \
            mc/VertexFactory.cpp \
-           mc/Cube.cpp
+           mc/Cube.cpp \
+           mc/CubeFactory.cpp \
+           mc/Grid.cpp \
+           mc/McFactory.cpp
 
 MOCABLEHEADERS += gui/ViewDialog.h\
 
