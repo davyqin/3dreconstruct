@@ -10,11 +10,23 @@ class Cube;
 class Grid
 {
 public:
+  Grid();
+
   Grid(const std::vector<Cube>& cubes);
 
   Grid(const Grid& other);
 
   ~Grid();
+
+  void set3D(int xSize, int ySize, int zSize);
+
+  int xSize() const;
+
+  int ySize() const;
+
+  int zSize() const;
+
+  void setCubes(const std::vector<Cube>& cubes);
 
   std::vector<Cube> cubes() const;
 

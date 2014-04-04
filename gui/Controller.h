@@ -18,12 +18,11 @@ public:
    */
   void activate();
 
-signals:
-
 private slots:
   void onLoadImage(const QString& imageFolder);
   void onRequestImage(int index);
   void onUpdateWL(int window, int level);
+  void onShow3d();
 
 private:
   class Pimpl;

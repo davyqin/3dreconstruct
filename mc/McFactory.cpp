@@ -4,6 +4,7 @@
 #include "Cube.h"
 #include "CubeFactory.h"
 #include "model/ImageStack.h"
+#include "model/Image.h"
 
 #include <vector>
 
@@ -25,9 +26,10 @@ McFactory::McFactory(boost::shared_ptr<const ImageStack> imageStack)
 McFactory::~McFactory() {}
 
 Grid McFactory::grid() const {
+  Grid grid;
   const int imageCount = _pimpl->imageStack->imageCount();
   if (imageCount == 0) {
-    return Grid(std::vector<Cube>());
+    return grid;
   }
 
   std::vector<Cube> cubes;
@@ -40,8 +42,14 @@ Grid McFactory::grid() const {
     cubeFactory.setImages(bottomImage, topImage);
     const std::vector<Cube> temp = cubeFactory.cubes();
     cubes.insert(cubes.end(), temp.begin(), temp.end()); 
-    std::cout<<"Genrate "<<temp.size()<<" cubes."<<std::endl;
   }
+
+  grid.setCubes(cubes);
+
+  // assume the orientation of image is transverse.
+  grid.set3D(_pimpl->imageStack->fetchImage(0)->width()/2,
+             _pimpl->imageStack->fetchImage(0)->height()/2,
+             imageCount - 1);
 
   return Grid(cubes);
 }

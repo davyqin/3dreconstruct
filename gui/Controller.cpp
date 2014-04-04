@@ -2,12 +2,7 @@
 
 #include "ViewDialog.cpp"
 #include "model/ImageStack.h"
-
-/**********************************/
-// #include "mc/McFactory.h"
-// #include "mc/Grid.h"
-// #include "mc/Cube.h"
-/**********************************/
+#include "mc/McWorkshop.h"
 
 #include <QDesktopWidget>
 #include <QApplication>
@@ -30,6 +25,7 @@ Controller::Controller(QObject *parent)
   connect(&_pimpl->viewDialog, SIGNAL(loadImageSignal(const QString&)), SLOT(onLoadImage(const QString&)));
   connect(&_pimpl->viewDialog, SIGNAL(requestImage(int)), SLOT(onRequestImage(int)));
   connect(&_pimpl->viewDialog, SIGNAL(updateWLSignal(int,int)), SLOT(onUpdateWL(int,int)));
+  connect(&_pimpl->viewDialog, SIGNAL(show3dSignal()), SLOT(onShow3d()));
 }
 
 Controller::~Controller() {}
@@ -58,16 +54,12 @@ void Controller::onRequestImage(int index) {
   _pimpl->viewDialog.showImage(_pimpl->imageStack->fetchImage(index));
 }
 
-// namespace {
-//   void testMcFactory(boost::shared_ptr<const ImageStack> imageStack) {
-//     McFactory mcFactory(imageStack);
-//     const Grid grid = mcFactory.grid();
-//     cout<<"Number of cubes: "<<grid.cubes().size()<<endl;
-//   }
-// }
-
 void Controller::onUpdateWL(int window, int level) {
   _pimpl->imageStack->updateWL(window, level);
   _pimpl->viewDialog.showImage(_pimpl->imageStack->fetchImage());
-  //testMcFactory(_pimpl->imageStack);
+}
+
+void Controller::onShow3d() {
+  const McWorkshop mcWorkshop(_pimpl->imageStack);
+  mcWorkshop.work();
 }

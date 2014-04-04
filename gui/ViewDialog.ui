@@ -106,6 +106,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="mcButton">
+       <property name="text">
+        <string>3D</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>
