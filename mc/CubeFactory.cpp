@@ -67,6 +67,5 @@ std::vector<Cube> CubeFactory::cubes() const {
     ++i;
   }
 
-
   return cubes;
 }

@@ -10,10 +10,13 @@ class Cube;
 class Grid
 {
 public:
-
   Grid(const std::vector<Cube>& cubes);
 
+  Grid(const Grid& other);
+
   ~Grid();
+
+  std::vector<Cube> cubes() const;
 
 private:
   class Pimpl;

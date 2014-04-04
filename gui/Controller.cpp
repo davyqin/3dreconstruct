@@ -4,8 +4,9 @@
 #include "model/ImageStack.h"
 
 /**********************************/
-#include "mc/CubeFactory.h"
-#include "mc/Cube.h"
+// #include "mc/McFactory.h"
+// #include "mc/Grid.h"
+// #include "mc/Cube.h"
 /**********************************/
 
 #include <QDesktopWidget>
@@ -57,21 +58,16 @@ void Controller::onRequestImage(int index) {
   _pimpl->viewDialog.showImage(_pimpl->imageStack->fetchImage(index));
 }
 
-namespace {
-  // void testCubeFactory(const ImageStack& imageStack) {
-  //   CubeFactory cubeFactory;
-  //   cubeFactory.setImages(imageStack.fetchImage(0), imageStack.fetchImage(1));
-  //   const std::vector<Cube> cubes = cubeFactory.cubes();
-  //   const Cube cube = cubes.front();
-  //   const std::vector<Vertex> vertices = cube.vertices();
-  //   for (auto vertex : vertices) {
-  //     cout<<vertex.x()<<" "<<vertex.y()<<" "<<vertex.z()<<std::endl;
-  //   }
-  // }
-}
+// namespace {
+//   void testMcFactory(boost::shared_ptr<const ImageStack> imageStack) {
+//     McFactory mcFactory(imageStack);
+//     const Grid grid = mcFactory.grid();
+//     cout<<"Number of cubes: "<<grid.cubes().size()<<endl;
+//   }
+// }
 
 void Controller::onUpdateWL(int window, int level) {
   _pimpl->imageStack->updateWL(window, level);
   _pimpl->viewDialog.showImage(_pimpl->imageStack->fetchImage());
-  //testCubeFactory(_pimpl->imageStack);
+  //testMcFactory(_pimpl->imageStack);
 }

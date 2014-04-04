@@ -127,6 +127,10 @@ boost::shared_ptr<const Image> ImageStack::fetchImage() const {
 }
 
 int ImageStack::imageCount() const {
+  if (_pimpl->images.empty()) {
+    return 0;
+  }
+  
   return _pimpl->images.size();
 }
 

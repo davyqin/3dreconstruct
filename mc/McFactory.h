@@ -14,6 +14,8 @@ public:
 
   ~McFactory();
 
+  Grid grid() const;
+
 private:
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;

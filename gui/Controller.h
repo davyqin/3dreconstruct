@@ -28,7 +28,6 @@ private slots:
 private:
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;
-
 };
 
 #endif // CONTROLLER_H

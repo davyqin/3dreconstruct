@@ -27,6 +27,7 @@ HEADERS += gui/GLWidget.h \
            model/ImageStack.h \
            gui/Controller.h \
            gui/ViewDialog.h \
+           mc/common.h \
            mc/Vertex.h \
            mc/VertexFactory.h \
            mc/Cube.h \
