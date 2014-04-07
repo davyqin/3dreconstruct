@@ -8,6 +8,7 @@
 #include <QApplication>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/progress.hpp>
 
 using namespace std;
 
@@ -43,6 +44,7 @@ void Controller::activate() {
 }
 
 void Controller::onLoadImage(const QString& imageFolder) {
+  boost::progress_timer timer;
   _pimpl->imageStack->loadImages(imageFolder.toStdString());
   if (_pimpl->imageStack->imageCount() > 0) {
     _pimpl->viewDialog.setImageCount(_pimpl->imageStack->imageCount());
@@ -60,6 +62,7 @@ void Controller::onUpdateWL(int window, int level) {
 }
 
 void Controller::onShow3d() {
+  boost::progress_timer timer;
   const McWorkshop mcWorkshop(_pimpl->imageStack);
   mcWorkshop.work();
 }

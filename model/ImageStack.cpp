@@ -8,6 +8,7 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/progress.hpp>
 
 namespace {
  /**
@@ -96,6 +97,7 @@ void ImageStack::loadImages(const std::string& imageFolder) {
   _pimpl->images.clear();
   _pimpl->currentIndex = 0;
   const std::vector<std::string> imageFiles = findImageFiles(imageFolder);
+  boost::progress_display pd(imageFiles.size());
   for (auto imageFile : imageFiles) {
     DicomUtil dicomUtil(imageFile);
     if (dicomUtil.hasPixelData()) {
@@ -104,6 +106,7 @@ void ImageStack::loadImages(const std::string& imageFolder) {
       _pimpl->minLevel = std::min(int(image->minValue()), _pimpl->minLevel);
       _pimpl->maxLevel = std::max(int(image->maxValue()), _pimpl->maxLevel); 
     }
+    ++pd;
   }
 
   std::sort(_pimpl->images.begin(), _pimpl->images.end(), compareImagePosition);
