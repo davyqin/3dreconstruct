@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Cube.h"
+
 #include <boost/shared_ptr.hpp>
 #include <memory>
 #include <vector>

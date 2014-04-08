@@ -27,6 +27,8 @@ public:
 
   std::vector<Vertex> vertices() const;
 
+  Vertex vertex(unsigned int index) const;
+
 private:
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;

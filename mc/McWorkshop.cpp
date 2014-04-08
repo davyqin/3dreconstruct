@@ -33,4 +33,20 @@ void McWorkshop::work() const {
 
   const McFactory mcFactory(_pimpl->imageStack);
   const Grid grid = mcFactory.grid();
+
+  const double isoValue = 40000.0;
+  const std::vector<Cube> cubes = grid.cubes();
+  for (auto cube : cubes) {
+    int cubeindex = 0;
+    for (int i = 7; i >= 0; --i) {
+      cout << cube.vertex(i).value()<<endl;
+      // if (cube.vertex(i).value() < isoValue) {
+      //   cubeindex &= 1<<i;
+      // }
+      // else {
+      //   cubeindex &= 0<<i;
+      // }
+    }
+    // cout<<cubeindex<<endl;
+  }
 }

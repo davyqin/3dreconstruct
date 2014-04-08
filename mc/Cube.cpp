@@ -1,6 +1,8 @@
 #include "Cube.h"
 #include "Vertex.h"
 
+#include <exception>
+
 using namespace std;
 
 class Cube::Pimpl
@@ -41,4 +43,12 @@ void Cube::setVertices(const std::vector<Vertex>& vertices) {
 
 std::vector<Vertex> Cube::vertices() const {
   return _pimpl->vertices;
+}
+
+Vertex Cube::vertex(unsigned int index) const {
+  if (index > 7) {
+    throw std::runtime_error("wrong index of vertex");
+  }
+
+  return _pimpl->vertices.at(index);
 }
