@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Triangle.h"
+
 #include <boost/shared_ptr.hpp>
 #include <memory>
 
-class Grid;
+
 class ImageStack;
 
 class McWorkshop
@@ -14,7 +16,7 @@ public:
 
   ~McWorkshop();
 
-  void work() const;
+  std::vector<Triangle> work() const;
 
 private:
   class Pimpl;

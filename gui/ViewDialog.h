@@ -8,6 +8,7 @@
 #include <boost/shared_ptr.hpp>
 
 class Image;
+class Triangle;
 
 class ViewDialog : public QDialog
 {
@@ -19,6 +20,8 @@ public:
   void setImageCount(int count);
 
   void showImage(boost::shared_ptr<const Image> image);
+
+  void show3D(const std::vector<Triangle>& data);
 
 signals:
   void loadImageSignal(const QString& imageFolder);

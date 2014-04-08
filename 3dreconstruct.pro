@@ -34,7 +34,8 @@ HEADERS += gui/GLWidget.h \
            mc/CubeFactory.h \
            mc/Grid.h \
            mc/McFactory.h \
-           mc/McWorkshop.h       
+           mc/McWorkshop.h \
+           mc/Triangle.h
 
 SOURCES += main.cpp \
    	       gui/GLWidget.cpp \
@@ -49,7 +50,8 @@ SOURCES += main.cpp \
            mc/CubeFactory.cpp \
            mc/Grid.cpp \
            mc/McFactory.cpp \
-           mc/McWorkshop.cpp            
+           mc/McWorkshop.cpp \
+           mc/Triangle.cpp          
 
 MOCABLEHEADERS += gui/ViewDialog.h\
 

@@ -60,7 +60,7 @@ vector<Vertex> VertexFactory::vertices() const {
   	  	  break;
   	  	}
   	  }
-  	  vertices.push_back(Vertex(position, value));
+  	  vertices.push_back(Vertex(position.at(0), position.at(1), position.at(2), value));
   	}
   }
   return vertices;

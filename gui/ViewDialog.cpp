@@ -78,3 +78,8 @@ void ViewDialog::onApplyWL() {
   emit(updateWLSignal(_pimpl->ui.windowSpinBox->text().toInt(),
                       _pimpl->ui.levelSpinBox->text().toInt()));
 }
+
+void ViewDialog::show3D(const std::vector<Triangle>& data) {
+  _pimpl->ui.glWidget->set3dData(data);
+  _pimpl->ui.glWidget->update();
+}

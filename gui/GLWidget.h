@@ -1,12 +1,15 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
+#include "mc/Triangle.h"
+
 #include <QGLWidget>
 
 #include <memory>
 #include <boost/shared_ptr.hpp>
 
 class Image;
+class Triangle;
 
 //! [0]
 class GLWidget : public QGLWidget
@@ -21,6 +24,8 @@ public:
     QSize sizeHint() const;
 
     void setImage(boost::shared_ptr<const Image> image);
+
+    void set3dData(const std::vector<Triangle>& data);
 
 signals:
     void requestNextImage();

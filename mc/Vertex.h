@@ -8,9 +8,9 @@
 class Vertex
 {
 public:
+  Vertex();
 
-  Vertex(const std::vector<double>& position,
-  	     const double value);
+  Vertex(double x, double y, double z, double value = 0.0);
 
   Vertex(const Vertex& vertex);
 
@@ -23,6 +23,8 @@ public:
   double y() const;
 
   double z() const;
+
+  void setPosition(double x, double y, double z);
 
   std::vector<double> position() const;
 

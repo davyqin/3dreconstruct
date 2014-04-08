@@ -5,6 +5,7 @@ using namespace std;
 class Vertex::Pimpl
 {
 public:
+
   Pimpl(const vector<double>& position,
   	    const double value)
   : position(position)
@@ -15,9 +16,11 @@ public:
   double value;
 };
 
-Vertex::Vertex(const vector<double>& position,
-  	           const double value)
-:_pimpl(new Pimpl(position, value)) {}
+Vertex::Vertex()
+:_pimpl(new Pimpl({0.0, 0.0, 0.0}, 0.0)) {}
+
+Vertex::Vertex(double x, double y, double z, double value) 
+:_pimpl(new Pimpl({x, y, z}, value)) {}
 
 Vertex::Vertex(const Vertex& vertex)
 :_pimpl(new Pimpl(vertex.position(), vertex.value())) {}
@@ -43,6 +46,10 @@ double Vertex::y() const {
 
 double Vertex::z() const {
   return _pimpl->position.at(2);
+}
+
+void Vertex::setPosition(double x, double y, double z) {
+  _pimpl->position = {x, y, z};
 }
 
 std::vector<double> Vertex::position() const {

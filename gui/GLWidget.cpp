@@ -3,9 +3,12 @@
 
 #include "GLWidget.h"
 #include "model/Image.h"
+#include "mc/Triangle.h"
 
 #include <GL/glu.h>
 #include <boost/shared_ptr.hpp>
+
+using namespace std;
 
 class GLWidget::Pimpl {
 public:
@@ -18,6 +21,7 @@ public:
   QColor qtDark;
   QColor qtPurple;
   boost::shared_ptr<const Image> image;
+  std::vector<Triangle> data;
 };
 
 //! [0]
@@ -69,6 +73,17 @@ void GLWidget::paintGL()
       const unsigned short* pixel = image.pixelData().get();
       glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_SHORT, pixel);
     }
+
+    // if (!_pimpl->data.empty()) {
+    //   glColor3f(1.0, 1.0, 1.0);
+    //   glPushMatrix();
+    //   glMatrixMode(GL_MODELVIEW);
+    //   glLoadIdentity();
+    //   // for (auto triangle : _pimpl->data) {
+    //   //   glBegin(GL_TRIANGLES);
+    //   //   glNormal3fv();
+    //   // }
+    // }
 
  #if 0
     qglColor(qtRed); /* draw in red */
@@ -152,4 +167,10 @@ void GLWidget::wheelEvent(QWheelEvent * event) {
 
 void GLWidget::setImage(boost::shared_ptr<const Image> image) {
   _pimpl->image = image;
+  _pimpl->data.clear();
+}
+
+void GLWidget::set3dData(const std::vector<Triangle>& data) {
+  _pimpl->image.reset();
+  _pimpl->data = data;
 }
