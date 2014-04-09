@@ -5,6 +5,7 @@
 #include "McFactory.h"
 #include "model/Vertex.h"
 #include "Triangle.h"
+#include "Cube.h"
 
 #include "model/ImageStack.h"
 
@@ -79,10 +80,12 @@ std::vector<Triangle> McWorkshop::work() const {
 
   const double minValue = 32768.0;
   const double maxValue = 33000.0;
-  const std::vector<Cube> cubes = grid.cubes();
+  const std::vector<boost::shared_ptr<const Cube> > cubes = grid.cubes();
   cout<<endl<<"Calculating triangles..."<<endl;
   boost::progress_display pd(cubes.size());
-  for (auto cube : cubes) {
+  //for (auto cube : cubes) {
+  for (unsigned int i = 0; i < cubes.size(); ++i) {
+    const Cube& cube = *cubes.at(i);
     int cubeindex = 0;
     if (cube.vertex(0).value() >= minValue && cube.vertex(0).value() <= maxValue) cubeindex |= 1;
     if (cube.vertex(1).value() >= minValue && cube.vertex(1).value() <= maxValue) cubeindex |= 2;

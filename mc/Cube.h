@@ -15,7 +15,7 @@ public:
 
   Cube();
 
-  Cube(const std::vector<Vertex>& vertices);
+  Cube(const std::vector<boost::shared_ptr<const Vertex> >& vertices);
 
   Cube(const Cube& other);
 
@@ -23,9 +23,7 @@ public:
 
   ~Cube();
 
-  void setVertices(const std::vector<Vertex>& vertices);
-
-  std::vector<Vertex> vertices() const;
+  std::vector<boost::shared_ptr<const Vertex> > vertices() const;
 
   Vertex vertex(unsigned int index) const;
 

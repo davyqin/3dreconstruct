@@ -13,7 +13,6 @@ public:
   Pimpl() {}
 
   /* data */
-  vector<Cube> cubes;
   boost::shared_ptr<const Image> upImage;
   boost::shared_ptr<const Image> downImage;
 };
@@ -30,28 +29,28 @@ void CubeFactory::setImages(boost::shared_ptr<const Image> downsideImage,
   _pimpl->upImage = upsideImage;
 }
 
-std::vector<Cube> CubeFactory::cubes() const {
+ std::vector<boost::shared_ptr<const Cube> > CubeFactory::cubes() const {
   if (!_pimpl->downImage || !_pimpl->upImage) {
-    return vector<Cube>();
+    return  std::vector<boost::shared_ptr<const Cube> >();
   }
 
   // boost::progress_timer timer;
-  std::vector<Vertex> downVertices = _pimpl->downImage->vertices();
+  std::vector<boost::shared_ptr<const Vertex> > downVertices = _pimpl->downImage->vertices();
 
-  std::vector<Vertex> upVertices = _pimpl->upImage->vertices();
+  std::vector<boost::shared_ptr<const Vertex> > upVertices = _pimpl->upImage->vertices();
 
   if (downVertices.size() != upVertices.size()) {
-    return vector<Cube>();
+    return  std::vector<boost::shared_ptr<const Cube> >();
   }
-  std::vector<Cube> cubes;
 
+  std::vector<boost::shared_ptr<const Cube> > cubes;
   const int cols = _pimpl->upImage->width() / 4;
   const int rows = _pimpl->upImage->height() / 4;
   const int step = 1; //1; //63 //31; //15; //7; //3;
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {
       const unsigned int index = i * rows + j;
-      std::vector<Vertex> vertices;
+      std::vector<boost::shared_ptr<const Vertex> >  vertices;
       vertices.push_back(downVertices.at(index));
       vertices.push_back(downVertices.at(index + step));
       vertices.push_back(downVertices.at(index + rows + step));
@@ -60,7 +59,7 @@ std::vector<Cube> CubeFactory::cubes() const {
       vertices.push_back(upVertices.at(index + step));
       vertices.push_back(upVertices.at(index + rows + step));
       vertices.push_back(upVertices.at(index + rows));
-      cubes.push_back(Cube(vertices));
+      cubes.push_back(boost::shared_ptr<Cube>(new Cube(vertices)));
       //++j;
       j += step;
     }

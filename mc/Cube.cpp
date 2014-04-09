@@ -10,17 +10,17 @@ class Cube::Pimpl
 public:
   Pimpl() {}
 
-  Pimpl(const std::vector<Vertex>& vertices)
+  Pimpl(const std::vector<boost::shared_ptr<const Vertex> >& vertices)
   :vertices(vertices) {}
 
   /* data */
-  vector<Vertex> vertices;
+  vector<boost::shared_ptr<const Vertex> > vertices;
 };
 
 Cube::Cube()
 :_pimpl(new Pimpl()) {}
 
-Cube::Cube(const std::vector<Vertex>& vertices)
+Cube::Cube(const std::vector<boost::shared_ptr<const Vertex> >& vertices)
 :_pimpl(new Pimpl(vertices)) {}
 
 Cube::Cube(const Cube& other)
@@ -37,11 +37,7 @@ Cube& Cube::operator=(const Cube& other)
 
 Cube::~Cube() {}
 
-void Cube::setVertices(const std::vector<Vertex>& vertices) {
-  _pimpl->vertices = vertices;
-}
-
-std::vector<Vertex> Cube::vertices() const {
+std::vector<boost::shared_ptr<const Vertex> > Cube::vertices() const {
   return _pimpl->vertices;
 }
 
@@ -50,5 +46,5 @@ Vertex Cube::vertex(unsigned int index) const {
     throw std::runtime_error("wrong index of vertex");
   }
 
-  return _pimpl->vertices.at(index);
+  return *(_pimpl->vertices.at(index));
 }

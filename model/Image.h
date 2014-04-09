@@ -52,7 +52,7 @@ public:
 
   void generateVertices();
 
-  std::vector<Vertex> vertices() const;
+  std::vector<boost::shared_ptr<const Vertex> > vertices() const;
 
 private:
   class Pimpl;
