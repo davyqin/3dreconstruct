@@ -3,7 +3,7 @@
 #include "common.h"
 #include "Grid.h"
 #include "McFactory.h"
-#include "Vertex.h"
+#include "model/Vertex.h"
 #include "Triangle.h"
 
 #include "model/ImageStack.h"

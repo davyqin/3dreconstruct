@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vertex.h"
+#include "model/Vertex.h"
 
 #include <boost/shared_ptr.hpp>
 #include <memory>

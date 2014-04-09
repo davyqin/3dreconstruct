@@ -1,7 +1,6 @@
 #include "CubeFactory.h"
 #include "Cube.h"
-#include "VertexFactory.h"
-#include "Vertex.h"
+#include "model/Vertex.h"
 #include "model/Image.h"
 
 #include <boost/progress.hpp>
@@ -35,21 +34,20 @@ std::vector<Cube> CubeFactory::cubes() const {
   if (!_pimpl->downImage || !_pimpl->upImage) {
     return vector<Cube>();
   }
-  // boost::progress_timer timer;
-  VertexFactory vertexFactory(_pimpl->downImage);
-  std::vector<Vertex> downVertices = vertexFactory.vertices();
 
-  vertexFactory.setImage(_pimpl->upImage);
-  std::vector<Vertex> upVertices = vertexFactory.vertices();
+  // boost::progress_timer timer;
+  std::vector<Vertex> downVertices = _pimpl->downImage->vertices();
+
+  std::vector<Vertex> upVertices = _pimpl->upImage->vertices();
 
   if (downVertices.size() != upVertices.size()) {
     return vector<Cube>();
   }
   std::vector<Cube> cubes;
 
-  const int cols = _pimpl->upImage->width();
-  const int rows = _pimpl->upImage->height();
-  const int step = 1; //31; //15; //7; //3;
+  const int cols = _pimpl->upImage->width() / 4;
+  const int rows = _pimpl->upImage->height() / 4;
+  const int step = 1; //1; //63 //31; //15; //7; //3;
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {
       const unsigned int index = i * rows + j;

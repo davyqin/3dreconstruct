@@ -1,7 +1,5 @@
 #include "Triangle.h"
 
-#include "Vertex.h"
-
 #include <cmath>
 #include <exception>
 

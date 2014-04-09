@@ -26,13 +26,12 @@ LIBS += -L/opt/boost-1.49.0-gcc-4.8.1-static/lib -lboost_system -lboost_filesyst
 # Input
 HEADERS += gui/GLWidget.h \
            util/DicomUtil.h \
+           model/Vertex.h \
            model/Image.h \
            model/ImageStack.h \
            gui/Controller.h \
            gui/ViewDialog.h \
            mc/common.h \
-           mc/Vertex.h \
-           mc/VertexFactory.h \
            mc/Cube.h \
            mc/CubeFactory.h \
            mc/Grid.h \
@@ -43,12 +42,11 @@ HEADERS += gui/GLWidget.h \
 SOURCES += main.cpp \
    	       gui/GLWidget.cpp \
   	       util/DicomUtil.cpp \
+           model/Vertex.cpp \
 	         model/Image.cpp \
            model/ImageStack.cpp \
 	         gui/Controller.cpp \
            gui/ViewDialog.cpp \
-           mc/Vertex.cpp \
-           mc/VertexFactory.cpp \
            mc/Cube.cpp \
            mc/CubeFactory.cpp \
            mc/Grid.cpp \

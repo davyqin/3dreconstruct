@@ -10,7 +10,7 @@ class Vertex
 public:
   Vertex();
 
-  Vertex(double x, double y, double z, double value = 0.0);
+  Vertex(double x, double y, double z, int value = 0);
 
   Vertex(const Vertex& vertex);
 
@@ -28,7 +28,7 @@ public:
 
   std::vector<double> position() const;
 
-  double value() const;
+  int value() const;
 
 private:
   class Pimpl;

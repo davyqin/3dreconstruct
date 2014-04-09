@@ -1,5 +1,9 @@
 #include "Image.h"
 
+#include <vector>
+
+using namespace std;
+
 namespace {
 bool doublesAreEqual(double d1, double d2) {
   return std::fabs(d1 - d2) < std::numeric_limits<double>::epsilon();
@@ -36,7 +40,9 @@ public:
   int window;
   int level;
   std::vector<double> pixelSpacing;
+  std::vector<Vertex> vertices;
 
+#if 0
   void computerMinAndMax() {
     minValue = std::numeric_limits<unsigned short>::max();
     maxValue = std::numeric_limits<unsigned short>::min();
@@ -48,6 +54,7 @@ public:
       if (*p > maxValue) maxValue = *p;
     }
   }
+#endif
 };
 
 Image::Image(boost::shared_ptr<unsigned short> pixelData, 
@@ -170,4 +177,48 @@ void Image::setPixelSpacing(const std::vector<double>& value) {
 
 std::vector<double> Image::pixelSpacing() const {
   return _pimpl->pixelSpacing;
+}
+
+std::vector<Vertex> Image::vertices() const {
+  if (!_pimpl->pixelData) {
+    return std::vector<Vertex>();
+  }
+
+  return _pimpl->vertices;
+}
+
+void Image::generateVertices() {
+  if (_pimpl->vertices.empty()) {
+    const double xInc = _pimpl->pixelSpacing.at(0);
+    const double yInc = _pimpl->pixelSpacing.at(1);
+    const int cols = _pimpl->width;
+    const int rows = _pimpl->height;
+    const Orientation orientation = _pimpl->orientation;
+    const int step = 4;
+
+    // for (int i = 0; i < rows; ++i) {
+    //   for (int j = 0; j < cols; ++j) {
+    for (int i = 0; i < rows; i += step) {
+      for (int j = 0; j < cols; j += step) {
+        const unsigned int index = i * rows + j;
+        const int value = *(_pimpl->pixelData.get() + index);
+        vector<double> position = _pimpl->position;
+        switch (orientation)
+        {
+          case (Image::TRAN):
+          {
+            position.at(0) += (j * xInc);
+            position.at(1) += (i * yInc);
+            break;
+          }
+          default:
+          {
+            // Add codes later
+            break;
+          }
+        }
+        _pimpl->vertices.push_back(Vertex(position.at(0), position.at(1), position.at(2), value));
+      }
+    }
+  }
 }

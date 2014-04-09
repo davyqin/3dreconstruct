@@ -102,6 +102,7 @@ void ImageStack::loadImages(const std::string& imageFolder) {
     DicomUtil dicomUtil(imageFile);
     if (dicomUtil.hasPixelData()) {
       _pimpl->images.push_back(dicomUtil.fetchImage());
+      _pimpl->images.back()->generateVertices();
       boost::shared_ptr<const Image> image = _pimpl->images.back();
       _pimpl->minLevel = std::min(int(image->minValue()), _pimpl->minLevel);
       _pimpl->maxLevel = std::max(int(image->maxValue()), _pimpl->maxLevel); 

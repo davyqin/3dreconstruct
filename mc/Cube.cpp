@@ -1,5 +1,5 @@
 #include "Cube.h"
-#include "Vertex.h"
+#include "model/Vertex.h"
 
 #include <exception>
 

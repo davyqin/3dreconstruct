@@ -7,19 +7,19 @@ class Vertex::Pimpl
 public:
 
   Pimpl(const vector<double>& position,
-  	    const double value)
+  	    const int value)
   : position(position)
   , value(value) {}
 
   /* data */
   vector<double> position;
-  double value;
+  const int value;
 };
 
 Vertex::Vertex()
-:_pimpl(new Pimpl({0.0, 0.0, 0.0}, 0.0)) {}
+:_pimpl(new Pimpl({0.0, 0.0, 0.0}, 0)) {}
 
-Vertex::Vertex(double x, double y, double z, double value) 
+Vertex::Vertex(double x, double y, double z, int value) 
 :_pimpl(new Pimpl({x, y, z}, value)) {}
 
 Vertex::Vertex(const Vertex& vertex)
@@ -56,6 +56,6 @@ std::vector<double> Vertex::position() const {
   return _pimpl->position;
 }
 
-double Vertex::value() const {
+int Vertex::value() const {
   return _pimpl->value;
 }

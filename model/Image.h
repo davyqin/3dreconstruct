@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Vertex.h"
+
 #include <boost/shared_ptr.hpp>
 #include <memory>
 #include <vector>
@@ -47,6 +49,10 @@ public:
   unsigned short pixelValue(unsigned int index) const;
 
   void updateWL(int window, int level);
+
+  void generateVertices();
+
+  std::vector<Vertex> vertices() const;
 
 private:
   class Pimpl;
