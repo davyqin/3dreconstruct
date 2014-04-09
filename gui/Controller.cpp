@@ -64,5 +64,5 @@ void Controller::onUpdateWL(int window, int level) {
 void Controller::onShow3d() {
   boost::progress_timer timer;
   const McWorkshop mcWorkshop(_pimpl->imageStack);
-  mcWorkshop.work();
+  _pimpl->viewDialog.show3D(mcWorkshop.work());
 }

@@ -80,6 +80,7 @@ std::vector<Triangle> McWorkshop::work() const {
   const double minValue = 32768.0;
   const double maxValue = 33000.0;
   const std::vector<Cube> cubes = grid.cubes();
+  cout<<endl<<"Calculating triangles..."<<endl;
   boost::progress_display pd(cubes.size());
   for (auto cube : cubes) {
     int cubeindex = 0;
@@ -148,7 +149,7 @@ std::vector<Triangle> McWorkshop::work() const {
     const vector<int> vertices = TriangleTable[cubeindex];
     for (unsigned int i = 0; i < vertices.size(); ++i) {
       if (vertices.at(i) == -1) continue;
-      
+
       triangles.push_back(Triangle({vertList[vertices.at(i)], 
                                     vertList[vertices.at(++i)],
                                     vertList[vertices.at(++i)]}));

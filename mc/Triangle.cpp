@@ -63,3 +63,7 @@ Triangle::~Triangle() {}
 std::vector<Vertex> Triangle::vertices() const {
   return _pimpl->vertices;
 }
+
+std::vector<double> Triangle::normals() const {
+  return _pimpl->normals;
+}

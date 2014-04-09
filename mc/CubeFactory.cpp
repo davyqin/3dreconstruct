@@ -4,6 +4,8 @@
 #include "Vertex.h"
 #include "model/Image.h"
 
+#include <boost/progress.hpp>
+
 using namespace std;
 
 class CubeFactory::Pimpl
@@ -33,7 +35,7 @@ std::vector<Cube> CubeFactory::cubes() const {
   if (!_pimpl->downImage || !_pimpl->upImage) {
     return vector<Cube>();
   }
-
+  // boost::progress_timer timer;
   VertexFactory vertexFactory(_pimpl->downImage);
   std::vector<Vertex> downVertices = vertexFactory.vertices();
 
@@ -43,28 +45,29 @@ std::vector<Cube> CubeFactory::cubes() const {
   if (downVertices.size() != upVertices.size()) {
     return vector<Cube>();
   }
-
   std::vector<Cube> cubes;
 
   const int cols = _pimpl->upImage->width();
   const int rows = _pimpl->upImage->height();
-
+  const int step = 1; //31; //15; //7; //3;
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {
       const unsigned int index = i * rows + j;
       std::vector<Vertex> vertices;
       vertices.push_back(downVertices.at(index));
-      vertices.push_back(downVertices.at(index + 1));
-      vertices.push_back(downVertices.at(index + rows + 1));
+      vertices.push_back(downVertices.at(index + step));
+      vertices.push_back(downVertices.at(index + rows + step));
       vertices.push_back(downVertices.at(index + rows));
       vertices.push_back(upVertices.at(index));
-      vertices.push_back(upVertices.at(index + 1));
-      vertices.push_back(upVertices.at(index + rows + 1));
+      vertices.push_back(upVertices.at(index + step));
+      vertices.push_back(upVertices.at(index + rows + step));
       vertices.push_back(upVertices.at(index + rows));
       cubes.push_back(Cube(vertices));
-      ++j;
+      //++j;
+      j += step;
     }
-    ++i;
+    // ++i;
+    i += step;
   }
 
   return cubes;

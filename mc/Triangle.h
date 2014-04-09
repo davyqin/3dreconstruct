@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Vertex.h"
+
 #include <boost/shared_ptr.hpp>
 #include <memory>
 #include <vector>
@@ -18,6 +20,8 @@ public:
   ~Triangle();
 
   std::vector<Vertex> vertices() const;
+
+  std::vector<double> normals() const;
 
 private:
   class Pimpl;

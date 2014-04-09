@@ -5,8 +5,9 @@
 #include "model/Image.h"
 #include "mc/Triangle.h"
 
-#include <GL/glu.h>
+#include <GL/glut.h>
 #include <boost/shared_ptr.hpp>
+#include <vector>
 
 using namespace std;
 
@@ -53,10 +54,10 @@ QSize GLWidget::sizeHint() const
 //! [6]
 void GLWidget::initializeGL()
 {
-    qglClearColor(_pimpl->qtPurple);
+  qglClearColor(_pimpl->qtPurple);
 //    qglColor(qtRed); /* draw in red */
 
-//    glEnable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
 //    glShadeModel(GL_SMOOTH);
 //    glEnable(GL_MULTISAMPLE);
 }
@@ -67,26 +68,47 @@ void GLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+    qglColor(_pimpl->qtRed); /* draw in red */
 
-    if (_pimpl->image) {
-      const Image& image = *_pimpl->image;
-      const unsigned short* pixel = image.pixelData().get();
-      glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_SHORT, pixel);
-    }
-
-    // if (!_pimpl->data.empty()) {
-    //   glColor3f(1.0, 1.0, 1.0);
-    //   glPushMatrix();
-    //   glMatrixMode(GL_MODELVIEW);
-    //   glLoadIdentity();
-    //   // for (auto triangle : _pimpl->data) {
-    //   //   glBegin(GL_TRIANGLES);
-    //   //   glNormal3fv();
-    //   // }
+    // if (_pimpl->image) {
+    //   const Image& image = *_pimpl->image;
+    //   const unsigned short* pixel = image.pixelData().get();
+    //   glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_SHORT, pixel);
     // }
 
+    if (!_pimpl->data.empty()) {
+      gluLookAt(-300, -300, -1000, -50, -50, -900, 0.5, 0.5, 0.5);
+      // glOrtho(-500.0, 500.0, -500.0, 500.0, -1000.0, 1000.0);
+      // glColor3f(1.0, 1.0, 1.0);
+          
+      // glPushMatrix();
+      // glMatrixMode(GL_MODELVIEW);
+      // glLoadIdentity();
+      for (auto triangle : _pimpl->data) {
+        glBegin(GL_TRIANGLES);
+        
+        // cout<<"********************************"<<endl;
+        const std::vector<double> normals = triangle.normals();
+        glNormal3d(normals.at(0), normals.at(1), normals.at(2));
+        // glNormal3dv(&normals[0]);
+        const std::vector<Vertex> vertices = triangle.vertices();
+        for (auto vertex : vertices) {
+          // GLdouble point[2];
+          // point[0] = vertex.x();
+          // point[1] = vertex.y();
+          // glBegin(GL_POINTS);
+          //glVertex2dv(point);
+          glVertex3d(vertex.x(), vertex.y(), (vertex.z()));
+          // glEnd();
+        }
+        glEnd();
+        // cout<<"********************************"<<endl;
+      }
+      // glPopMatrix();
+    }
+
  #if 0
-    qglColor(qtRed); /* draw in red */
+    // qglColor(_pimpl->qtRed); /* draw in red */
 
     /* define a point data type */
 
@@ -135,21 +157,20 @@ void GLWidget::resizeGL(int width, int height)
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-    //gluOrtho2D(0.0, 500.0, 0.0, 500.0);
-  glOrtho(0.0, 500.0, 0.0, 500.0, -1.0, 1.0);
+  glOrtho(-300.0, 300.0, -300.0, 300.0, -1000.0, 1000.0);
   glMatrixMode(GL_MODELVIEW);
 
-  if (_pimpl->image) {
-    const Image& image = *_pimpl->image;
+  // if (_pimpl->image) {
+  //   const Image& image = *_pimpl->image;
 
-    // const QSize widgetSize = size();
-    double zoomSloat = std::min((double)width / (double)image.width(), 
-                                (double)height / (double)image.height());
-    if (zoomSloat > 1.0) {
-      glPixelZoom(zoomSloat, zoomSloat);
-      glFlush();
-    }
-  }
+  //   // const QSize widgetSize = size();
+  //   double zoomSloat = std::min((double)width / (double)image.width(), 
+  //                               (double)height / (double)image.height());
+  //   if (zoomSloat > 1.0) {
+  //     glPixelZoom(zoomSloat, zoomSloat);
+  //     glFlush();
+  //   }
+  // }
 }
 //! [8]
 
