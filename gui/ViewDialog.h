@@ -21,8 +21,6 @@ public:
 
   void showImage(boost::shared_ptr<const Image> image);
 
-  void show3D(const std::vector<Triangle>& data);
-
 signals:
   void loadImageSignal(const QString& imageFolder);
   void requestImage(int index);

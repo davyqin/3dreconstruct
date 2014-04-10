@@ -1,6 +1,7 @@
 #include "Controller.h"
 
-#include "ViewDialog.cpp"
+#include "ViewDialog.h"
+#include "View3DDialog.h"
 #include "model/ImageStack.h"
 #include "mc/McWorkshop.h"
 
@@ -17,6 +18,7 @@ public:
   Pimpl() 
   :imageStack(new ImageStack()) {}
   ViewDialog viewDialog;
+  View3DDialog view3dDialog;
   boost::shared_ptr<ImageStack> imageStack;
 };
 
@@ -62,7 +64,9 @@ void Controller::onUpdateWL(int window, int level) {
 }
 
 void Controller::onShow3d() {
-  boost::progress_timer timer;
-  const McWorkshop mcWorkshop(_pimpl->imageStack);
-  _pimpl->viewDialog.show3D(mcWorkshop.work());
+  _pimpl->view3dDialog.adjustSize();
+  _pimpl->view3dDialog.show();
+  // boost::progress_timer timer;
+  // const McWorkshop mcWorkshop(_pimpl->imageStack);
+  // _pimpl->viewDialog.show3D(mcWorkshop.work());
 }

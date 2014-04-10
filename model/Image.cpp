@@ -188,6 +188,7 @@ std::vector<boost::shared_ptr<const Vertex> > Image::vertices() const {
 }
 
 void Image::generateVertices() {
+#if 0
   if (_pimpl->vertices.empty()) {
     const double xInc = _pimpl->pixelSpacing.at(0);
     const double yInc = _pimpl->pixelSpacing.at(1);
@@ -222,4 +223,5 @@ void Image::generateVertices() {
       }
     }
   }
+#endif
 }

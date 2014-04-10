@@ -25,8 +25,6 @@ public:
 
     void setImage(boost::shared_ptr<const Image> image);
 
-    void set3dData(const std::vector<Triangle>& data);
-
 signals:
     void requestNextImage();
     void requestPrevImage();

@@ -24,37 +24,43 @@ LIBS += -L/opt/boost-1.49.0-gcc-4.8.1-static/lib -lboost_system -lboost_filesyst
 
 
 # Input
-HEADERS += gui/GLWidget.h \
-           util/DicomUtil.h \
+HEADERS += util/DicomUtil.h \
            model/Vertex.h \
            model/Image.h \
            model/ImageStack.h \
+           gui/GLWidget.h \
+           gui/D3Widget.h \
            gui/Controller.h \
            gui/ViewDialog.h \
+           gui/View3DDialog.h \
            mc/common.h \
            mc/Cube.h \
            mc/CubeFactory.h \
            mc/Grid.h \
            mc/McFactory.h \
            mc/McWorkshop.h \
-           mc/Triangle.h
+           mc/Triangle.h \
 
 SOURCES += main.cpp \
-   	       gui/GLWidget.cpp \
   	       util/DicomUtil.cpp \
            model/Vertex.cpp \
 	         model/Image.cpp \
            model/ImageStack.cpp \
+           gui/GLWidget.cpp \
+           gui/D3Widget.cpp \
 	         gui/Controller.cpp \
            gui/ViewDialog.cpp \
+           gui/View3DDialog.cpp \
            mc/Cube.cpp \
            mc/CubeFactory.cpp \
            mc/Grid.cpp \
            mc/McFactory.cpp \
            mc/McWorkshop.cpp \
-           mc/Triangle.cpp          
+           mc/Triangle.cpp \          
 
 MOCABLEHEADERS += gui/ViewDialog.h\
+                  gui/View3DDialog.h
 
 FORMS += \
-    gui/ViewDialog.ui
+    gui/ViewDialog.ui \
+    gui/View3DDialog.ui
