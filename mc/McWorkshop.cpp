@@ -68,8 +68,8 @@ namespace {
   }
 }
 
-std::vector<Triangle> McWorkshop::work() const {
-  std::vector<Triangle> triangles;
+std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() const {
+  std::vector<boost::shared_ptr<const Triangle> > triangles;
   if (!_pimpl->imageStack || _pimpl->imageStack->imageCount() == 0) {
   	cout<<"No images loaded, quit workshop"<<endl;
   	return triangles;
@@ -83,7 +83,6 @@ std::vector<Triangle> McWorkshop::work() const {
   const std::vector<boost::shared_ptr<const Cube> > cubes = grid.cubes();
   cout<<endl<<"Calculating triangles..."<<endl;
   boost::progress_display pd(cubes.size());
-  //for (auto cube : cubes) {
   for (unsigned int i = 0; i < cubes.size(); ++i) {
     const Cube& cube = *cubes.at(i);
     int cubeindex = 0;
@@ -153,9 +152,10 @@ std::vector<Triangle> McWorkshop::work() const {
     for (unsigned int i = 0; i < vertices.size(); ++i) {
       if (vertices.at(i) == -1) continue;
 
-      triangles.push_back(Triangle({vertList[vertices.at(i)], 
-                                    vertList[vertices.at(++i)],
-                                    vertList[vertices.at(++i)]}));
+      triangles.push_back(
+        boost::shared_ptr<const Triangle>(new Triangle({vertList[vertices.at(i)], 
+                                                        vertList[vertices.at(++i)],
+                                                        vertList[vertices.at(++i)]})));
     }
   }
 

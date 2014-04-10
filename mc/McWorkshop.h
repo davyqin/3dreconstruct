@@ -16,7 +16,7 @@ public:
 
   ~McWorkshop();
 
-  std::vector<Triangle> work() const;
+  std::vector<boost::shared_ptr<const Triangle> > work() const;
 
 private:
   class Pimpl;

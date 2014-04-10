@@ -64,9 +64,11 @@ void Controller::onUpdateWL(int window, int level) {
 }
 
 void Controller::onShow3d() {
-  _pimpl->view3dDialog.adjustSize();
-  _pimpl->view3dDialog.show();
-  // boost::progress_timer timer;
-  // const McWorkshop mcWorkshop(_pimpl->imageStack);
-  // _pimpl->viewDialog.show3D(mcWorkshop.work());
+  boost::progress_timer timer;
+  const McWorkshop mcWorkshop(_pimpl->imageStack);
+  const std::vector<boost::shared_ptr<const Triangle> > data = mcWorkshop.work();
+  if (!data.empty()) {
+    _pimpl->view3dDialog.show();
+    _pimpl->view3dDialog.show3D(data);
+  }
 }

@@ -1,6 +1,8 @@
 #include "View3DDialog.h"
 #include "ui_View3DDialog.h"
 
+#include "mc/Triangle.h"
+
 using namespace std;
 
 class View3DDialog::Pimpl
@@ -22,3 +24,8 @@ View3DDialog::View3DDialog(QWidget *parent)
 }
 
 View3DDialog::~View3DDialog() {}
+
+void View3DDialog::show3D(const std::vector<boost::shared_ptr<const Triangle> >& data) {
+  _pimpl->ui.d3Widget->setData(data);
+  _pimpl->ui.d3Widget->update();
+}

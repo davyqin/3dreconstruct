@@ -20,7 +20,7 @@ public:
   QColor qtRed;
   QColor qtDark;
   QColor qtPurple;
-  std::vector<Triangle> data;
+  std::vector<boost::shared_ptr<const Triangle> > data;
 };
 
 D3Widget::D3Widget(QWidget *parent)
@@ -29,12 +29,10 @@ D3Widget::D3Widget(QWidget *parent)
 
 D3Widget::~D3Widget() {}
 
-
 QSize D3Widget::minimumSizeHint() const
 {
   return QSize(100, 100);
 }
-
 
 QSize D3Widget::sizeHint() const
 {
@@ -56,23 +54,17 @@ void D3Widget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     qglColor(_pimpl->qtRed); /* draw in red */
-#if 0
+
     if (!_pimpl->data.empty()) {
       gluLookAt(-300, -300, -1000, -50, -50, -900, 0.5, 0.5, 0.5);
-      // glOrtho(-500.0, 500.0, -500.0, 500.0, -1000.0, 1000.0);
-      // glColor3f(1.0, 1.0, 1.0);
-          
-      // glPushMatrix();
-      // glMatrixMode(GL_MODELVIEW);
-      // glLoadIdentity();
       for (auto triangle : _pimpl->data) {
         glBegin(GL_TRIANGLES);
         
         // cout<<"********************************"<<endl;
-        const std::vector<double> normals = triangle.normals();
+        const std::vector<double> normals = triangle->normals();
         glNormal3d(normals.at(0), normals.at(1), normals.at(2));
         // glNormal3dv(&normals[0]);
-        const std::vector<Vertex> vertices = triangle.vertices();
+        const std::vector<Vertex> vertices = triangle->vertices();
         for (auto vertex : vertices) {
           glVertex3d(vertex.x(), vertex.y(), (vertex.z()));
         }
@@ -81,7 +73,6 @@ void D3Widget::paintGL()
       }
       // glPopMatrix();
     }
-  #endif
 
     glFlush(); /* clear buffers */
 }
@@ -109,6 +100,6 @@ void D3Widget::wheelEvent(QWheelEvent * event) {
   // }
 }
 
-void D3Widget::setData(const std::vector<Triangle>& data) {
+void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& data) {
   _pimpl->data = data;
 }

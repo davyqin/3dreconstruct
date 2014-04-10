@@ -22,7 +22,7 @@ public:
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
 
-    void setData(const std::vector<Triangle>& data);
+    void setData(const std::vector<boost::shared_ptr<const Triangle> >& data);
 
 signals:
     void requestNextImage();

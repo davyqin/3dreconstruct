@@ -40,7 +40,7 @@ public:
   int window;
   int level;
   std::vector<double> pixelSpacing;
-  std::vector<boost::shared_ptr<const Vertex> > vertices;
+  mutable std::vector<boost::shared_ptr<const Vertex> > vertices;
 
 #if 0
   void computerMinAndMax() {
@@ -188,7 +188,7 @@ std::vector<boost::shared_ptr<const Vertex> > Image::vertices() const {
 }
 
 void Image::generateVertices() {
-#if 0
+#if 1
   if (_pimpl->vertices.empty()) {
     const double xInc = _pimpl->pixelSpacing.at(0);
     const double yInc = _pimpl->pixelSpacing.at(1);

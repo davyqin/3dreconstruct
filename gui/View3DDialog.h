@@ -2,7 +2,11 @@
 #define VIEW3DDIALOG_H
 
 #include <QDialog>
+
 #include <memory>
+#include <boost/shared_ptr.hpp>
+
+class Triangle;
 
 class View3DDialog : public QDialog
 {
@@ -11,6 +15,8 @@ class View3DDialog : public QDialog
 public:
   explicit View3DDialog(QWidget *parent = 0);
   ~View3DDialog();
+
+  void show3D(const std::vector<boost::shared_ptr<const Triangle> >& data);
 
 private:
   class Pimpl;
