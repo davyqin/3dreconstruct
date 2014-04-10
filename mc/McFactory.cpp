@@ -55,5 +55,5 @@ Grid McFactory::grid() const {
              _pimpl->imageStack->fetchImage(0)->height()/2,
              imageCount - 1);
 
-  return Grid(cubes);
+  return grid;
 }

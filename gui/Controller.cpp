@@ -34,15 +34,12 @@ Controller::Controller(QObject *parent)
 Controller::~Controller() {}
 
 void Controller::activate() {
- _pimpl->viewDialog.adjustSize();
- const int desktopArea = QApplication::desktop()->width() *  QApplication::desktop()->height();
- const int widgetArea = _pimpl->viewDialog.width() * _pimpl->viewDialog.height();
- if (((float)widgetArea / (float)desktopArea) < 0.75f)
-    _pimpl->viewDialog.show();
- else
-   _pimpl->viewDialog.showMaximized();
-
- _pimpl->viewDialog.update();
+  _pimpl->viewDialog.adjustSize();
+  _pimpl->viewDialog.show();
+  _pimpl->viewDialog.update();
+  _pimpl->view3dDialog.adjustSize();
+  _pimpl->view3dDialog.show();
+  _pimpl->view3dDialog.update();
 }
 
 void Controller::onLoadImage(const QString& imageFolder) {
@@ -68,7 +65,6 @@ void Controller::onShow3d() {
   const McWorkshop mcWorkshop(_pimpl->imageStack);
   const std::vector<boost::shared_ptr<const Triangle> > data = mcWorkshop.work();
   if (!data.empty()) {
-    _pimpl->view3dDialog.show();
     _pimpl->view3dDialog.show3D(data);
   }
 }

@@ -50,9 +50,7 @@ public:
 
   void updateWL(int window, int level);
 
-  void generateVertices();
-
-  std::vector<boost::shared_ptr<const Vertex> > vertices() const;
+  std::vector<boost::shared_ptr<const Vertex> > vertices();
 
 private:
   class Pimpl;

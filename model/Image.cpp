@@ -40,7 +40,41 @@ public:
   int window;
   int level;
   std::vector<double> pixelSpacing;
-  mutable std::vector<boost::shared_ptr<const Vertex> > vertices;
+  std::vector<boost::shared_ptr<const Vertex> > vertices;
+
+  void generateVertices() {
+    const double xInc = pixelSpacing.at(0);
+    const double yInc = pixelSpacing.at(1);
+    const int cols = width;
+    const int rows = height;
+    //const Orientation orientation = _pimpl->orientation;
+    const int step = 4;
+
+    for (int i = 0; i < rows; i += step) {
+      for (int j = 0; j < cols; j += step) {
+        const unsigned int index = i * rows + j;
+        const int value = *(pixelData.get() + index);
+        vector<double> vertexPosition = position;
+        switch (orientation)
+        {
+          case (Image::TRAN):
+          {
+            vertexPosition.at(0) += (j * xInc);
+            vertexPosition.at(1) += (i * yInc);
+            break;
+          }
+          default:
+          {
+            // Add codes later
+            break;
+          }
+        }
+        vertices.push_back(
+          boost::shared_ptr<Vertex>(new Vertex(vertexPosition.at(0), vertexPosition.at(1), 
+                                               vertexPosition.at(2), value)));
+      }
+    }
+}
 
 #if 0
   void computerMinAndMax() {
@@ -168,7 +202,10 @@ void Image::updateWL(int window, int level) {
     wlChanged = true;
   }
 
-  if (wlChanged) _pimpl->outputPixel.reset();
+  if (wlChanged) {
+    _pimpl->outputPixel.reset();
+    _pimpl->vertices.clear();
+  }
 }
 
 void Image::setPixelSpacing(const std::vector<double>& value) {
@@ -179,49 +216,14 @@ std::vector<double> Image::pixelSpacing() const {
   return _pimpl->pixelSpacing;
 }
 
-std::vector<boost::shared_ptr<const Vertex> > Image::vertices() const {
-  if (!_pimpl->pixelData) {
+std::vector<boost::shared_ptr<const Vertex> > Image::vertices() {
+  if (!_pimpl->pixelData && !_pimpl->outputPixel) {
     return std::vector<boost::shared_ptr<const Vertex> >();
   }
 
-  return _pimpl->vertices;
-}
-
-void Image::generateVertices() {
-#if 1
   if (_pimpl->vertices.empty()) {
-    const double xInc = _pimpl->pixelSpacing.at(0);
-    const double yInc = _pimpl->pixelSpacing.at(1);
-    const int cols = _pimpl->width;
-    const int rows = _pimpl->height;
-    const Orientation orientation = _pimpl->orientation;
-    const int step = 4;
-
-    // for (int i = 0; i < rows; ++i) {
-    //   for (int j = 0; j < cols; ++j) {
-    for (int i = 0; i < rows; i += step) {
-      for (int j = 0; j < cols; j += step) {
-        const unsigned int index = i * rows + j;
-        const int value = *(_pimpl->pixelData.get() + index);
-        vector<double> position = _pimpl->position;
-        switch (orientation)
-        {
-          case (Image::TRAN):
-          {
-            position.at(0) += (j * xInc);
-            position.at(1) += (i * yInc);
-            break;
-          }
-          default:
-          {
-            // Add codes later
-            break;
-          }
-        }
-        _pimpl->vertices.push_back(
-          boost::shared_ptr<Vertex>(new Vertex(position.at(0), position.at(1), position.at(2), value)));
-      }
-    }
+    _pimpl->generateVertices();
   }
-#endif
+
+  return _pimpl->vertices;
 }
