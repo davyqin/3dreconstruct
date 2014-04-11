@@ -10,6 +10,13 @@
 
 using namespace std;
 
+namespace {
+  const GLfloat ambient[4] = {1.0, 0.0, 0.0, 1.0};
+  const GLfloat difffuse[] = {0.0, 0.0, 1.0, 1.0};
+  const GLfloat spec[4] = {1.0, 1.0, 1.0, 1.0};
+  const GLfloat light_position[] = {-1.0, -1.0, 1.0, 0.0};
+}
+
 class D3Widget::Pimpl {
 public:
   Pimpl()
@@ -41,12 +48,18 @@ QSize D3Widget::sizeHint() const
 
 void D3Widget::initializeGL()
 {
-  qglClearColor(_pimpl->qtPurple);
-//    qglColor(qtRed); /* draw in red */
+  qglClearColor(_pimpl->qtDark);
+  glShadeModel (GL_SMOOTH);
 
+  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
+  glMaterialfv(GL_FRONT, GL_SPECULAR, spec);
+  glMaterialf(GL_FRONT, GL_SHININESS, 50);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
+  glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
   glEnable(GL_DEPTH_TEST);
-//    glShadeModel(GL_SMOOTH);
-//    glEnable(GL_MULTISAMPLE);
 }
 
 void D3Widget::paintGL()
@@ -60,18 +73,14 @@ void D3Widget::paintGL()
       for (auto triangle : _pimpl->data) {
         glBegin(GL_TRIANGLES);
         
-        // cout<<"********************************"<<endl;
         const std::vector<double> normals = triangle->normals();
         glNormal3d(normals.at(0), normals.at(1), normals.at(2));
-        // glNormal3dv(&normals[0]);
         const std::vector<Vertex> vertices = triangle->vertices();
         for (auto vertex : vertices) {
           glVertex3d(vertex.x(), vertex.y(), (vertex.z()));
         }
         glEnd();
-        // cout<<"********************************"<<endl;
       }
-      // glPopMatrix();
     }
 
     glFlush(); /* clear buffers */

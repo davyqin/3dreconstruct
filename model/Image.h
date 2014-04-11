@@ -52,6 +52,10 @@ public:
 
   std::vector<boost::shared_ptr<const Vertex> > vertices();
 
+  int sampleStep() const;
+
+  void setSampleStep(const int step);
+
 private:
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;

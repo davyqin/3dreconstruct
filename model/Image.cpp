@@ -23,6 +23,7 @@ public:
   , pixelLength(pixelLength)
   , window(65535)
   , level(32768)
+  , sampleStep(4)
   {
 //    computerMinAndMax();
   }
@@ -39,6 +40,7 @@ public:
   unsigned short maxValue;
   int window;
   int level;
+  int sampleStep;
   std::vector<double> pixelSpacing;
   std::vector<boost::shared_ptr<const Vertex> > vertices;
 
@@ -47,11 +49,10 @@ public:
     const double yInc = pixelSpacing.at(1);
     const int cols = width;
     const int rows = height;
-    //const Orientation orientation = _pimpl->orientation;
-    const int step = 4;
+    const int sampleStep = 4;
 
-    for (int i = 0; i < rows; i += step) {
-      for (int j = 0; j < cols; j += step) {
+    for (int i = 0; i < rows; i += sampleStep) {
+      for (int j = 0; j < cols; j += sampleStep) {
         const unsigned int index = i * rows + j;
         const int value = *(pixelData.get() + index);
         vector<double> vertexPosition = position;
@@ -226,4 +227,12 @@ std::vector<boost::shared_ptr<const Vertex> > Image::vertices() {
   }
 
   return _pimpl->vertices;
+}
+
+int Image::sampleStep() const {
+  return _pimpl->sampleStep;
+}
+
+void Image::setSampleStep(const int step) {
+  _pimpl->sampleStep = step;
 }

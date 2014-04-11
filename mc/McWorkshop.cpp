@@ -78,7 +78,7 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() const {
   const McFactory mcFactory(_pimpl->imageStack);
   const Grid grid = mcFactory.grid();
 
-  const double minValue = 32768.0;
+  const double minValue = 32800.0;
   const double maxValue = 33000.0;
   const std::vector<boost::shared_ptr<const Cube> > cubes = grid.cubes();
   cout<<endl<<"Calculating triangles..."<<endl;

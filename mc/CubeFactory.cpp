@@ -46,9 +46,9 @@ void CubeFactory::setImages(boost::shared_ptr<const Image> downsideImage,
   }
 
   std::vector<boost::shared_ptr<const Cube> > cubes;
-  const int cols = _pimpl->upImage->width() / 4;
-  const int rows = _pimpl->upImage->height() / 4;
-  const int step = 1; //1; //63 //31; //15; //7; //3;
+  const int cols = _pimpl->upImage->width() / _pimpl->upImage->sampleStep();
+  const int rows = _pimpl->upImage->height() / _pimpl->upImage->sampleStep();
+  const int step = 2; //1; //63 //31; //15; //7; //3;
   for (int i = 0; i < (rows - step); i += step) {
     for (int j = 0; j < (cols - step); j += step) {
       const unsigned int index = i * rows + j;
