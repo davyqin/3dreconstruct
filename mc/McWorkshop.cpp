@@ -18,17 +18,44 @@ using namespace std;
 class McWorkshop::Pimpl
 {
 public:
+  Pimpl() 
+  :minValue(0), maxValue(0) {}
+
   Pimpl(boost::shared_ptr<const ImageStack> imageStack)
-  :imageStack(imageStack) {}
+  :imageStack(imageStack),minValue(0),maxValue(0) {}
 
   /* data */
   boost::shared_ptr<const ImageStack> imageStack;
+  int minValue;
+  int maxValue;
+  boost::shared_ptr<const Grid> grid;
+  std::vector<boost::shared_ptr<const Triangle> > triangles;
 };
+
+McWorkshop::McWorkshop()
+:_pimpl(new Pimpl()) {}
 
 McWorkshop::McWorkshop(boost::shared_ptr<const ImageStack> imageStack) 
 :_pimpl(new Pimpl(imageStack)) {}
 
 McWorkshop::~McWorkshop() {}
+
+void McWorkshop::setIsoMinMax(int minValue, int maxValue) {
+  if (minValue == _pimpl->minValue && 
+      maxValue == _pimpl->maxValue) {
+    return;
+  }
+
+  _pimpl->minValue = minValue;
+  _pimpl->maxValue = maxValue;
+  _pimpl->triangles.clear();
+}
+
+void McWorkshop::setImageStack(boost::shared_ptr<const ImageStack> imageStack) {
+  _pimpl->imageStack = imageStack;
+  _pimpl->grid.reset();
+  _pimpl->triangles.clear();
+}
 
 namespace {
   Vertex interpolate(const Vertex& vertex1, const Vertex& vertex2, double minValue, double maxValue) {
@@ -68,32 +95,29 @@ namespace {
   }
 }
 
-std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() const {
-  std::vector<boost::shared_ptr<const Triangle> > triangles;
-  if (!_pimpl->imageStack || _pimpl->imageStack->imageCount() == 0) {
-  	cout<<"No images loaded, quit workshop"<<endl;
-  	return triangles;
+std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
+  if (!_pimpl->triangles.empty()) return _pimpl->triangles;
+
+  if (!_pimpl->grid) {
+    const McFactory mcFactory(_pimpl->imageStack);
+    _pimpl->grid = boost::shared_ptr<const Grid>(new Grid(mcFactory.grid()));
   }
 
-  const McFactory mcFactory(_pimpl->imageStack);
-  const Grid grid = mcFactory.grid();
-
-  const double minValue = 32800.0;
-  const double maxValue = 33000.0;
-  const std::vector<boost::shared_ptr<const Cube> > cubes = grid.cubes();
+  const std::vector<boost::shared_ptr<const Cube> > cubes = _pimpl->grid->cubes();
   cout<<endl<<"Calculating triangles..."<<endl;
+  cout<<"Min: "<<_pimpl->minValue<<" Max: "<<_pimpl->maxValue<<endl;
   boost::progress_display pd(cubes.size());
   for (unsigned int i = 0; i < cubes.size(); ++i) {
     const Cube& cube = *cubes.at(i);
     int cubeindex = 0;
-    if (cube.vertex(0).value() >= minValue && cube.vertex(0).value() <= maxValue) cubeindex |= 1;
-    if (cube.vertex(1).value() >= minValue && cube.vertex(1).value() <= maxValue) cubeindex |= 2;
-    if (cube.vertex(2).value() >= minValue && cube.vertex(2).value() <= maxValue) cubeindex |= 4;
-    if (cube.vertex(3).value() >= minValue && cube.vertex(3).value() <= maxValue) cubeindex |= 8;
-    if (cube.vertex(4).value() >= minValue && cube.vertex(4).value() <= maxValue) cubeindex |= 16;
-    if (cube.vertex(5).value() >= minValue && cube.vertex(5).value() <= maxValue) cubeindex |= 32;
-    if (cube.vertex(6).value() >= minValue && cube.vertex(6).value() <= maxValue) cubeindex |= 64;
-    if (cube.vertex(7).value() >= minValue && cube.vertex(7).value() <= maxValue) cubeindex |= 128;
+    if (cube.vertex(0).value() >= _pimpl->minValue && cube.vertex(0).value() <= _pimpl->maxValue) cubeindex |= 1;
+    if (cube.vertex(1).value() >= _pimpl->minValue && cube.vertex(1).value() <= _pimpl->maxValue) cubeindex |= 2;
+    if (cube.vertex(2).value() >= _pimpl->minValue && cube.vertex(2).value() <= _pimpl->maxValue) cubeindex |= 4;
+    if (cube.vertex(3).value() >= _pimpl->minValue && cube.vertex(3).value() <= _pimpl->maxValue) cubeindex |= 8;
+    if (cube.vertex(4).value() >= _pimpl->minValue && cube.vertex(4).value() <= _pimpl->maxValue) cubeindex |= 16;
+    if (cube.vertex(5).value() >= _pimpl->minValue && cube.vertex(5).value() <= _pimpl->maxValue) cubeindex |= 32;
+    if (cube.vertex(6).value() >= _pimpl->minValue && cube.vertex(6).value() <= _pimpl->maxValue) cubeindex |= 64;
+    if (cube.vertex(7).value() >= _pimpl->minValue && cube.vertex(7).value() <= _pimpl->maxValue) cubeindex |= 128;
 
     ++pd;
 
@@ -101,63 +125,63 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() const {
 
     Vertex vertList[12];
     if ((EdgeTable[cubeindex] & 1) != 0) {
-      vertList[0] = interpolate(cube.vertex(0), cube.vertex(1), minValue, maxValue);
+      vertList[0] = interpolate(cube.vertex(0), cube.vertex(1), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 2) != 0) {
-      vertList[1] = interpolate(cube.vertex(1), cube.vertex(2), minValue, maxValue);
+      vertList[1] = interpolate(cube.vertex(1), cube.vertex(2), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 4) != 0) {
-      vertList[2] = interpolate(cube.vertex(2), cube.vertex(3), minValue, maxValue);
+      vertList[2] = interpolate(cube.vertex(2), cube.vertex(3), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 8) != 0) {
-      vertList[3] = interpolate(cube.vertex(3), cube.vertex(0), minValue, maxValue);
+      vertList[3] = interpolate(cube.vertex(3), cube.vertex(0), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 16) != 0) {
-      vertList[4] = interpolate(cube.vertex(4), cube.vertex(5), minValue, maxValue);
+      vertList[4] = interpolate(cube.vertex(4), cube.vertex(5), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 32) != 0) {
-      vertList[5] = interpolate(cube.vertex(5), cube.vertex(6), minValue, maxValue);
+      vertList[5] = interpolate(cube.vertex(5), cube.vertex(6), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 64) != 0) {
-      vertList[6] = interpolate(cube.vertex(6), cube.vertex(7), minValue, maxValue);
+      vertList[6] = interpolate(cube.vertex(6), cube.vertex(7), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 128) != 0) {
-      vertList[7] = interpolate(cube.vertex(7), cube.vertex(4), minValue, maxValue);
+      vertList[7] = interpolate(cube.vertex(7), cube.vertex(4), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 256) != 0) {
-      vertList[8] = interpolate(cube.vertex(0), cube.vertex(4), minValue, maxValue);
+      vertList[8] = interpolate(cube.vertex(0), cube.vertex(4), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 512) != 0) {
-      vertList[9] = interpolate(cube.vertex(1), cube.vertex(5), minValue, maxValue);
+      vertList[9] = interpolate(cube.vertex(1), cube.vertex(5), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 1024) != 0) {
-      vertList[10] = interpolate(cube.vertex(2), cube.vertex(6), minValue, maxValue);
+      vertList[10] = interpolate(cube.vertex(2), cube.vertex(6), _pimpl->minValue, _pimpl->maxValue);
     }
 
     if ((EdgeTable[cubeindex] & 2048) != 0) {
-      vertList[11] = interpolate(cube.vertex(3), cube.vertex(7), minValue, maxValue);
+      vertList[11] = interpolate(cube.vertex(3), cube.vertex(7), _pimpl->minValue, _pimpl->maxValue);
     }
 
     const vector<int> vertices = TriangleTable[cubeindex];
     for (unsigned int i = 0; i < vertices.size(); ++i) {
       if (vertices.at(i) == -1) continue;
 
-      triangles.push_back(
+      _pimpl->triangles.push_back(
         boost::shared_ptr<const Triangle>(new Triangle({vertList[vertices.at(i)], 
                                                         vertList[vertices.at(++i)],
                                                         vertList[vertices.at(++i)]})));
     }
   }
 
-  return triangles;
+  return _pimpl->triangles;
 }

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>433</width>
+    <width>566</width>
     <height>378</height>
    </rect>
   </property>
@@ -103,13 +103,6 @@
       <widget class="QPushButton" name="applyWLButton">
        <property name="text">
         <string>Apply W/L</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="mcButton">
-       <property name="text">
-        <string>3D</string>
        </property>
       </widget>
      </item>

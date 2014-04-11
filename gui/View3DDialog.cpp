@@ -21,6 +21,8 @@ View3DDialog::View3DDialog(QWidget *parent)
   _pimpl->ui.setupUi(this);
 
   setWindowTitle(tr("View 3D Reconstruction"));
+
+  connect(_pimpl->ui.show3DButton, SIGNAL(clicked()), SLOT(onShow3D()));
 }
 
 View3DDialog::~View3DDialog() {}
@@ -28,4 +30,10 @@ View3DDialog::~View3DDialog() {}
 void View3DDialog::show3D(const std::vector<boost::shared_ptr<const Triangle> >& data) {
   _pimpl->ui.d3Widget->setData(data);
   _pimpl->ui.d3Widget->update();
+}
+
+void View3DDialog::onShow3D() {
+  const int minValue = _pimpl->ui.minValueSpinBox->text().toInt();
+  const int maxValue = _pimpl->ui.maxValueSpinBox->text().toInt();
+  emit(show3DSignal(minValue, maxValue));
 }

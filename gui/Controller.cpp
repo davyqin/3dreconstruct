@@ -20,6 +20,7 @@ public:
   ViewDialog viewDialog;
   View3DDialog view3dDialog;
   boost::shared_ptr<ImageStack> imageStack;
+  McWorkshop mcWorkshop;
 };
 
 Controller::Controller(QObject *parent) 
@@ -28,7 +29,8 @@ Controller::Controller(QObject *parent)
   connect(&_pimpl->viewDialog, SIGNAL(loadImageSignal(const QString&)), SLOT(onLoadImage(const QString&)));
   connect(&_pimpl->viewDialog, SIGNAL(requestImage(int)), SLOT(onRequestImage(int)));
   connect(&_pimpl->viewDialog, SIGNAL(updateWLSignal(int,int)), SLOT(onUpdateWL(int,int)));
-  connect(&_pimpl->viewDialog, SIGNAL(show3dSignal()), SLOT(onShow3d()));
+
+  connect(&_pimpl->view3dDialog, SIGNAL(show3DSignal(int,int)), SLOT(onShow3d(int,int)));
 }
 
 Controller::~Controller() {}
@@ -45,6 +47,7 @@ void Controller::onLoadImage(const QString& imageFolder) {
   boost::progress_timer timer;
   _pimpl->imageStack->loadImages(imageFolder.toStdString());
   if (_pimpl->imageStack->imageCount() > 0) {
+    _pimpl->mcWorkshop.setImageStack(_pimpl->imageStack);
     _pimpl->viewDialog.setImageCount(_pimpl->imageStack->imageCount());
     onRequestImage(0);
   }
@@ -59,11 +62,8 @@ void Controller::onUpdateWL(int window, int level) {
   _pimpl->viewDialog.showImage(_pimpl->imageStack->fetchImage());
 }
 
-void Controller::onShow3d() {
+void Controller::onShow3d(int minValue, int maxValue) {
   boost::progress_timer timer;
-  const McWorkshop mcWorkshop(_pimpl->imageStack);
-  const std::vector<boost::shared_ptr<const Triangle> > data = mcWorkshop.work();
-  if (!data.empty()) {
-    _pimpl->view3dDialog.show3D(data);
-  }
+  _pimpl->mcWorkshop.setIsoMinMax(minValue, maxValue);
+  _pimpl->view3dDialog.show3D(_pimpl->mcWorkshop.work());
 }

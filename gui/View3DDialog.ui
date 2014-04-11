@@ -37,6 +37,40 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Min Iso:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="minValueSpinBox">
+       <property name="maximum">
+        <number>65534</number>
+       </property>
+       <property name="value">
+        <number>32768</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Max Iso</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="maxValueSpinBox">
+       <property name="maximum">
+        <number>65535</number>
+       </property>
+       <property name="value">
+        <number>33000</number>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="show3DButton">
        <property name="text">
         <string>Show 3D</string>

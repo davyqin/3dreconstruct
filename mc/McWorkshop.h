@@ -11,12 +11,21 @@ class ImageStack;
 class McWorkshop
 {
 public:
+  McWorkshop();
 
   McWorkshop(boost::shared_ptr<const ImageStack> imageStack);
 
   ~McWorkshop();
 
-  std::vector<boost::shared_ptr<const Triangle> > work() const;
+  void setMinValue(int value);
+
+  void setMaxValue(int value);
+
+  void setIsoMinMax(int minValue, int maxValue);
+
+  void setImageStack(boost::shared_ptr<const ImageStack> imageStack);
+
+  std::vector<boost::shared_ptr<const Triangle> > work();
 
 private:
   class Pimpl;

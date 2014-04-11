@@ -30,7 +30,6 @@ ViewDialog::ViewDialog(QWidget *parent)
   connect(_pimpl->ui.glWidget, SIGNAL(requestNextImage()), SLOT(onNextImage()));
   connect(_pimpl->ui.glWidget, SIGNAL(requestPrevImage()), SLOT(onPrevImage()));
   connect(_pimpl->ui.applyWLButton, SIGNAL(clicked()), SLOT(onApplyWL()));
-  connect(_pimpl->ui.mcButton, SIGNAL(clicked()), SIGNAL(show3dSignal()));
 }
 
 ViewDialog::~ViewDialog() {}

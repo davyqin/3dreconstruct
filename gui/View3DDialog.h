@@ -18,6 +18,12 @@ public:
 
   void show3D(const std::vector<boost::shared_ptr<const Triangle> >& data);
 
+signals:
+  void show3DSignal(int minValue, int maxValue);
+
+private slots:
+  void onShow3D();
+
 private:
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;
