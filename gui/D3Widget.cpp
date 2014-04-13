@@ -7,6 +7,7 @@
 #include <GL/glut.h>
 #include <boost/shared_ptr.hpp>
 #include <vector>
+#include <limits>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ namespace {
   const GLfloat ambient[4] = {1.0, 0.0, 0.0, 1.0};
   const GLfloat difffuse[] = {0.0, 0.0, 1.0, 1.0};
   const GLfloat spec[4] = {1.0, 1.0, 1.0, 1.0};
-  const GLfloat light_position[] = {-1.0, -1.0, 1.0, 0.0};
+  const GLfloat light_position[] = {-300.0, -300.0, 1.0, 0.0};
 }
 
 class D3Widget::Pimpl {
@@ -29,7 +30,7 @@ public:
   , minZ(std::numeric_limits<double>::max())
   , maxX(std::numeric_limits<double>::min())
   , maxY(std::numeric_limits<double>::min())
-  , maxZ(std::numeric_limits<double>::min()) {}
+  , maxZ(-2000.0) {}
 
   QColor qtRed;
   QColor qtDark;
@@ -42,6 +43,9 @@ public:
   double maxX;
   double maxY;
   double maxZ;
+  double centerX;
+  double centerY;
+  double centerZ;
 };
 
 D3Widget::D3Widget(QWidget *parent)
@@ -67,7 +71,7 @@ void D3Widget::initializeGL()
 
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
   glMaterialfv(GL_FRONT, GL_SPECULAR, spec);
-  glMaterialf(GL_FRONT, GL_SHININESS, 50);
+  glMaterialf(GL_FRONT, GL_SHININESS, 20);
   glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
@@ -83,12 +87,18 @@ void D3Widget::paintGL()
     qglColor(_pimpl->qtRed); /* draw in red */
 
     if (!_pimpl->data.empty()) {
-      // glPushMatrix();
-      // const double centerX = (_pimpl->minX + _pimpl->maxX) / 2;
-      // const double centerY = (_pimpl->minY + _pimpl->maxY) / 2;
-      // const double centerZ = (_pimpl->minZ + _pimpl->maxZ) / 2;
-      // glTranslatef(-centerX, -centerY, -centerZ);
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      glOrtho(_pimpl->minX -100, _pimpl->maxX + 100, _pimpl->minY - 100, _pimpl->maxY + 100, -1000.0, 1000.0);
+      glMatrixMode(GL_MODELVIEW);
+      // glPushMatrix(_pimpl->minX, _pimpl->minY);
+      // glTranslatef(0, 20, 857);
+      // glRotatef(90.0, 1.0, 0.0, 0.0);
+      // glTranslatef(0, -20, -857);
 
+      // gluLookAt(_pimpl->maxX, _pimpl->maxY, _pimpl->centerZ,
+      //           _pimpl->centerX, _pimpl->centerY, _pimpl->centerZ,
+      //           0, 1, 0);
 
       for (auto triangle : _pimpl->data) {
         glBegin(GL_TRIANGLES);    
@@ -104,8 +114,6 @@ void D3Widget::paintGL()
 
     // glPopMatrix();
 
-    glRotatef(90.0, 0.0, 0.0, 1.0);
-
     glFlush(); /* clear buffers */
 }
 
@@ -113,11 +121,13 @@ void D3Widget::resizeGL(int width, int height)
 {
   const int side = qMin(width, height);
   glViewport((width - side) / 2, (height - side) / 2, side * _pimpl->zoom, side * _pimpl->zoom);
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glOrtho(-300.0, 300.0, -300.0, 300.0, -1000.0, 1000.0);
-  glMatrixMode(GL_MODELVIEW);
+  // if (!_pimpl->data.empty()) {
+  //   glMatrixMode(GL_PROJECTION);
+  //   glLoadIdentity();
+  //   glOrtho(_pimpl->minX -100, _pimpl->maxX + 100, _pimpl->minY - 100, _pimpl->maxY + 100, -1000.0, 1000.0);
+  //   // glOrtho(-200, 200, -200, 200, -1000, 1000);
+  //   glMatrixMode(GL_MODELVIEW);
+  // }
 }
 
 void D3Widget::wheelEvent(QWheelEvent * event) {
@@ -140,12 +150,18 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   for (auto triangle : _pimpl->data) {
     const std::vector<Vertex> vertices = triangle->vertices();
     for (auto vertex : vertices) {
-      if (vertex.x() < _pimpl->minX) _pimpl->minX = vertex.x();
-      if (vertex.x() > _pimpl->maxX) _pimpl->maxX = vertex.x();
-      if (vertex.y() < _pimpl->minY) _pimpl->minY = vertex.y();
-      if (vertex.y() > _pimpl->maxX) _pimpl->maxY = vertex.y();
-      if (vertex.z() < _pimpl->minZ) _pimpl->minZ = vertex.z();
-      if (vertex.z() > _pimpl->maxZ) _pimpl->maxZ = vertex.z();
+      if (vertex.x() < _pimpl->minX) { _pimpl->minX = vertex.x(); }
+      if (vertex.x() > _pimpl->maxX) { _pimpl->maxX = vertex.x(); }
+      if (vertex.y() < _pimpl->minY) { _pimpl->minY = vertex.y(); }
+      if (vertex.y() > _pimpl->maxY) { _pimpl->maxY = vertex.y(); }
+      if (vertex.z() < _pimpl->minZ) { _pimpl->minZ = vertex.z(); }
+      if (vertex.z() > _pimpl->maxZ) { _pimpl->maxZ = vertex.z(); }
     }
   }
+  _pimpl->centerX = (_pimpl->minX + _pimpl->maxX) / 2;
+  _pimpl->centerY = (_pimpl->minY + _pimpl->maxY) / 2;
+  _pimpl->centerZ = (_pimpl->minZ + _pimpl->maxZ) / 2;
+  cout <<_pimpl->minX<<" "<<_pimpl->maxX<<endl;
+  cout <<_pimpl->minY<<" "<<_pimpl->maxY<<endl;
+  cout <<_pimpl->minZ<<" "<<_pimpl->maxZ<<endl;
 }
