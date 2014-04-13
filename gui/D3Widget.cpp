@@ -22,12 +22,26 @@ public:
   Pimpl()
   : qtRed(QColor::fromRgb(255,0,0))
   , qtDark(QColor::fromRgb(0,0,0))
-  , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0)) {}
+  , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0))
+  , zoom(1.0)
+  , minX(std::numeric_limits<double>::max())
+  , minY(std::numeric_limits<double>::max())
+  , minZ(std::numeric_limits<double>::max())
+  , maxX(std::numeric_limits<double>::min())
+  , maxY(std::numeric_limits<double>::min())
+  , maxZ(std::numeric_limits<double>::min()) {}
 
   QColor qtRed;
   QColor qtDark;
   QColor qtPurple;
   std::vector<boost::shared_ptr<const Triangle> > data;
+  GLfloat zoom;
+  double minX;
+  double minY;
+  double minZ;
+  double maxX;
+  double maxY;
+  double maxZ;
 };
 
 D3Widget::D3Widget(QWidget *parent)
@@ -69,10 +83,15 @@ void D3Widget::paintGL()
     qglColor(_pimpl->qtRed); /* draw in red */
 
     if (!_pimpl->data.empty()) {
-      gluLookAt(-300, -300, -1000, -50, -50, -900, 0.5, 0.5, 0.5);
+      // glPushMatrix();
+      // const double centerX = (_pimpl->minX + _pimpl->maxX) / 2;
+      // const double centerY = (_pimpl->minY + _pimpl->maxY) / 2;
+      // const double centerZ = (_pimpl->minZ + _pimpl->maxZ) / 2;
+      // glTranslatef(-centerX, -centerY, -centerZ);
+
+
       for (auto triangle : _pimpl->data) {
-        glBegin(GL_TRIANGLES);
-        
+        glBegin(GL_TRIANGLES);    
         const std::vector<double> normals = triangle->normals();
         glNormal3d(normals.at(0), normals.at(1), normals.at(2));
         const std::vector<Vertex> vertices = triangle->vertices();
@@ -83,32 +102,50 @@ void D3Widget::paintGL()
       }
     }
 
+    // glPopMatrix();
+
+    glRotatef(90.0, 0.0, 0.0, 1.0);
+
     glFlush(); /* clear buffers */
 }
 
 void D3Widget::resizeGL(int width, int height)
 {
-  int side = qMin(width, height);
-  glViewport((width - side) / 2, (height - side) / 2, side, side);
+  const int side = qMin(width, height);
+  glViewport((width - side) / 2, (height - side) / 2, side * _pimpl->zoom, side * _pimpl->zoom);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-
   glOrtho(-300.0, 300.0, -300.0, 300.0, -1000.0, 1000.0);
   glMatrixMode(GL_MODELVIEW);
 }
 
 void D3Widget::wheelEvent(QWheelEvent * event) {
-  // const QPoint angle = event->angleDelta();
+  const QPoint angle = event->angleDelta();
   event->accept();
-  // if (angle.y() > 0) {
-  //   emit requestNextImage();
-  // }
-  // else {
-  //   emit requestPrevImage();
-  // }
+  if (angle.y() > 0) {
+    _pimpl->zoom *= 1.1;
+  }
+  else {
+    _pimpl->zoom /= 1.1;
+  }
+
+  resizeGL(width(), height());
+  updateGL();
 }
 
 void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& data) {
   _pimpl->data = data;
+
+  for (auto triangle : _pimpl->data) {
+    const std::vector<Vertex> vertices = triangle->vertices();
+    for (auto vertex : vertices) {
+      if (vertex.x() < _pimpl->minX) _pimpl->minX = vertex.x();
+      if (vertex.x() > _pimpl->maxX) _pimpl->maxX = vertex.x();
+      if (vertex.y() < _pimpl->minY) _pimpl->minY = vertex.y();
+      if (vertex.y() > _pimpl->maxX) _pimpl->maxY = vertex.y();
+      if (vertex.z() < _pimpl->minZ) _pimpl->minZ = vertex.z();
+      if (vertex.z() > _pimpl->maxZ) _pimpl->maxZ = vertex.z();
+    }
+  }
 }
