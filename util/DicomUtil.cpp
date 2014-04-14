@@ -238,7 +238,7 @@ class DicomUtil::Pimpl {
 public:
   Pimpl()
   :nCols(0),nRows(0),nBytesP(0),nFrameSize(0),nNumFrames(1),nHighBit(0),bIsSigned(false),nBitsAllocated(0)
-  ,fWindowCenter(0.0), fWindowWidth(0.0), fRescaleSlope(1.0), fRescaleIntercept(0),nLength(0) {}
+  ,fWindowCenter(-1.0), fWindowWidth(-1.0), fRescaleSlope(1.0), fRescaleIntercept(0),nLength(0) {}
 
   /* data */
   int nCols;
@@ -259,15 +259,15 @@ public:
   std::vector<double> imageOrientation;
   boost::shared_ptr<unsigned char> pixelData;
   boost::shared_ptr<unsigned short> pixelData16;
+  boost::shared_ptr<unsigned char> pixelData8;
   std::string fileName;
 
   void imageAdjuestment() {
 
-    short* pp = (short *)pixelData.get();
-
     // 1. Clip the high bits.
     if (nHighBit < 15)
     {
+      short* pp = (short *)pixelData.get();
       short nMask;
       short nSignBit;
 
@@ -300,7 +300,7 @@ public:
     {
       float fValue;
 
-      pp = (short *)pixelData.get();
+      short* pp = (short *)pixelData.get();
       int nCount = nLength / 2;
 
       while( nCount-- > 0 )
@@ -331,7 +331,9 @@ public:
       pixelSize = 2;
 
     pixelData16.reset(new unsigned short[nLength/2 + 16]);
+    pixelData8.reset(new unsigned char[nLength/2 + 8]);
     unsigned short* data16 = pixelData16.get();
+    unsigned char* data8 = pixelData8.get();
     const unsigned char* p = (unsigned char*)pixelData.get();
     int nCount = nLength / 2;
     switch (nBitsAllocated) 
@@ -343,16 +345,21 @@ public:
           unsigned char value = p[0];
           p += pixelSize;
           data16[i] = convertToUnsigned(value, mask, signMask, makePos);
+          data8[i] = value;
         }
         break;
       }
       case 16: // 16 bit images
       {
+        float fSlope = 255.0f / 65535.0f;
         for (int i = 0; i < nCount; ++i) 
         {
           unsigned short value = (p[0] | p[1]<<8);
           p += pixelSize;
           data16[i] = convertToUnsigned(value, mask, signMask, makePos);
+
+          float fValue = value * fSlope;
+          data8[i] = (unsigned char)fValue;
         }
         break;
       }
@@ -1056,9 +1063,9 @@ void DicomUtil::readFile()
     }
   }
 
-    fp.close();
+  fp.close();
 
-//    std::cout<<std::endl<<sHeader<<std::endl;
+   // std::cout<<std::endl<<sHeader<<std::endl;
 
     if (_pimpl->pixelData) // Have we got the pixel data?
     {
@@ -1071,4 +1078,4 @@ void DicomUtil::readFile()
 
       _pimpl->imageAdjuestment();
     }
-}
+  }
