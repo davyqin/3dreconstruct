@@ -49,7 +49,6 @@ public:
     const double yInc = pixelSpacing.at(1);
     const int cols = width;
     const int rows = height;
-    const int sampleStep = 4;
 
     for (int i = 0; i < rows; i += sampleStep) {
       for (int j = 0; j < cols; j += sampleStep) {

@@ -28,8 +28,8 @@ public:
   , minX(std::numeric_limits<double>::max())
   , minY(std::numeric_limits<double>::max())
   , minZ(std::numeric_limits<double>::max())
-  , maxX(std::numeric_limits<double>::min())
-  , maxY(std::numeric_limits<double>::min())
+  , maxX(-2000.0)
+  , maxY(-2000.0)
   , maxZ(-2000.0) {}
 
   QColor qtRed;
@@ -71,7 +71,7 @@ void D3Widget::initializeGL()
 
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
   glMaterialfv(GL_FRONT, GL_SPECULAR, spec);
-  glMaterialf(GL_FRONT, GL_SHININESS, 20);
+  glMaterialf(GL_FRONT, GL_SHININESS, 50);
   glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
@@ -82,52 +82,43 @@ void D3Widget::initializeGL()
 
 void D3Widget::paintGL()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-    qglColor(_pimpl->qtRed); /* draw in red */
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  qglColor(_pimpl->qtRed); /* draw in red */
 
-    if (!_pimpl->data.empty()) {
-      glMatrixMode(GL_PROJECTION);
-      glLoadIdentity();
-      glOrtho(_pimpl->minX -100, _pimpl->maxX + 100, _pimpl->minY - 100, _pimpl->maxY + 100, -1000.0, 1000.0);
-      glMatrixMode(GL_MODELVIEW);
-      // glPushMatrix(_pimpl->minX, _pimpl->minY);
-      // glTranslatef(0, 20, 857);
-      // glRotatef(90.0, 1.0, 0.0, 0.0);
-      // glTranslatef(0, -20, -857);
+  if (!_pimpl->data.empty()) {
+    glPushMatrix();
 
-      // gluLookAt(_pimpl->maxX, _pimpl->maxY, _pimpl->centerZ,
-      //           _pimpl->centerX, _pimpl->centerY, _pimpl->centerZ,
-      //           0, 1, 0);
+    gluLookAt(_pimpl->maxX, _pimpl->maxY, _pimpl->centerZ,
+              _pimpl->centerX, _pimpl->centerY, _pimpl->centerZ,
+              0, 0, 1);
 
-      for (auto triangle : _pimpl->data) {
-        glBegin(GL_TRIANGLES);    
-        const std::vector<double> normals = triangle->normals();
-        glNormal3d(normals.at(0), normals.at(1), normals.at(2));
-        const std::vector<Vertex> vertices = triangle->vertices();
-        for (auto vertex : vertices) {
-          glVertex3d(vertex.x(), vertex.y(), (vertex.z()));
-        }
-        glEnd();
+    for (auto triangle : _pimpl->data) {
+      glBegin(GL_TRIANGLES);    
+      const std::vector<double> normals = triangle->normals();
+      glNormal3d(normals.at(0), normals.at(1), normals.at(2));
+      const std::vector<Vertex> vertices = triangle->vertices();
+      for (auto vertex : vertices) {
+        glVertex3d(vertex.x(), vertex.y(), (vertex.z()));
       }
+      glEnd();
     }
 
-    // glPopMatrix();
-
-    glFlush(); /* clear buffers */
+    glPopMatrix();
+  }
+  
+  glFlush(); /* clear buffers */
 }
 
 void D3Widget::resizeGL(int width, int height)
 {
   const int side = qMin(width, height);
   glViewport((width - side) / 2, (height - side) / 2, side * _pimpl->zoom, side * _pimpl->zoom);
-  // if (!_pimpl->data.empty()) {
-  //   glMatrixMode(GL_PROJECTION);
-  //   glLoadIdentity();
-  //   glOrtho(_pimpl->minX -100, _pimpl->maxX + 100, _pimpl->minY - 100, _pimpl->maxY + 100, -1000.0, 1000.0);
-  //   // glOrtho(-200, 200, -200, 200, -1000, 1000);
-  //   glMatrixMode(GL_MODELVIEW);
-  // }
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(-200, 200, -200, 200, -300.0, 300.0);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
 }
 
 void D3Widget::wheelEvent(QWheelEvent * event) {
@@ -146,6 +137,7 @@ void D3Widget::wheelEvent(QWheelEvent * event) {
 
 void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& data) {
   _pimpl->data = data;
+  _pimpl->zoom = 1.0;
 
   for (auto triangle : _pimpl->data) {
     const std::vector<Vertex> vertices = triangle->vertices();
@@ -161,7 +153,7 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   _pimpl->centerX = (_pimpl->minX + _pimpl->maxX) / 2;
   _pimpl->centerY = (_pimpl->minY + _pimpl->maxY) / 2;
   _pimpl->centerZ = (_pimpl->minZ + _pimpl->maxZ) / 2;
-  cout <<_pimpl->minX<<" "<<_pimpl->maxX<<endl;
-  cout <<_pimpl->minY<<" "<<_pimpl->maxY<<endl;
-  cout <<_pimpl->minZ<<" "<<_pimpl->maxZ<<endl;
+  cout <<_pimpl->minX<<" "<<_pimpl->centerX<<" "<<_pimpl->maxX<<endl;
+  cout <<_pimpl->minY<<" "<<_pimpl->centerY<<" "<<_pimpl->maxY<<endl;
+  cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<endl;
 }
