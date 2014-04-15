@@ -18,8 +18,10 @@ class Image::Pimpl
 {
 public:
   Pimpl(boost::shared_ptr<unsigned short> pixelData,
+        boost::shared_ptr<unsigned char> pixelData8bit,
   	    const int pixelLength)
   : pixelData(pixelData)
+  , pixelData8bit(pixelData8bit)
   , pixelLength(pixelLength)
   , window(65535)
   , level(32768)
@@ -30,7 +32,7 @@ public:
 
   /* data */
   boost::shared_ptr<unsigned short> pixelData;
-  boost::shared_ptr<unsigned short> outputPixel;
+  boost::shared_ptr<unsigned char> pixelData8bit;
   const unsigned long pixelLength;
   std::vector<double> position;
   Image::Orientation orientation;
@@ -42,6 +44,8 @@ public:
   int level;
   int sampleStep;
   std::vector<double> pixelSpacing;
+  boost::shared_ptr<unsigned short> outputPixel;
+  boost::shared_ptr<unsigned char> outputPixel8bit;
   std::vector<boost::shared_ptr<const Vertex> > vertices;
 
   void generateVertices() {
@@ -53,7 +57,7 @@ public:
     for (int i = 0; i < rows; i += sampleStep) {
       for (int j = 0; j < cols; j += sampleStep) {
         const unsigned int index = i * rows + j;
-        const int value = *(pixelData.get() + index);
+        const int value = *(pixelData8bit.get() + index);
         vector<double> vertexPosition = position;
         switch (orientation)
         {
@@ -91,9 +95,10 @@ public:
 #endif
 };
 
-Image::Image(boost::shared_ptr<unsigned short> pixelData, 
+Image::Image(boost::shared_ptr<unsigned short> pixelData,
+             boost::shared_ptr<unsigned char> pixelData8bit,
 	           const int pixelLength)
-:_pimpl(new Pimpl(pixelData, pixelLength)) {}
+:_pimpl(new Pimpl(pixelData, pixelData8bit, pixelLength)) {}
 
 Image::~Image() {}
 
@@ -109,8 +114,6 @@ void Image::setSize(const int width, const int height) {
   _pimpl->width = width;
   _pimpl->height = height;
 }
-
-  // int pixelLength() const;
 
 int Image::height() const {
   return _pimpl->height;
@@ -149,6 +152,32 @@ boost::shared_ptr<unsigned short> Image::pixelData() const {
   }
 
   return _pimpl->outputPixel;
+}
+
+boost::shared_ptr<unsigned char> Image::pixelData8bit() const {
+  if (!_pimpl->outputPixel8bit) {
+    int nCount = _pimpl->pixelLength;
+    _pimpl->outputPixel8bit.reset(new unsigned char[_pimpl->pixelLength + 16]);
+    unsigned char* np = _pimpl->outputPixel8bit.get();
+    unsigned char* pp = _pimpl->pixelData8bit.get();
+
+    // const double dSlope = 65535.0 / (double)_pimpl->window;
+    // const double dShift = (double)_pimpl->level - (double)_pimpl->window / 2.0;
+
+    while (nCount-- > 0) {
+      // int value = ((int)*pp - dShift) * dSlope;
+      // if (value <= 0) {
+      //   value = 0;
+      // }
+      // else if (value >= 65535) {
+      //   value = 65535;
+      // }
+      
+      *np++ = *pp++;
+    }
+  }
+
+  return _pimpl->outputPixel8bit;
 }
 
 void Image::setOrientation(const std::vector<double>& ori) {

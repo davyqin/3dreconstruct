@@ -20,8 +20,6 @@ public:
 
     boost::shared_ptr<unsigned short> pixel();
 
-//    boost::shared_ptr<unsigned char> pixel();
-
     boost::shared_ptr<Image> fetchImage() const;
 
     int pixelLength() const;

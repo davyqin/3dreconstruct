@@ -83,7 +83,7 @@ void D3Widget::initializeGL()
 void D3Widget::paintGL()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  qglColor(_pimpl->qtRed); /* draw in red */
+  glColor3i(244, 164, 96);
 
   if (!_pimpl->data.empty()) {
     glPushMatrix();
@@ -115,7 +115,7 @@ void D3Widget::resizeGL(int width, int height)
   glViewport((width - side) / 2, (height - side) / 2, side * _pimpl->zoom, side * _pimpl->zoom);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-200, 200, -200, 200, -300.0, 300.0);
+  glOrtho(-400, 400, -400, 400, -400.0, 400.0);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();

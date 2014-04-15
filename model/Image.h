@@ -16,6 +16,7 @@ public:
   };
 
   Image(boost::shared_ptr<unsigned short> pixelData,
+        boost::shared_ptr<unsigned char> pixelData8bit,
         const int pixelLength);
 
   ~Image();
@@ -37,6 +38,8 @@ public:
   int pixelLength() const;
   
   boost::shared_ptr<unsigned short> pixelData() const;
+
+  boost::shared_ptr<unsigned char> pixelData8bit() const;
 
   Orientation orientation() const;
 

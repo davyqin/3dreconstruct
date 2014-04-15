@@ -276,7 +276,6 @@ public:
       if(bIsSigned == 0 ) // Unsigned integer
       {
         nMask = 0xffff << (nHighBit + 1);
-
         while( nCount-- > 0 )
           *(pp ++) &= ~nMask;
       }
@@ -300,13 +299,61 @@ public:
     {
       float fValue;
 
-      short* pp = (short *)pixelData.get();
+      short* pp = (short*)pixelData.get();
       int nCount = nLength / 2;
 
       while( nCount-- > 0 )
       {
         fValue = (*pp) * fRescaleSlope + fRescaleIntercept;
         *pp ++ = (short)fValue;
+      }
+    }
+
+    // 3. Apply window/level
+    float fShift;
+    float fSlope;
+    if ((fWindowCenter > 0) || (fWindowWidth > 0))
+    {
+      // Since we have window level info, we will only map what are
+      // within the Window.
+      fShift = fWindowCenter - fWindowWidth / 2.0;
+      fSlope = 255.0 / double(fWindowWidth);
+    }
+    else {
+      int minValue = std::numeric_limits<short>::max();
+      int maxValue = std::numeric_limits<short>::min();
+      short* p = (short*)pixelData.get();
+
+      const int nCount = nLength / 2;
+      for (int i = 0; i < nCount; ++i, ++p)
+      {
+        if (*p < minValue) minValue = *p;
+        if (*p > maxValue) maxValue = *p;
+      }
+
+      if (maxValue != minValue)
+        fSlope = 255.0f / (maxValue - minValue);
+      else
+        fSlope = 1.0f;
+
+      fShift = minValue;
+    }
+    
+    {
+      pixelData8.reset(new unsigned char[nLength/2 + 8]);
+      unsigned char* data8 = pixelData8.get();
+      int nCount = nLength / 2;
+      short* pp = (short*)pixelData.get();
+
+      while (nCount-- > 0)
+      {
+        float fValue = ((*pp ++) - fShift) * fSlope;
+        if (fValue < 0)
+          fValue = 0;
+        else if (fValue > 255)
+          fValue = 255;
+
+        *data8++ = (unsigned char)fValue;
       }
     }
 
@@ -331,11 +378,11 @@ public:
       pixelSize = 2;
 
     pixelData16.reset(new unsigned short[nLength/2 + 16]);
-    pixelData8.reset(new unsigned char[nLength/2 + 8]);
     unsigned short* data16 = pixelData16.get();
     unsigned char* data8 = pixelData8.get();
     const unsigned char* p = (unsigned char*)pixelData.get();
     int nCount = nLength / 2;
+
     switch (nBitsAllocated) 
     {
       case 8: // 8 bit images
@@ -351,15 +398,11 @@ public:
       }
       case 16: // 16 bit images
       {
-        float fSlope = 255.0f / 65535.0f;
         for (int i = 0; i < nCount; ++i) 
         {
           unsigned short value = (p[0] | p[1]<<8);
           p += pixelSize;
           data16[i] = convertToUnsigned(value, mask, signMask, makePos);
-
-          float fValue = value * fSlope;
-          data8[i] = (unsigned char)fValue;
         }
         break;
       }
@@ -386,11 +429,11 @@ DicomUtil::DicomUtil(const std::string& fileName)
 }
 
 boost::shared_ptr<Image> DicomUtil::fetchImage() const {
-  if (!_pimpl->pixelData16) {
+  if (!_pimpl->pixelData16 || !_pimpl->pixelData8) {
     return boost::shared_ptr<Image>();
   }
 
-  boost::shared_ptr<Image> image(new Image(_pimpl->pixelData16, _pimpl->nLength/2));
+  boost::shared_ptr<Image> image(new Image(_pimpl->pixelData16, _pimpl->pixelData8, _pimpl->nLength/2));
   image->setPosition(_pimpl->imagePosition);
   image->setSize(_pimpl->nCols, _pimpl->nRows);
   image->setOrientation(_pimpl->imageOrientation);

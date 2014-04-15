@@ -70,8 +70,10 @@ void GLWidget::paintGL()
 
     if (_pimpl->image) {
       const Image& image = *_pimpl->image;
-      const unsigned short* pixel = image.pixelData().get();
-      glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_SHORT, pixel);
+      //const unsigned short* pixel = image.pixelData().get();
+      //glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_SHORT, pixel);
+      const unsigned char* pixel = image.pixelData8bit().get();
+      glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pixel);
     }
 
  #if 0
@@ -130,7 +132,6 @@ void GLWidget::resizeGL(int width, int height)
   if (_pimpl->image) {
     const Image& image = *_pimpl->image;
 
-    // const QSize widgetSize = size();
     double zoomSloat = std::min((double)width / (double)image.width(), 
                                 (double)height / (double)image.height());
     if (zoomSloat > 1.0) {
