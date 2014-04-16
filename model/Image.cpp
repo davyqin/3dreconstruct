@@ -233,7 +233,7 @@ void Image::updateWL(int window, int level) {
 
   if (wlChanged) {
     _pimpl->outputPixel.reset();
-    _pimpl->vertices.clear();
+    // _pimpl->vertices.clear();
   }
 }
 
@@ -262,5 +262,8 @@ int Image::sampleStep() const {
 }
 
 void Image::setSampleStep(const int step) {
-  _pimpl->sampleStep = step;
+  if (_pimpl->sampleStep != step) {
+    _pimpl->sampleStep = step;
+    _pimpl->vertices.clear();
+  }
 }

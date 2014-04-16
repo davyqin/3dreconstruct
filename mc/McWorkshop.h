@@ -13,7 +13,7 @@ class McWorkshop
 public:
   McWorkshop();
 
-  McWorkshop(boost::shared_ptr<const ImageStack> imageStack);
+  McWorkshop(boost::shared_ptr<ImageStack> imageStack);
 
   ~McWorkshop();
 
@@ -23,7 +23,9 @@ public:
 
   void setIsoMinMax(int minValue, int maxValue);
 
-  void setImageStack(boost::shared_ptr<const ImageStack> imageStack);
+  void set3dQuality(int value);
+
+  void setImageStack(boost::shared_ptr<ImageStack> imageStack);
 
   std::vector<boost::shared_ptr<const Triangle> > work();
 

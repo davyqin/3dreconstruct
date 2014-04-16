@@ -35,5 +35,6 @@ void View3DDialog::show3D(const std::vector<boost::shared_ptr<const Triangle> >&
 void View3DDialog::onShow3D() {
   const int minValue = _pimpl->ui.minValueSpinBox->text().toInt();
   const int maxValue = _pimpl->ui.maxValueSpinBox->text().toInt();
-  emit(show3DSignal(minValue, maxValue));
+  const int qualityValue = _pimpl->ui.qualityComboBox->currentIndex() + 1;
+  emit(show3DSignal(minValue, maxValue, qualityValue));
 }

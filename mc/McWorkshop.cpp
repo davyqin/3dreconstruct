@@ -21,20 +21,21 @@ public:
   Pimpl() 
   :minValue(0), maxValue(0) {}
 
-  Pimpl(boost::shared_ptr<const ImageStack> imageStack)
-  :imageStack(imageStack),minValue(0),maxValue(0) {}
+  Pimpl(boost::shared_ptr<ImageStack> imageStack)
+  :imageStack(imageStack),minValue(0),maxValue(0),quality(4) {}
 
   /* data */
-  boost::shared_ptr<const ImageStack> imageStack;
+  boost::shared_ptr<ImageStack> imageStack;
   int minValue;
   int maxValue;
+  int quality;
   std::vector<boost::shared_ptr<const Triangle> > triangles;
 };
 
 McWorkshop::McWorkshop()
 :_pimpl(new Pimpl()) {}
 
-McWorkshop::McWorkshop(boost::shared_ptr<const ImageStack> imageStack) 
+McWorkshop::McWorkshop(boost::shared_ptr<ImageStack> imageStack) 
 :_pimpl(new Pimpl(imageStack)) {}
 
 McWorkshop::~McWorkshop() {}
@@ -50,7 +51,15 @@ void McWorkshop::setIsoMinMax(int minValue, int maxValue) {
   _pimpl->triangles.clear();
 }
 
-void McWorkshop::setImageStack(boost::shared_ptr<const ImageStack> imageStack) {
+void McWorkshop::set3dQuality(int value) {
+  if (_pimpl->quality == value) return;
+
+  _pimpl->quality = value;
+  _pimpl->imageStack->set3dQuality(value);
+  _pimpl->triangles.clear();
+}
+
+void McWorkshop::setImageStack(boost::shared_ptr<ImageStack> imageStack) {
   _pimpl->imageStack = imageStack;
   _pimpl->triangles.clear();
 }

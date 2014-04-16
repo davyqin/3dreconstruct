@@ -19,7 +19,7 @@ public:
   void show3D(const std::vector<boost::shared_ptr<const Triangle> >& data);
 
 signals:
-  void show3DSignal(int minValue, int maxValue);
+  void show3DSignal(int minValue, int maxValue, int qualityValue);
 
 private slots:
   void onShow3D();

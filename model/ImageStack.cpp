@@ -73,7 +73,8 @@ public:
   Pimpl()
   :currentIndex(0)
   ,minLevel(std::numeric_limits<int>::max())
-  ,maxLevel(std::numeric_limits<int>::min()) {}
+  ,maxLevel(std::numeric_limits<int>::min())
+  ,quality(4) {}
 
   /* data */
   std::vector<boost::shared_ptr<Image> > images;
@@ -81,6 +82,7 @@ public:
   unsigned int currentIndex;
   int minLevel;
   int maxLevel;
+  int quality;
 };
 
 ImageStack::ImageStack()
@@ -138,5 +140,11 @@ int ImageStack::imageCount() const {
 void ImageStack::updateWL(int window, int level) {
   for (auto image : _pimpl->images) {
     image->updateWL(window, level);
+  }
+}
+
+void ImageStack::set3dQuality(int value) {
+  for (auto image : _pimpl->images) {
+    image->setSampleStep(value);
   }
 }

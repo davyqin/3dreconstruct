@@ -24,6 +24,8 @@ public:
 
   void updateWL(int window, int level);
 
+  void set3dQuality(int value);
+
 private:
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;

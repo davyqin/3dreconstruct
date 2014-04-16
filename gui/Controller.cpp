@@ -30,7 +30,7 @@ Controller::Controller(QObject *parent)
   connect(&_pimpl->viewDialog, SIGNAL(requestImage(int)), SLOT(onRequestImage(int)));
   connect(&_pimpl->viewDialog, SIGNAL(updateWLSignal(int,int)), SLOT(onUpdateWL(int,int)));
 
-  connect(&_pimpl->view3dDialog, SIGNAL(show3DSignal(int,int)), SLOT(onShow3d(int,int)));
+  connect(&_pimpl->view3dDialog, SIGNAL(show3DSignal(int,int,int)), SLOT(onShow3d(int,int,int)));
 }
 
 Controller::~Controller() {}
@@ -62,8 +62,9 @@ void Controller::onUpdateWL(int window, int level) {
   _pimpl->viewDialog.showImage(_pimpl->imageStack->fetchImage());
 }
 
-void Controller::onShow3d(int minValue, int maxValue) {
+void Controller::onShow3d(int minValue, int maxValue, int qualityValue) {
   boost::progress_timer timer;
+  _pimpl->mcWorkshop.set3dQuality(qualityValue);
   _pimpl->mcWorkshop.setIsoMinMax(minValue, maxValue);
   _pimpl->view3dDialog.show3D(_pimpl->mcWorkshop.work());
 }
