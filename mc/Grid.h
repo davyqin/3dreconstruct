@@ -12,7 +12,7 @@ class Grid
 public:
   Grid();
 
-  Grid(const std::vector<boost::shared_ptr<const Cube> >& cubes);
+  Grid(const std::vector<boost::shared_ptr<Cube> >& cubes);
 
   Grid(const Grid& other);
 
@@ -26,9 +26,9 @@ public:
 
   int zSize() const;
 
-  void setCubes(const std::vector<boost::shared_ptr<const Cube> >& cubes);
+  void setCubes(const std::vector<boost::shared_ptr<Cube> >& cubes);
 
-  std::vector<boost::shared_ptr<const Cube> > cubes() const;
+  std::vector<boost::shared_ptr<Cube> > cubes() const;
 
 private:
   class Pimpl;

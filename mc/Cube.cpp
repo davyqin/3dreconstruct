@@ -37,6 +37,10 @@ Cube& Cube::operator=(const Cube& other)
 
 Cube::~Cube() {}
 
+void Cube::setVertices(const std::vector<boost::shared_ptr<const Vertex> >& vertices) {
+  _pimpl->vertices = vertices;
+}
+
 std::vector<boost::shared_ptr<const Vertex> > Cube::vertices() const {
   return _pimpl->vertices;
 }

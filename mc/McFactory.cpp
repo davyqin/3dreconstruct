@@ -37,14 +37,14 @@ boost::shared_ptr<Grid> McFactory::grid() const {
 
   cout<<endl<<"Generating cubes..."<<endl;
   boost::progress_display pd(imageCount);
-  std::vector<boost::shared_ptr<const Cube> > cubes;
+  std::vector<boost::shared_ptr<Cube> > cubes;
   for (int i = 0; i < imageCount; ++i) {
     int index = i;
     boost::shared_ptr<const Image> bottomImage = _pimpl->imageStack->fetchImage(index);
     boost::shared_ptr<const Image> topImage = _pimpl->imageStack->fetchImage(++index);
     CubeFactory cubeFactory;
     cubeFactory.setImages(bottomImage, topImage);
-    const std::vector<boost::shared_ptr<const Cube> > temp = cubeFactory.cubes();
+    const std::vector<boost::shared_ptr<Cube> > temp = cubeFactory.cubes();
     cubes.insert(cubes.end(), temp.begin(), temp.end());
     ++pd;
   }

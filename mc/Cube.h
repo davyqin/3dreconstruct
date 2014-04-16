@@ -25,6 +25,8 @@ public:
 
   std::vector<boost::shared_ptr<const Vertex> > vertices() const;
 
+  void setVertices(const std::vector<boost::shared_ptr<const Vertex> >& vertices);
+
   Vertex vertex(unsigned int index) const;
 
 private:

@@ -108,12 +108,12 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
   const McFactory mcFactory(_pimpl->imageStack);
   boost::shared_ptr<Grid> grid = mcFactory.grid();
 
-  const std::vector<boost::shared_ptr<const Cube> > cubes = grid->cubes();
+  std::vector<boost::shared_ptr<Cube> > cubes = grid->cubes();
   cout<<endl<<"Calculating triangles..."<<endl;
   cout<<"Min: "<<_pimpl->minValue<<" Max: "<<_pimpl->maxValue<<endl;
   boost::progress_display pd(cubes.size());
   for (unsigned int i = 0; i < cubes.size(); ++i) {
-    const Cube& cube = *cubes.at(i);
+    Cube& cube = *cubes.at(i);
     int cubeindex = 0;
     if (cube.vertex(0).value() >= _pimpl->minValue && cube.vertex(0).value() <= _pimpl->maxValue) cubeindex |= 1;
     if (cube.vertex(1).value() >= _pimpl->minValue && cube.vertex(1).value() <= _pimpl->maxValue) cubeindex |= 2;
@@ -124,9 +124,12 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
     if (cube.vertex(6).value() >= _pimpl->minValue && cube.vertex(6).value() <= _pimpl->maxValue) cubeindex |= 64;
     if (cube.vertex(7).value() >= _pimpl->minValue && cube.vertex(7).value() <= _pimpl->maxValue) cubeindex |= 128;
 
-    ++pd;
-
-    if (EdgeTable[cubeindex] == 0 ) continue;
+    if (EdgeTable[cubeindex] == 0 ) 
+    {
+      cube.setVertices(std::vector<boost::shared_ptr<const Vertex> >());
+      ++pd;
+      continue;
+    }
 
     Vertex vertList[12];
     if ((EdgeTable[cubeindex] & 1) != 0) {
@@ -186,6 +189,9 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
                                                         vertList[vertices.at(++i)],
                                                         vertList[vertices.at(++i)]})));
     }
+    
+    cube.setVertices(std::vector<boost::shared_ptr<const Vertex> >());
+    ++pd;
   }
 
   return _pimpl->triangles;

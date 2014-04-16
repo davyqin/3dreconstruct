@@ -18,7 +18,7 @@ public:
   void setImages(boost::shared_ptr<const Image> downsideImage, 
                  boost::shared_ptr<const Image> upsideImage);
 
-  std::vector<boost::shared_ptr<const Cube> > cubes() const;
+  std::vector<boost::shared_ptr<Cube> > cubes() const;
 
 private:
   class Pimpl;

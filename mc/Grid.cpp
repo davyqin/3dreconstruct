@@ -11,14 +11,14 @@ public:
   Pimpl()
   : xSize(0), ySize(0), zSize(0) {}
 
-  Pimpl(const std::vector<boost::shared_ptr<const Cube> >& cubes)
+  Pimpl(const std::vector<boost::shared_ptr<Cube> >& cubes)
   :cubes(cubes), xSize(0), ySize(0), zSize(0) {}
 
-  Pimpl(const std::vector<boost::shared_ptr<const Cube> >& cubes, int xSize, int ySize, int zSize)
+  Pimpl(const std::vector<boost::shared_ptr<Cube> >& cubes, int xSize, int ySize, int zSize)
   :cubes(cubes), xSize(xSize), ySize(ySize), zSize(zSize) {}
 
   /* data */
-  std::vector<boost::shared_ptr<const Cube> > cubes;
+  std::vector<boost::shared_ptr<Cube> > cubes;
   int xSize;
   int ySize;
   int zSize;
@@ -27,7 +27,7 @@ public:
 Grid::Grid()
 :_pimpl(new Pimpl()) {}
 
-Grid::Grid(const std::vector<boost::shared_ptr<const Cube> >& cubes)
+Grid::Grid(const std::vector<boost::shared_ptr<Cube> >& cubes)
 :_pimpl(new Pimpl(cubes)) {}
 
 Grid::Grid(const Grid& other)
@@ -53,10 +53,10 @@ int Grid::zSize() const {
   return _pimpl->zSize;
 }
 
-void Grid::setCubes(const std::vector<boost::shared_ptr<const Cube> >& cubes) {
+void Grid::setCubes(const std::vector<boost::shared_ptr<Cube> >& cubes) {
   _pimpl->cubes = cubes;
 }
 
-std::vector<boost::shared_ptr<const Cube> > Grid::cubes() const {
+std::vector<boost::shared_ptr<Cube> > Grid::cubes() const {
   return _pimpl->cubes;
 }

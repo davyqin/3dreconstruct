@@ -46,13 +46,14 @@ public:
   std::vector<double> pixelSpacing;
   boost::shared_ptr<unsigned short> outputPixel;
   boost::shared_ptr<unsigned char> outputPixel8bit;
-  std::vector<boost::shared_ptr<const Vertex> > vertices;
+  // std::vector<boost::shared_ptr<const Vertex> > vertices;
 
-  void generateVertices() {
+  std::vector<boost::shared_ptr<const Vertex> > generateVertices() {
     const double xInc = pixelSpacing.at(0);
     const double yInc = pixelSpacing.at(1);
     const int cols = width;
     const int rows = height;
+    std::vector<boost::shared_ptr<const Vertex> > vertices;
 
     for (int i = 0; i < rows; i += sampleStep) {
       for (int j = 0; j < cols; j += sampleStep) {
@@ -78,7 +79,8 @@ public:
                                                vertexPosition.at(2), value)));
       }
     }
-}
+    return vertices;
+  }
 
 #if 0
   void computerMinAndMax() {
@@ -245,16 +247,12 @@ std::vector<double> Image::pixelSpacing() const {
   return _pimpl->pixelSpacing;
 }
 
-std::vector<boost::shared_ptr<const Vertex> > Image::vertices() {
+std::vector<boost::shared_ptr<const Vertex> > Image::vertices() const {
   if (!_pimpl->pixelData && !_pimpl->outputPixel) {
     return std::vector<boost::shared_ptr<const Vertex> >();
   }
 
-  if (_pimpl->vertices.empty()) {
-    _pimpl->generateVertices();
-  }
-
-  return _pimpl->vertices;
+  return  _pimpl->generateVertices();
 }
 
 int Image::sampleStep() const {
@@ -264,6 +262,5 @@ int Image::sampleStep() const {
 void Image::setSampleStep(const int step) {
   if (_pimpl->sampleStep != step) {
     _pimpl->sampleStep = step;
-    _pimpl->vertices.clear();
   }
 }

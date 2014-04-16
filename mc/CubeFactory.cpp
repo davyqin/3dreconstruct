@@ -29,9 +29,9 @@ void CubeFactory::setImages(boost::shared_ptr<const Image> downsideImage,
   _pimpl->upImage = upsideImage;
 }
 
- std::vector<boost::shared_ptr<const Cube> > CubeFactory::cubes() const {
+ std::vector<boost::shared_ptr<Cube> > CubeFactory::cubes() const {
   if (!_pimpl->downImage || !_pimpl->upImage) {
-    return  std::vector<boost::shared_ptr<const Cube> >();
+    return  std::vector<boost::shared_ptr<Cube> >();
   }
 
   // boost::progress_timer timer;
@@ -42,10 +42,10 @@ void CubeFactory::setImages(boost::shared_ptr<const Image> downsideImage,
     boost::const_pointer_cast<Image>(_pimpl->upImage)->vertices();
 
   if (downVertices.size() != upVertices.size()) {
-    return  std::vector<boost::shared_ptr<const Cube> >();
+    return  std::vector<boost::shared_ptr<Cube> >();
   }
 
-  std::vector<boost::shared_ptr<const Cube> > cubes;
+  std::vector<boost::shared_ptr<Cube> > cubes;
   const int cols = _pimpl->upImage->width() / _pimpl->upImage->sampleStep();
   const int rows = _pimpl->upImage->height() / _pimpl->upImage->sampleStep();
   const int step = 1;

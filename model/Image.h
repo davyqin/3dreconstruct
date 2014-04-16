@@ -53,7 +53,7 @@ public:
 
   void updateWL(int window, int level);
 
-  std::vector<boost::shared_ptr<const Vertex> > vertices();
+  std::vector<boost::shared_ptr<const Vertex> > vertices() const;
 
   int sampleStep() const;
 
