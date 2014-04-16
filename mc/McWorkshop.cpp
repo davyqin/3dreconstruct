@@ -28,7 +28,6 @@ public:
   boost::shared_ptr<const ImageStack> imageStack;
   int minValue;
   int maxValue;
-  boost::shared_ptr<const Grid> grid;
   std::vector<boost::shared_ptr<const Triangle> > triangles;
 };
 
@@ -53,7 +52,6 @@ void McWorkshop::setIsoMinMax(int minValue, int maxValue) {
 
 void McWorkshop::setImageStack(boost::shared_ptr<const ImageStack> imageStack) {
   _pimpl->imageStack = imageStack;
-  _pimpl->grid.reset();
   _pimpl->triangles.clear();
 }
 
@@ -98,12 +96,10 @@ namespace {
 std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
   if (!_pimpl->triangles.empty()) return _pimpl->triangles;
 
-  if (!_pimpl->grid) {
-    const McFactory mcFactory(_pimpl->imageStack);
-    _pimpl->grid = boost::shared_ptr<const Grid>(new Grid(mcFactory.grid()));
-  }
+  const McFactory mcFactory(_pimpl->imageStack);
+  boost::shared_ptr<Grid> grid = mcFactory.grid();
 
-  const std::vector<boost::shared_ptr<const Cube> > cubes = _pimpl->grid->cubes();
+  const std::vector<boost::shared_ptr<const Cube> > cubes = grid->cubes();
   cout<<endl<<"Calculating triangles..."<<endl;
   cout<<"Min: "<<_pimpl->minValue<<" Max: "<<_pimpl->maxValue<<endl;
   boost::progress_display pd(cubes.size());

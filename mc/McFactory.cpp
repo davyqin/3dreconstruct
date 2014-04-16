@@ -27,12 +27,13 @@ McFactory::McFactory(boost::shared_ptr<const ImageStack> imageStack)
 
 McFactory::~McFactory() {}
 
-Grid McFactory::grid() const {
-  Grid grid;
+boost::shared_ptr<Grid> McFactory::grid() const {
   const int imageCount = _pimpl->imageStack->imageCount();
   if (imageCount == 0) {
-    return grid;
+    return boost::shared_ptr<Grid>();
   }
+
+    boost::shared_ptr<Grid> grid(new Grid());
 
   cout<<endl<<"Generating cubes..."<<endl;
   boost::progress_display pd(imageCount);
@@ -48,10 +49,10 @@ Grid McFactory::grid() const {
     ++pd;
   }
 
-  grid.setCubes(cubes);
+  grid->setCubes(cubes);
 
   // assume the orientation of image is transverse.
-  grid.set3D(_pimpl->imageStack->fetchImage(0)->width()/2,
+  grid->set3D(_pimpl->imageStack->fetchImage(0)->width()/2,
              _pimpl->imageStack->fetchImage(0)->height()/2,
              imageCount - 1);
 

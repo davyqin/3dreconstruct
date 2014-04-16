@@ -14,7 +14,7 @@ public:
 
   ~McFactory();
 
-  Grid grid() const;
+  boost::shared_ptr<Grid> grid() const;
 
 private:
   class Pimpl;

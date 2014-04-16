@@ -10,7 +10,7 @@ class Vertex
 public:
   Vertex();
 
-  Vertex(double x, double y, double z, int value = 0);
+  Vertex(float x, float y, float z, int value = 0);
 
   Vertex(const Vertex& vertex);
 
@@ -18,15 +18,13 @@ public:
 
   ~Vertex();
 
-  double x() const;
+  float x() const;
 
-  double y() const;
+  float y() const;
 
-  double z() const;
+  float z() const;
 
-  void setPosition(double x, double y, double z);
-
-  std::vector<double> position() const;
+  std::vector<float> position() const;
 
   int value() const;
 

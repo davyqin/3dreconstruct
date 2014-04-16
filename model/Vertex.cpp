@@ -6,20 +6,20 @@ class Vertex::Pimpl
 {
 public:
 
-  Pimpl(const vector<double>& position,
+  Pimpl(const vector<float>& position,
   	    const int value)
   : position(position)
   , value(value) {}
 
   /* data */
-  vector<double> position;
+  vector<float> position;
   const int value;
 };
 
 Vertex::Vertex()
 :_pimpl(new Pimpl({0.0, 0.0, 0.0}, 0)) {}
 
-Vertex::Vertex(double x, double y, double z, int value) 
+Vertex::Vertex(float x, float y, float z, int value) 
 :_pimpl(new Pimpl({x, y, z}, value)) {}
 
 Vertex::Vertex(const Vertex& vertex)
@@ -36,23 +36,19 @@ Vertex& Vertex::operator=(const Vertex& vertex)
 
 Vertex::~Vertex() {}
 
-double Vertex::x() const {
+float Vertex::x() const {
   return _pimpl->position.at(0);
 }
 
-double Vertex::y() const {
+float Vertex::y() const {
   return _pimpl->position.at(1);
 }
 
-double Vertex::z() const {
+float Vertex::z() const {
   return _pimpl->position.at(2);
 }
 
-void Vertex::setPosition(double x, double y, double z) {
-  _pimpl->position = {x, y, z};
-}
-
-std::vector<double> Vertex::position() const {
+std::vector<float> Vertex::position() const {
   return _pimpl->position;
 }
 
