@@ -44,7 +44,7 @@ boost::shared_ptr<Grid> McFactory::grid() const {
     boost::shared_ptr<const Image> topImage = _pimpl->imageStack->fetchImage(++index);
     CubeFactory cubeFactory;
     cubeFactory.setImages(bottomImage, topImage);
-    const std::vector<boost::shared_ptr<Cube> > temp = cubeFactory.cubes();
+    const std::vector<boost::shared_ptr<Cube> > temp = std::move(cubeFactory.cubes());
     cubes.insert(cubes.end(), temp.begin(), temp.end());
     ++pd;
   }

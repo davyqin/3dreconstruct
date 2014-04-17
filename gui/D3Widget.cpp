@@ -25,9 +25,9 @@ public:
   , qtDark(QColor::fromRgb(0,0,0))
   , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0))
   , zoom(1.0)
-  , minX(std::numeric_limits<double>::max())
-  , minY(std::numeric_limits<double>::max())
-  , minZ(std::numeric_limits<double>::max())
+  , minX(std::numeric_limits<float>::max())
+  , minY(std::numeric_limits<float>::max())
+  , minZ(std::numeric_limits<float>::max())
   , maxX(-2000.0)
   , maxY(-2000.0)
   , maxZ(-2000.0) {}
@@ -37,15 +37,15 @@ public:
   QColor qtPurple;
   std::vector<boost::shared_ptr<const Triangle> > data;
   GLfloat zoom;
-  double minX;
-  double minY;
-  double minZ;
-  double maxX;
-  double maxY;
-  double maxZ;
-  double centerX;
-  double centerY;
-  double centerZ;
+  float minX;
+  float minY;
+  float minZ;
+  float maxX;
+  float maxY;
+  float maxZ;
+  float centerX;
+  float centerY;
+  float centerZ;
 };
 
 D3Widget::D3Widget(QWidget *parent)
@@ -98,7 +98,7 @@ void D3Widget::paintGL()
       glNormal3d(normals.at(0), normals.at(1), normals.at(2));
       const std::vector<Vertex> vertices = triangle->vertices();
       for (auto vertex : vertices) {
-        glVertex3d(vertex.x(), vertex.y(), (vertex.z()));
+        glVertex3f(vertex.x(), vertex.y(), vertex.z());
       }
       glEnd();
     }

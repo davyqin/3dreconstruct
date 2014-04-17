@@ -66,5 +66,5 @@ void Controller::onShow3d(int minValue, int maxValue, int qualityValue) {
   boost::progress_timer timer;
   _pimpl->mcWorkshop.set3dQuality(qualityValue);
   _pimpl->mcWorkshop.setIsoMinMax(minValue, maxValue);
-  _pimpl->view3dDialog.show3D(_pimpl->mcWorkshop.work());
+  _pimpl->view3dDialog.show3D(std::move(_pimpl->mcWorkshop.work()));
 }

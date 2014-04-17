@@ -35,11 +35,9 @@ void CubeFactory::setImages(boost::shared_ptr<const Image> downsideImage,
   }
 
   // boost::progress_timer timer;
-  std::vector<boost::shared_ptr<const Vertex> > downVertices = 
-    boost::const_pointer_cast<Image>(_pimpl->downImage)->vertices();
+  std::vector<boost::shared_ptr<const Vertex> > downVertices = std::move(_pimpl->downImage->vertices());
 
-  std::vector<boost::shared_ptr<const Vertex> > upVertices = 
-    boost::const_pointer_cast<Image>(_pimpl->upImage)->vertices();
+  std::vector<boost::shared_ptr<const Vertex> > upVertices = std::move(_pimpl->upImage->vertices());
 
   if (downVertices.size() != upVertices.size()) {
     return  std::vector<boost::shared_ptr<Cube> >();

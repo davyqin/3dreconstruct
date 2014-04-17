@@ -108,9 +108,9 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
   const McFactory mcFactory(_pimpl->imageStack);
   boost::shared_ptr<Grid> grid = mcFactory.grid();
 
-  std::vector<boost::shared_ptr<Cube> > cubes = grid->cubes();
+  std::vector<boost::shared_ptr<Cube> > cubes = std::move(grid->cubes());
   cout<<endl<<"Calculating triangles..."<<endl;
-  cout<<"Min: "<<_pimpl->minValue<<" Max: "<<_pimpl->maxValue<<endl;
+  cout<<"Min: "<<_pimpl->minValue<<" Max: "<<_pimpl->maxValue<<" Quality: "<<_pimpl->quality<<endl;
   boost::progress_display pd(cubes.size());
   for (unsigned int i = 0; i < cubes.size(); ++i) {
     Cube& cube = *cubes.at(i);
