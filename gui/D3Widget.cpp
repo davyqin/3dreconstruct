@@ -16,6 +16,7 @@ namespace {
   const GLfloat difffuse[] = {0.0f, 0.0f, 1.0f, 1.0f};
   const GLfloat spec[4] = {1.0, 1.0, 1.0, 1.0};
   const GLfloat light_position[] = {-300.0f, -300.0f, 0.0f, 0.0f};
+  const GLfloat light1_position[] = {300.0f, -300.0f, 0.0f, 0.0f};
 }
 
 class D3Widget::Pimpl {
@@ -30,7 +31,9 @@ public:
   , minZ(std::numeric_limits<float>::max())
   , maxX(-2000.0)
   , maxY(-2000.0)
-  , maxZ(-2000.0) {}
+  , maxZ(-2000.0)
+  , zRot(135.0)
+  , rotFlag(false) {}
 
   QColor qtRed;
   QColor qtDark;
@@ -46,6 +49,9 @@ public:
   float centerX;
   float centerY;
   float centerZ;
+  float zRot;
+  bool rotFlag;
+  QPoint lastPoint;
 };
 
 D3Widget::D3Widget(QWidget *parent)
@@ -74,9 +80,12 @@ void D3Widget::initializeGL()
   glMaterialf(GL_FRONT, GL_SHININESS, 20);
   glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+  glLightfv(GL_LIGHT1, GL_SPECULAR, spec);
+  glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
 
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
+  glEnable(GL_LIGHT1);
   glEnable(GL_DEPTH_TEST);
 }
 
@@ -89,8 +98,8 @@ void D3Widget::paintGL()
     glPushMatrix();
 
     glScalef(_pimpl->zoom, _pimpl->zoom, _pimpl->zoom);
-    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-    glRotatef(-45.0f, 0.0f, 0.0f, 1.0f);
+    glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
+    glRotatef(_pimpl->zRot, 0.0f, 0.0f, 1.0f);
     glTranslated(-_pimpl->centerX, -_pimpl->centerY, -_pimpl->centerZ);
 
     for (auto triangle : _pimpl->data) {
@@ -107,7 +116,7 @@ void D3Widget::paintGL()
     glPopMatrix();
   }
   
-  glFlush(); /* clear buffers */
+  //glFlush(); /* clear buffers */
 }
 
 void D3Widget::resizeGL(int width, int height)
@@ -137,7 +146,6 @@ void D3Widget::wheelEvent(QWheelEvent * event) {
 
 void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& data) {
   _pimpl->data = data;
-  _pimpl->zoom = 1.0;
 
   for (auto triangle : _pimpl->data) {
     const std::vector<Vertex> vertices = triangle->vertices();
@@ -157,3 +165,31 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   cout <<_pimpl->minY<<" "<<_pimpl->centerY<<" "<<_pimpl->maxY<<endl;
   cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<endl;
 }
+
+void D3Widget::mousePressEvent(QMouseEvent *event) {
+  if (event->button() == Qt::LeftButton) {
+    _pimpl->lastPoint = event->pos();
+    _pimpl->rotFlag = true;
+  }
+}
+
+void D3Widget::mouseMoveEvent(QMouseEvent * event) {
+  if (_pimpl->rotFlag && (event->buttons() & Qt::LeftButton)) {
+    const QPoint newPoint = event->pos();
+    if (newPoint.x() < _pimpl->lastPoint.x())
+      _pimpl->zRot -= 1;
+    else
+      _pimpl->zRot += 1;
+
+    if (_pimpl->zRot < 0) _pimpl->zRot = 360;
+    if (_pimpl->zRot > 360) _pimpl->zRot = 0;
+    updateGL();
+  }
+}
+
+void D3Widget::mouseReleaseEvent(QMouseEvent *event) {
+  if (_pimpl->rotFlag && (event->buttons() & Qt::LeftButton)) {
+    _pimpl->rotFlag = false;
+  }
+}
+
