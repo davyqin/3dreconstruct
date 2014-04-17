@@ -12,10 +12,10 @@
 using namespace std;
 
 namespace {
-  const GLfloat ambient[4] = {1.0, 0.0, 0.0, 1.0};
-  const GLfloat difffuse[] = {0.0, 0.0, 1.0, 1.0};
+  const GLfloat ambient[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+  const GLfloat difffuse[] = {0.0f, 0.0f, 1.0f, 1.0f};
   const GLfloat spec[4] = {1.0, 1.0, 1.0, 1.0};
-  const GLfloat light_position[] = {-300.0, -300.0, 1.0, 0.0};
+  const GLfloat light_position[] = {-300.0f, -300.0f, 0.0f, 0.0f};
 }
 
 class D3Widget::Pimpl {
@@ -71,7 +71,7 @@ void D3Widget::initializeGL()
 
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
   glMaterialfv(GL_FRONT, GL_SPECULAR, spec);
-  glMaterialf(GL_FRONT, GL_SHININESS, 50);
+  glMaterialf(GL_FRONT, GL_SHININESS, 20);
   glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
@@ -89,10 +89,9 @@ void D3Widget::paintGL()
     glPushMatrix();
 
     glScalef(_pimpl->zoom, _pimpl->zoom, _pimpl->zoom);
-
-    gluLookAt(_pimpl->maxX, _pimpl->maxY, _pimpl->centerZ,
-              _pimpl->centerX, _pimpl->centerY, _pimpl->centerZ,
-              0, 0, 1);
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+    glRotatef(-45.0f, 0.0f, 0.0f, 1.0f);
+    glTranslated(-_pimpl->centerX, -_pimpl->centerY, -_pimpl->centerZ);
 
     for (auto triangle : _pimpl->data) {
       glBegin(GL_TRIANGLES);    
@@ -117,7 +116,7 @@ void D3Widget::resizeGL(int width, int height)
   glViewport((width - side) / 2, (height - side) / 2, side, side);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-400, 400, -400, 400, -400.0, 400.0);
+  glOrtho(-300, 300, -300, 300, -300.0, 300.0);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
