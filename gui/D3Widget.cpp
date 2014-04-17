@@ -88,6 +88,8 @@ void D3Widget::paintGL()
   if (!_pimpl->data.empty()) {
     glPushMatrix();
 
+    glScalef(_pimpl->zoom, _pimpl->zoom, _pimpl->zoom);
+
     gluLookAt(_pimpl->maxX, _pimpl->maxY, _pimpl->centerZ,
               _pimpl->centerX, _pimpl->centerY, _pimpl->centerZ,
               0, 0, 1);
@@ -112,7 +114,7 @@ void D3Widget::paintGL()
 void D3Widget::resizeGL(int width, int height)
 {
   const int side = qMin(width, height);
-  glViewport((width - side) / 2, (height - side) / 2, side * _pimpl->zoom, side * _pimpl->zoom);
+  glViewport((width - side) / 2, (height - side) / 2, side, side);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(-400, 400, -400, 400, -400.0, 400.0);
@@ -131,7 +133,6 @@ void D3Widget::wheelEvent(QWheelEvent * event) {
     _pimpl->zoom /= 1.1;
   }
 
-  resizeGL(width(), height());
   updateGL();
 }
 
