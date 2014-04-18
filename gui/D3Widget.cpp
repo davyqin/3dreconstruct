@@ -16,7 +16,6 @@ namespace {
   const GLfloat difffuse[] = {0.0f, 0.0f, 1.0f, 1.0f};
   const GLfloat spec[4] = {1.0, 1.0, 1.0, 1.0};
   const GLfloat light_position[] = {-300.0f, -300.0f, 0.0f, 0.0f};
-  const GLfloat light1_position[] = {300.0f, -300.0f, 0.0f, 0.0f};
 }
 
 class D3Widget::Pimpl {
@@ -32,7 +31,7 @@ public:
   , maxX(-2000.0)
   , maxY(-2000.0)
   , maxZ(-2000.0)
-  , zRot(135.0)
+  , zRot(225.0)
   , rotFlag(false) {}
 
   QColor qtRed;
@@ -80,23 +79,19 @@ void D3Widget::initializeGL()
   glMaterialf(GL_FRONT, GL_SHININESS, 20);
   glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-  glLightfv(GL_LIGHT1, GL_SPECULAR, spec);
-  glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
 
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
-  glEnable(GL_LIGHT1);
   glEnable(GL_DEPTH_TEST);
 }
 
 void D3Widget::paintGL()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glColor3i(244, 164, 96);
 
   if (!_pimpl->data.empty()) {
     glPushMatrix();
-
+    glColor3i(244, 164, 96);
     glScalef(_pimpl->zoom, _pimpl->zoom, _pimpl->zoom);
     glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
     glRotatef(_pimpl->zRot, 0.0f, 0.0f, 1.0f);
@@ -104,9 +99,9 @@ void D3Widget::paintGL()
 
     for (auto triangle : _pimpl->data) {
       glBegin(GL_TRIANGLES);    
-      const std::vector<double> normals = triangle->normals();
+      const std::vector<double> normals = std::move(triangle->normals());
       glNormal3d(normals.at(0), normals.at(1), normals.at(2));
-      const std::vector<Vertex> vertices = triangle->vertices();
+      const std::vector<Vertex> vertices = std::move(triangle->vertices());
       for (auto vertex : vertices) {
         glVertex3f(vertex.x(), vertex.y(), vertex.z());
       }
@@ -192,4 +187,3 @@ void D3Widget::mouseReleaseEvent(QMouseEvent *event) {
     _pimpl->rotFlag = false;
   }
 }
-
