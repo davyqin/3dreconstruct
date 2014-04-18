@@ -33,8 +33,7 @@ boost::shared_ptr<Grid> McFactory::grid() const {
     return boost::shared_ptr<Grid>();
   }
 
-    boost::shared_ptr<Grid> grid(new Grid());
-
+  boost::progress_timer timer;
   cout<<endl<<"Generating cubes..."<<endl;
   boost::progress_display pd(imageCount);
   std::vector<boost::shared_ptr<Cube> > cubes;
@@ -49,7 +48,7 @@ boost::shared_ptr<Grid> McFactory::grid() const {
     ++pd;
   }
 
-  grid->setCubes(cubes);
+  boost::shared_ptr<Grid> grid(new Grid(cubes));
 
   // assume the orientation of image is transverse.
   grid->set3D(_pimpl->imageStack->fetchImage(0)->width()/2,
