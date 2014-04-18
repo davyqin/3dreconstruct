@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <future>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -90,23 +91,63 @@ ImageStack::ImageStack()
 
 ImageStack::~ImageStack() {}
 
+namespace {
+std::vector<std::vector<std::string> > groupFileNames(
+  const std::vector<std::string>& fileNames/*, unsigned int groupSize*/)
+{
+  const unsigned int groupSize = std::thread::hardware_concurrency();
+  unsigned int numberOfFiles = std::ceil(fileNames.size() / groupSize);
+  std::vector<std::vector<std::string> > fileGroups;
+  
+  std::vector<std::string> temp;
+  for (auto file : fileNames) {
+    temp.push_back(file);
+    if (temp.size() == numberOfFiles) {
+      fileGroups.push_back(temp);
+      temp.clear();
+    }
+  }
+
+  if (!temp.empty()) {
+    fileGroups.push_back(temp);
+  }
+
+  return fileGroups;
+}
+}
+
 void ImageStack::loadImages(const std::string& imageFolder) {
   if (_pimpl->imageFolder == imageFolder) return;
   
   _pimpl->imageFolder = imageFolder;  
   _pimpl->images.clear();
   _pimpl->currentIndex = 0;
-  const std::vector<std::string> imageFiles = findImageFiles(imageFolder);
+
+  const std::vector<std::string> imageFiles = std::move(findImageFiles(imageFolder));
   boost::progress_display pd(imageFiles.size());
-  for (auto imageFile : imageFiles) {
-    DicomUtil dicomUtil(imageFile);
-    if (dicomUtil.hasPixelData()) {
-      _pimpl->images.push_back(dicomUtil.fetchImage());
-      boost::shared_ptr<const Image> image = _pimpl->images.back();
-      _pimpl->minLevel = std::min(int(image->minValue()), _pimpl->minLevel);
-      _pimpl->maxLevel = std::max(int(image->maxValue()), _pimpl->maxLevel); 
-    }
-    ++pd;
+
+  const std::vector<std::vector<std::string> > fileGroups = std::move(groupFileNames(imageFiles));
+  std::vector<std::future<std::vector<boost::shared_ptr<Image> > > > workerPool;
+  for (auto fileGroup : fileGroups) {
+    std::future<std::vector<boost::shared_ptr<Image> > > worker = 
+    std::async(std::launch::async, [fileGroup, &pd]() {
+      std::vector<boost::shared_ptr<Image> > images;
+      for (auto file : fileGroup) {
+        DicomUtil dicomUtil(file);
+        if (dicomUtil.hasPixelData()) {
+          images.push_back(dicomUtil.fetchImage());
+        }
+        ++pd;
+      }  
+      return images;
+    });
+
+    workerPool.push_back(std::move(worker));
+  }
+
+  for (auto& worker: workerPool) {
+    const std::vector<boost::shared_ptr<Image> > temp = worker.get();
+    _pimpl->images.insert(_pimpl->images.end(), temp.begin(), temp.end());
   }
 
   std::sort(_pimpl->images.begin(), _pimpl->images.end(), compareImagePosition);
