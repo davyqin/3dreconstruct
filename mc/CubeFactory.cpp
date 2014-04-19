@@ -12,31 +12,50 @@ class CubeFactory::Pimpl
 public:
   Pimpl() {}
 
+  Pimpl(boost::shared_ptr<const Image> downImage, 
+        boost::shared_ptr<const Image> upImage)
+  :downImage(downImage)
+  ,upImage(upImage) {}
+
   /* data */
-  boost::shared_ptr<const Image> upImage;
   boost::shared_ptr<const Image> downImage;
+  boost::shared_ptr<const Image> upImage;
 };
 
 CubeFactory::CubeFactory()
 :_pimpl(new Pimpl()) {}
 
+CubeFactory::CubeFactory(boost::shared_ptr<const Image> downImage, 
+                         boost::shared_ptr<const Image> upImage)
+:_pimpl(new Pimpl(downImage, upImage)) {}
+
 CubeFactory::~CubeFactory() {}
 
-void CubeFactory::setImages(boost::shared_ptr<const Image> downsideImage, 
-                            boost::shared_ptr<const Image> upsideImage) 
+CubeFactory::CubeFactory(const CubeFactory& other)
+:_pimpl(new Pimpl(other.downImage(), other.upImage())) {}
+
+
+void CubeFactory::setImages(boost::shared_ptr<const Image> downImage, 
+                            boost::shared_ptr<const Image> upImage) 
 {
-  _pimpl->downImage = downsideImage;
-  _pimpl->upImage = upsideImage;
+  _pimpl->downImage = downImage;
+  _pimpl->upImage = upImage;
 }
 
- std::vector<boost::shared_ptr<Cube> > CubeFactory::cubes() const {
+boost::shared_ptr<const Image> CubeFactory::downImage() const {
+  return _pimpl->downImage;
+}
+
+boost::shared_ptr<const Image> CubeFactory::upImage() const {
+  return _pimpl->upImage;
+}
+
+std::vector<boost::shared_ptr<Cube> > CubeFactory::cubes() const {
   if (!_pimpl->downImage || !_pimpl->upImage) {
     return  std::vector<boost::shared_ptr<Cube> >();
   }
-
-  // boost::progress_timer timer;
+  
   std::vector<boost::shared_ptr<const Vertex> > downVertices = std::move(_pimpl->downImage->vertices());
-
   std::vector<boost::shared_ptr<const Vertex> > upVertices = std::move(_pimpl->upImage->vertices());
 
   if (downVertices.size() != upVertices.size()) {

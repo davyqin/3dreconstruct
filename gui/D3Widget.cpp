@@ -141,6 +141,7 @@ void D3Widget::wheelEvent(QWheelEvent * event) {
 
 void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& data) {
   _pimpl->data = data;
+  if (_pimpl->data.empty()) return;
 
   for (auto triangle : _pimpl->data) {
     const std::vector<Vertex> vertices = triangle->vertices();
@@ -156,6 +157,7 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   _pimpl->centerX = (_pimpl->minX + _pimpl->maxX) / 2;
   _pimpl->centerY = (_pimpl->minY + _pimpl->maxY) / 2;
   _pimpl->centerZ = (_pimpl->minZ + _pimpl->maxZ) / 2;
+  cout <<"Input "<<data.size()<<" triangles"<<endl;
   cout <<_pimpl->minX<<" "<<_pimpl->centerX<<" "<<_pimpl->maxX<<endl;
   cout <<_pimpl->minY<<" "<<_pimpl->centerY<<" "<<_pimpl->maxY<<endl;
   cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<endl;
@@ -178,7 +180,7 @@ void D3Widget::mouseMoveEvent(QMouseEvent * event) {
 
     if (_pimpl->zRot < 0) _pimpl->zRot = 360;
     if (_pimpl->zRot > 360) _pimpl->zRot = 0;
-    updateGL();
+    if(!_pimpl->data.empty()) updateGL();
   }
 }
 

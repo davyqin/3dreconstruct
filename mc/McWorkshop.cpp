@@ -3,6 +3,7 @@
 #include "common.h"
 #include "Grid.h"
 #include "McFactory.h"
+#include "CubeFactory.h"
 #include "model/Vertex.h"
 #include "Triangle.h"
 #include "Cube.h"
@@ -16,55 +17,6 @@
 #include <future>
 
 using namespace std;
-
-class McWorkshop::Pimpl
-{
-public:
-  Pimpl() 
-  :minValue(0), maxValue(0) {}
-
-  Pimpl(boost::shared_ptr<ImageStack> imageStack)
-  :imageStack(imageStack),minValue(0),maxValue(0),quality(4) {}
-
-  /* data */
-  boost::shared_ptr<ImageStack> imageStack;
-  int minValue;
-  int maxValue;
-  int quality;
-  std::vector<boost::shared_ptr<const Triangle> > triangles;
-};
-
-McWorkshop::McWorkshop()
-:_pimpl(new Pimpl()) {}
-
-McWorkshop::McWorkshop(boost::shared_ptr<ImageStack> imageStack) 
-:_pimpl(new Pimpl(imageStack)) {}
-
-McWorkshop::~McWorkshop() {}
-
-void McWorkshop::setIsoMinMax(int minValue, int maxValue) {
-  if (minValue == _pimpl->minValue && 
-      maxValue == _pimpl->maxValue) {
-    return;
-  }
-
-  _pimpl->minValue = minValue;
-  _pimpl->maxValue = maxValue;
-  _pimpl->triangles.clear();
-}
-
-void McWorkshop::set3dQuality(int value) {
-  if (_pimpl->quality == value) return;
-
-  _pimpl->quality = value;
-  _pimpl->imageStack->set3dQuality(value);
-  _pimpl->triangles.clear();
-}
-
-void McWorkshop::setImageStack(boost::shared_ptr<ImageStack> imageStack) {
-  _pimpl->imageStack = imageStack;
-  _pimpl->triangles.clear();
-}
 
 namespace {
   Vertex interpolate(const Vertex& vertex1, const Vertex& vertex2, double minValue, double maxValue) {
@@ -106,8 +58,8 @@ namespace {
   std::vector<boost::shared_ptr<const Triangle> > 
   generateTriangles(const std::vector<boost::shared_ptr<Cube> >& cubes,
                     const int minValue, const int maxValue,
-                    const unsigned int startPos, const unsigned int endPos,
-                    boost::progress_display& pd) {
+                    const unsigned int startPos, const unsigned int endPos/*,
+                    boost::progress_display& pd*/) {
     std::vector<boost::shared_ptr<const Triangle> > triangles;
     for (unsigned int i = startPos; i <= endPos; ++i) {
       Cube& cube = *cubes.at(i);
@@ -123,8 +75,6 @@ namespace {
 
       if (EdgeTable[cubeindex] == 0 ) 
       {
-        // cube.setVertices(std::vector<boost::shared_ptr<const Vertex> >());
-        ++pd;
         continue;
       }
 
@@ -186,52 +136,114 @@ namespace {
                                                           vertList[vertices.at(++i)],
                                                           vertList[vertices.at(++i)]})));
       }
-    
-      // cube.setVertices(std::vector<boost::shared_ptr<const Vertex> >());
-      ++pd;
     }
 
     return triangles;
   }
+} // namespace
+
+class McWorkshop::Pimpl
+{
+public:
+  Pimpl() 
+  :minValue(0), maxValue(0) {}
+
+  Pimpl(boost::shared_ptr<ImageStack> imageStack)
+  :imageStack(imageStack),minValue(0),maxValue(0),quality(4) {}
+
+  /* data */
+  boost::shared_ptr<ImageStack> imageStack;
+  int minValue;
+  int maxValue;
+  int quality;
+  std::vector<boost::shared_ptr<const Triangle> > triangles;
+
+  std::vector<boost::shared_ptr<const Triangle> > 
+  triangleTask(const std::vector<boost::shared_ptr<Cube> >& cubes) {
+   std::vector<boost::shared_ptr<const Triangle> > triangles;
+   const unsigned int cubeSize = cubes.size();
+   const unsigned int groupSize = std::thread::hardware_concurrency();
+   const unsigned int numberOfCubes = std::ceil(cubeSize / groupSize);
+   auto triangleFunc = std::bind(generateTriangles, std::ref(cubes), minValue, maxValue,
+                                 std::placeholders::_1, std::placeholders::_2);
+
+   unsigned int startPos = 0;
+   unsigned int endPos = numberOfCubes;
+   std::vector<std::future<std::vector<boost::shared_ptr<const Triangle> > > > workerPool;
+   while (endPos < cubeSize) {
+     std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
+       std::async(std::launch::async, [=](){return triangleFunc(startPos, endPos);});
+
+      workerPool.push_back(std::move(worker));
+      startPos = endPos + 1;
+      endPos = startPos + numberOfCubes;
+    }
+
+    std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
+      std::async(std::launch::async, [=](){return triangleFunc(startPos, (cubeSize - 1));});
+    workerPool.push_back(std::move(worker));
+
+    for (auto& worker: workerPool) {
+      const std::vector<boost::shared_ptr<const Triangle> > temp = worker.get();
+      triangles.insert(triangles.end(), temp.begin(), temp.end());
+    }
+
+    return triangles;
+  }
+};
+
+McWorkshop::McWorkshop()
+:_pimpl(new Pimpl()) {}
+
+McWorkshop::McWorkshop(boost::shared_ptr<ImageStack> imageStack) 
+:_pimpl(new Pimpl(imageStack)) {}
+
+McWorkshop::~McWorkshop() {}
+
+void McWorkshop::setIsoMinMax(int minValue, int maxValue) {
+  if (minValue == _pimpl->minValue && 
+      maxValue == _pimpl->maxValue) {
+    return;
+  }
+
+  _pimpl->minValue = minValue;
+  _pimpl->maxValue = maxValue;
+  _pimpl->triangles.clear();
+}
+
+void McWorkshop::set3dQuality(int value) {
+  if (_pimpl->quality == value) return;
+
+  _pimpl->quality = value;
+  _pimpl->imageStack->set3dQuality(value);
+  _pimpl->triangles.clear();
+}
+
+void McWorkshop::setImageStack(boost::shared_ptr<ImageStack> imageStack) {
+  _pimpl->imageStack = imageStack;
+  _pimpl->triangles.clear();
 }
 
 std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
   if (!_pimpl->triangles.empty()) return _pimpl->triangles;
 
-  const McFactory mcFactory(_pimpl->imageStack);
-  boost::shared_ptr<Grid> grid = mcFactory.grid();
+  const int imageCount = _pimpl->imageStack->imageCount();
+  if (imageCount == 0) {
+    return std::vector<boost::shared_ptr<const Triangle> >();
+  }
 
   cout<<endl<<"Calculating triangles..."<<endl;
   cout<<"Min: "<<_pimpl->minValue<<" Max: "<<_pimpl->maxValue<<" Quality: "<<_pimpl->quality<<endl;
+
   boost::progress_timer timer;
-  
-  std::vector<boost::shared_ptr<Cube> > cubes = std::move(grid->cubes());
-  const unsigned int cubeSize = cubes.size();
-  boost::progress_display pd(cubeSize);
-  const unsigned int groupSize = std::thread::hardware_concurrency();
-  const unsigned int numberOfCubes = std::ceil(cubeSize / groupSize);
-  auto triangleFunc = std::bind(generateTriangles, std::ref(cubes), _pimpl->minValue, _pimpl->maxValue,
-                                std::placeholders::_1, std::placeholders::_2, std::ref(pd));
-
-  unsigned int startPos = 0;
-  unsigned int endPos = numberOfCubes;
-  std::vector<std::future<std::vector<boost::shared_ptr<const Triangle> > > > workerPool;
-  while (endPos < cubeSize) {
-    std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
-      std::async(std::launch::async, [=](){return triangleFunc(startPos, endPos);});
-
-    workerPool.push_back(std::move(worker));
-    startPos = endPos + 1;
-    endPos = startPos + numberOfCubes;
-  }
-
-  std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
-      std::async(std::launch::async, [=](){return triangleFunc(startPos, (cubeSize - 1));});
-  workerPool.push_back(std::move(worker));
-
-  for (auto& worker: workerPool) {
-    const std::vector<boost::shared_ptr<const Triangle> > temp = worker.get();
+  boost::progress_display pd(imageCount);
+  for (int i = 0; i < (imageCount - 1); ++i) {
+    boost::shared_ptr<const Image> bottomImage = _pimpl->imageStack->fetchImage(i);
+    boost::shared_ptr<const Image> topImage = _pimpl->imageStack->fetchImage(i+1);
+    CubeFactory cubeFactory(bottomImage, topImage);
+    const std::vector<boost::shared_ptr<const Triangle> >& temp = _pimpl->triangleTask(cubeFactory.cubes());
     _pimpl->triangles.insert(_pimpl->triangles.end(), temp.begin(), temp.end());
+    ++pd;
   }
 
   return _pimpl->triangles;

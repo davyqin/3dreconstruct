@@ -13,10 +13,19 @@ public:
 
   CubeFactory();
 
+  CubeFactory(boost::shared_ptr<const Image> downImage, 
+              boost::shared_ptr<const Image> upImage);
+
+  CubeFactory(const CubeFactory& other);
+
   ~CubeFactory();
 
-  void setImages(boost::shared_ptr<const Image> downsideImage, 
-                 boost::shared_ptr<const Image> upsideImage);
+  void setImages(boost::shared_ptr<const Image> downImage, 
+                 boost::shared_ptr<const Image> upImage);
+
+  boost::shared_ptr<const Image> downImage() const;
+
+  boost::shared_ptr<const Image> upImage() const;
 
   std::vector<boost::shared_ptr<Cube> > cubes() const;
 
