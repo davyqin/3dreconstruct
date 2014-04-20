@@ -159,10 +159,11 @@ public:
   std::vector<boost::shared_ptr<const Triangle> > triangles;
 
   std::vector<boost::shared_ptr<const Triangle> > 
-  triangleTask(const std::vector<boost::shared_ptr<Cube> >& cubes) {
+  triangleTask(const std::vector<boost::shared_ptr<Cube> >& cubes) const {
    std::vector<boost::shared_ptr<const Triangle> > triangles;
+   unsigned int groupSize = std::thread::hardware_concurrency();
+   if (groupSize < 4) groupSize = 4;
    const unsigned int cubeSize = cubes.size();
-   const unsigned int groupSize = std::thread::hardware_concurrency();
    const unsigned int numberOfCubes = std::ceil(cubeSize / groupSize);
    auto triangleFunc = std::bind(generateTriangles, std::ref(cubes), minValue, maxValue,
                                  std::placeholders::_1, std::placeholders::_2);
