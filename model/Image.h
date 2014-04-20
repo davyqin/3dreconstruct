@@ -10,9 +10,14 @@ class Image
 {
 public:
   enum Orientation {
-      TRAN,
-      CORO,
-      SAGI
+    TRAN,
+    CORO,
+    SAGI
+  };
+
+  enum DataType {
+    SHORTBIT = 0,
+    CHARBIT
   };
 
   Image(boost::shared_ptr<unsigned short> pixelData,
@@ -58,6 +63,10 @@ public:
   int sampleStep() const;
 
   void setSampleStep(const int step);
+
+  DataType dataType() const;
+
+  void setDataType(const DataType dataType);
 
 private:
   class Pimpl;

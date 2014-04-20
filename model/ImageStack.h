@@ -26,6 +26,8 @@ public:
 
   void set3dQuality(int value);
 
+  void setImageType(int index);
+
 private:
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;

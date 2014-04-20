@@ -53,11 +53,7 @@ QSize GLWidget::sizeHint() const
 void GLWidget::initializeGL()
 {
   qglClearColor(_pimpl->qtPurple);
-//    qglColor(qtRed); /* draw in red */
-
   glEnable(GL_DEPTH_TEST);
-//    glShadeModel(GL_SMOOTH);
-//    glEnable(GL_MULTISAMPLE);
 }
 //! [6]
 
@@ -66,14 +62,17 @@ void GLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    // qglColor(_pimpl->qtRed); /* draw in red */
 
     if (_pimpl->image) {
       const Image& image = *_pimpl->image;
-      //const unsigned short* pixel = image.pixelData().get();
-      //glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_SHORT, pixel);
-      const unsigned char* pixel = image.pixelData8bit().get();
-      glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pixel);
+      if (image.dataType() == Image::SHORTBIT) {
+        const unsigned short* pixel = image.pixelData().get();
+        glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_SHORT, pixel);
+      }
+      else {
+        const unsigned char* pixel = image.pixelData8bit().get();
+        glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pixel);
+      }
     }
 
  #if 0

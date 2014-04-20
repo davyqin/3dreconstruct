@@ -25,7 +25,7 @@ signals:
   void loadImageSignal(const QString& imageFolder);
   void requestImage(int index);
   void updateWLSignal(int window, int level);
-  void show3dSignal();
+  void imageTypeSignal(int index);
 
 private slots:
   void onBrowseFolder();
@@ -33,6 +33,7 @@ private slots:
   void onApplyWL();
   void onNextImage();
   void onPrevImage();
+  void onImageType(int index);
 
 private:
   class Pimpl;

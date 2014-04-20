@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>566</width>
-    <height>378</height>
+    <width>540</width>
+    <height>421</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -65,6 +65,27 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Image Type</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="imageTypeCombo">
+       <item>
+        <property name="text">
+         <string>16Bits</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>8Bits</string>
+        </property>
+       </item>
+      </widget>
+     </item>
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">

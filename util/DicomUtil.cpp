@@ -359,6 +359,7 @@ public:
 
     // 3. Convert to unsigned short(16bit)
     unsigned long mask, signMask, makePos;
+    mask = 0xffff;
     if (bIsSigned == 1) 
     {    
       /* in this case, Signed values must be taken in account */

@@ -30,6 +30,7 @@ ViewDialog::ViewDialog(QWidget *parent)
   connect(_pimpl->ui.glWidget, SIGNAL(requestNextImage()), SLOT(onNextImage()));
   connect(_pimpl->ui.glWidget, SIGNAL(requestPrevImage()), SLOT(onPrevImage()));
   connect(_pimpl->ui.applyWLButton, SIGNAL(clicked()), SLOT(onApplyWL()));
+  connect(_pimpl->ui.imageTypeCombo, SIGNAL(currentIndexChanged(int)), SLOT(onImageType(int)));
 }
 
 ViewDialog::~ViewDialog() {}
@@ -76,4 +77,9 @@ void ViewDialog::onPrevImage() {
 void ViewDialog::onApplyWL() {
   emit(updateWLSignal(_pimpl->ui.windowSpinBox->text().toInt(),
                       _pimpl->ui.levelSpinBox->text().toInt()));
+}
+
+void ViewDialog::onImageType(int index) {
+  _pimpl->ui.applyWLButton->setEnabled(index == 0);
+  emit(imageTypeSignal(index));
 }

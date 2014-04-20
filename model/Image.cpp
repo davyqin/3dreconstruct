@@ -26,6 +26,7 @@ public:
   , window(65535)
   , level(32768)
   , sampleStep(4)
+  , dataType(Image::SHORTBIT)
   {
 //    computerMinAndMax();
   }
@@ -46,7 +47,7 @@ public:
   std::vector<double> pixelSpacing;
   boost::shared_ptr<unsigned short> outputPixel;
   boost::shared_ptr<unsigned char> outputPixel8bit;
-  // std::vector<boost::shared_ptr<const Vertex> > vertices;
+  Image::DataType dataType;
 
   std::vector<boost::shared_ptr<const Vertex> > generateVertices() {
     const double xInc = pixelSpacing.at(0);
@@ -263,4 +264,12 @@ void Image::setSampleStep(const int step) {
   if (_pimpl->sampleStep != step) {
     _pimpl->sampleStep = step;
   }
+}
+
+Image::DataType Image::dataType() const {
+  return _pimpl->dataType;
+}
+
+void Image::setDataType(const Image::DataType dataType) {
+  _pimpl->dataType = dataType;
 }

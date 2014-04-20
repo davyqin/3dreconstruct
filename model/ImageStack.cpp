@@ -189,3 +189,9 @@ void ImageStack::set3dQuality(int value) {
     image->setSampleStep(value);
   }
 }
+
+void ImageStack::setImageType(int index) {
+  for (auto image : _pimpl->images) {
+    image->setDataType(static_cast<Image::DataType>(index));
+  }
+}
