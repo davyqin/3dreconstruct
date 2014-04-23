@@ -1,9 +1,7 @@
 #include "Triangle.h"
 
-// #include <cmath>
 #include <exception>
 
-#define GLM_FORCE_CXX11
 #include <glm/glm.hpp>
 #include <glm/gtx/normal.hpp>
 
@@ -15,8 +13,8 @@ public:
 
   Pimpl(const std::vector<Vertex>& vertices)
   : vertices(vertices)
-  , normal(0.0f)
-  { 
+  , normal(0.0)
+  {
     calcNormal();
   }
 
