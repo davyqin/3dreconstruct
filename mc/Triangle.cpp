@@ -1,7 +1,11 @@
 #include "Triangle.h"
 
-#include <cmath>
+// #include <cmath>
 #include <exception>
+
+#define GLM_FORCE_CXX11
+#include <glm/glm.hpp>
+#include <glm/gtx/normal.hpp>
 
 using namespace std;
 
@@ -11,34 +15,25 @@ public:
 
   Pimpl(const std::vector<Vertex>& vertices)
   : vertices(vertices)
-  , normals({0.0, 0.0, 0.0})
+  , normal(0.0f)
   { 
     calcNormal();
   }
 
   /* data */
   vector<Vertex> vertices;
-  std::vector<double> normals;
+  glm::vec3 normal;
 
   void calcNormal() {
     if (vertices.size() != 3) {
       throw std::runtime_error("The number of triangle vertices is not equal to 3.");
     }
 
-    const double vi = vertices.at(1).x() - vertices.at(0).x();
-    const double vj = vertices.at(1).y() - vertices.at(0).y();
-    const double vk = vertices.at(1).z() - vertices.at(0).z();
+    glm::vec3 point0(vertices.at(0).x(), vertices.at(0).y(), vertices.at(0).z());
+    glm::vec3 point1(vertices.at(1).x(), vertices.at(1).y(), vertices.at(1).z());
+    glm::vec3 point2(vertices.at(2).x(), vertices.at(2).y(), vertices.at(2).z());
 
-    const double wi = vertices.at(2).x() - vertices.at(0).x();
-    const double wj = vertices.at(2).y() - vertices.at(0).y();
-    const double wk = vertices.at(2).z() - vertices.at(0).z();
-
-    const double nr = sqrt((vj * wk - vk * wj) * (vj * wk - vk * wj) + 
-                           (vk * wi - vi * wk) * (vk * wi - vi * wk) +
-                           (vi * wj - vj * wi) * (vi * wj - vj * wi));
-    normals.at(0) = 0 - (vj * wk - vk * wj) / nr;
-    normals.at(1) = 0 - (vk * wi - vi * wk) / nr;
-    normals.at(2) = 0 - (vi * wj - vj * wi) / nr;
+    normal = glm::triangleNormal(point0, point1, point2);
   }
 };
 
@@ -62,6 +57,6 @@ std::vector<Vertex> Triangle::vertices() const {
   return _pimpl->vertices;
 }
 
-std::vector<double> Triangle::normals() const {
-  return _pimpl->normals;
+std::vector<float> Triangle::normal() const {
+  return std::vector<float>({_pimpl->normal[0], _pimpl->normal[1], _pimpl->normal[2]});
 }

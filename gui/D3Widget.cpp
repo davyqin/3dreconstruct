@@ -99,8 +99,8 @@ void D3Widget::paintGL()
 
     for (auto triangle : _pimpl->data) {
       glBegin(GL_TRIANGLES);    
-      const std::vector<double> normals = std::move(triangle->normals());
-      glNormal3d(normals.at(0), normals.at(1), normals.at(2));
+      const std::vector<float> normal = std::move(triangle->normal());
+      glNormal3fv(&normal[0]);
       const std::vector<Vertex> vertices = std::move(triangle->vertices());
       for (auto vertex : vertices) {
         glVertex3f(vertex.x(), vertex.y(), vertex.z());

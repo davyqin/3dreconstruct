@@ -11,6 +11,7 @@ CONFIG += c++11 console
 win32 {
 INCLUDEPATH += C:/boost_1_54_0
 INCLUDEPATH += C:/glut-3.7.6
+INCLUDEPATH += C:/glm
 LIBS += "C:/boost_1_54_0/stage/lib/libboost_system-mgw48-1_54.a"
 LIBS += "C:/boost_1_54_0/stage/lib/libboost_filesystem-mgw48-1_54.a"
 LIBS += "C:/glut-3.7.6/libglut32.a"
@@ -18,6 +19,7 @@ LIBS += "C:/glut-3.7.6/libglut32.a"
 
 unix {
 INCLUDEPATH += /opt/boost-1.49.0-gcc-4.8.1-static/include
+INCLUDEPATH += /opt/glm
 LIBS += -lglut -lGLU
 LIBS += -L/opt/boost-1.49.0-gcc-4.8.1-static/lib -lboost_system -lboost_filesystem
 }

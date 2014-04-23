@@ -6,6 +6,9 @@
 #include <memory>
 #include <vector>
 
+#define GLM_FORCE_CXX11
+#include <glm/glm.hpp>
+
 class Vertex;
 
 class Triangle
@@ -21,7 +24,7 @@ public:
 
   std::vector<Vertex> vertices() const;
 
-  std::vector<double> normals() const;
+  std::vector<float> normal() const;
 
 private:
   class Pimpl;
