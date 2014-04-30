@@ -3,7 +3,6 @@
 #include "mc/Triangle.h"
 
 #include <QGLWidget>
-#include <QGLFunctions>
 
 #include <memory>
 #include <boost/shared_ptr.hpp>
@@ -12,7 +11,7 @@
 class Triangle;
 
 //! [0]
-class D3Widget : public QGLWidget, protected QGLFunctions
+class D3Widget : public QGLWidget
 {
     Q_OBJECT
 
