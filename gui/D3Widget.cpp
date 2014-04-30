@@ -1,10 +1,12 @@
 #include <QtGui>
 #include <QtOpenGL>
+#include <QGLFunctions>
+#include <QGLShaderProgram>
 
 #include "D3Widget.h"
 #include "mc/Triangle.h"
 
-#include <GL/glut.h>
+// #include <GL/glut.h>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <limits>
@@ -18,7 +20,7 @@ namespace {
   const GLfloat light_position[] = {-300.0f, -300.0f, 0.0f, 0.0f};
 }
 
-class D3Widget::Pimpl {
+class D3Widget::Pimpl : protected QGLFunctions {
 public:
   Pimpl()
   : qtRed(QColor::fromRgb(255,0,0))
@@ -32,12 +34,18 @@ public:
   , maxY(-2000.0)
   , maxZ(-2000.0)
   , zRot(225.0)
-  , rotFlag(false) {}
+  , rotFlag(false)
+  , indexes(0)
+  , points(0)
+  , normals(0)
+  , indexCount(0)
+  , vertexCount(0)
+  , dataLoaded(false) {}
 
   QColor qtRed;
   QColor qtDark;
   QColor qtPurple;
-  std::vector<boost::shared_ptr<const Triangle> > data;
+  // std::vector<boost::shared_ptr<const Triangle> > data;
   GLfloat zoom;
   float minX;
   float minY;
@@ -51,13 +59,93 @@ public:
   float zRot;
   bool rotFlag;
   QPoint lastPoint;
+  // std::vector<std::vector<float> > normals;
+  // std::vector<std::vector<float> > points;
+  // std::vector<short> indexes;
+  GLushort *indexes;
+  GLfloat *points;
+  GLfloat *normals;
+  int indexCount;
+  int vertexCount;
+
+  GLuint m_VertexObject;
+  GLuint m_VertexArray;
+  GLuint m_IndexArray;
+  GLuint m_NormalArray;
+  GLuint m_TextureVertexArray;
+
+  GLuint bufferObjects[3];
+  QGLShaderProgram program;
+  bool dataLoaded;
+
+  ~Pimpl() {
+    glDeleteBuffers(3, bufferObjects);
+  }
+
+  void clear() {
+    delete [] normals;
+    normals = 0;
+    delete [] points;
+    points = 0;
+    delete [] indexes;
+    indexes = 0;
+  }
+
+  void init() {
+    initializeGLFunctions();
+    glGenBuffers(3, bufferObjects);
+  }
+
+  void setData() 
+  {
+    // std::cout<<vertexCount<<"*********"<<indexCount<<std::endl;
+    glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[0]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertexCount * 3, points, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertexCount * 3, normals, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects[2]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * indexCount, indexes, GL_STATIC_DRAW);
+  }
+
+  void drawData() {
+    if (dataLoaded) {
+      glPushMatrix();
+      glColor3i(244, 164, 96);
+      glScalef(zoom, zoom, zoom);
+      glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
+      glRotatef(zRot, 0.0f, 0.0f, 1.0f);
+      glTranslated(-centerX, -centerY, -centerZ);
+      
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glEnableClientState(GL_NORMAL_ARRAY);
+      
+      glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[0]);
+      glVertexPointer(3, GL_FLOAT, 0, 0);
+
+      glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[1]);
+      glNormalPointer(GL_FLOAT, 0, 0);
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects[2]);
+      glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
+
+      // glDisableClientState(GL_VERTEX_ARRAY);
+      // glDisableClientState(GL_NORMAL_ARRAY);
+      glPopMatrix();
+    }
+  }
 };
 
 D3Widget::D3Widget(QWidget *parent)
   : QGLWidget(QGLFormat(QGL::DoubleBuffer), parent)
   , _pimpl(new Pimpl()) {}
 
-D3Widget::~D3Widget() {}
+D3Widget::~D3Widget() {
+  delete [] _pimpl->normals;
+  delete [] _pimpl->points;
+  delete [] _pimpl->indexes;
+}
 
 QSize D3Widget::minimumSizeHint() const
 {
@@ -71,6 +159,8 @@ QSize D3Widget::sizeHint() const
 
 void D3Widget::initializeGL()
 {
+  initializeGLFunctions();
+
   qglClearColor(_pimpl->qtDark);
   glShadeModel (GL_SMOOTH);
 
@@ -83,35 +173,17 @@ void D3Widget::initializeGL()
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glEnable(GL_DEPTH_TEST);
+
+  _pimpl->init();
 }
 
 void D3Widget::paintGL()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  if (!_pimpl->data.empty()) {
-    glPushMatrix();
-    glColor3i(244, 164, 96);
-    glScalef(_pimpl->zoom, _pimpl->zoom, _pimpl->zoom);
-    glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
-    glRotatef(_pimpl->zRot, 0.0f, 0.0f, 1.0f);
-    glTranslated(-_pimpl->centerX, -_pimpl->centerY, -_pimpl->centerZ);
-
-    for (auto triangle : _pimpl->data) {
-      glBegin(GL_TRIANGLES);    
-      const std::vector<float> normal = std::move(triangle->normal());
-      glNormal3fv(&normal[0]);
-      const std::vector<Vertex> vertices = std::move(triangle->vertices());
-      for (auto vertex : vertices) {
-        glVertex3f(vertex.x(), vertex.y(), vertex.z());
-      }
-      glEnd();
-    }
-
-    glPopMatrix();
-  }
+  _pimpl->drawData();
   
-  //glFlush(); /* clear buffers */
+  glFlush(); /* clear buffers */
 }
 
 void D3Widget::resizeGL(int width, int height)
@@ -140,12 +212,32 @@ void D3Widget::wheelEvent(QWheelEvent * event) {
 }
 
 void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& data) {
-  _pimpl->data = data;
-  if (_pimpl->data.empty()) return;
 
-  for (auto triangle : _pimpl->data) {
+  _pimpl->clear();
+
+  _pimpl->dataLoaded = false;
+
+  if (data.empty()) return;
+
+  const unsigned int dataSize = data.size() * 3;
+  _pimpl->indexes = new GLushort[dataSize];
+  _pimpl->points = new GLfloat[dataSize * 3];
+  _pimpl->normals = new GLfloat[dataSize * 3];
+
+  _pimpl->indexCount = 0;
+  _pimpl->vertexCount = 0;
+  for (auto triangle : data) {
+    const std::vector<float> normal = triangle->normal();
     const std::vector<Vertex> vertices = triangle->vertices();
     for (auto vertex : vertices) {
+      _pimpl->points[_pimpl->vertexCount] = vertex.x();
+      _pimpl->points[_pimpl->vertexCount + 1] = vertex.y();
+      _pimpl->points[_pimpl->vertexCount + 2] = vertex.z();
+
+      _pimpl->normals[_pimpl->vertexCount] = normal.at(0);
+      _pimpl->normals[_pimpl->vertexCount + 1] = normal.at(1);
+      _pimpl->normals[_pimpl->vertexCount + 2] = normal.at(2);
+
       if (vertex.x() < _pimpl->minX) { _pimpl->minX = vertex.x(); }
       if (vertex.x() > _pimpl->maxX) { _pimpl->maxX = vertex.x(); }
       if (vertex.y() < _pimpl->minY) { _pimpl->minY = vertex.y(); }
@@ -153,6 +245,10 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
       if (vertex.z() < _pimpl->minZ) { _pimpl->minZ = vertex.z(); }
       if (vertex.z() > _pimpl->maxZ) { _pimpl->maxZ = vertex.z(); }
     }
+
+    _pimpl->indexes[_pimpl->indexCount] = _pimpl->vertexCount;
+    _pimpl->vertexCount += 3;
+    _pimpl->indexCount += 1;
   }
   _pimpl->centerX = (_pimpl->minX + _pimpl->maxX) / 2;
   _pimpl->centerY = (_pimpl->minY + _pimpl->maxY) / 2;
@@ -161,6 +257,11 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   cout <<_pimpl->minX<<" "<<_pimpl->centerX<<" "<<_pimpl->maxX<<endl;
   cout <<_pimpl->minY<<" "<<_pimpl->centerY<<" "<<_pimpl->maxY<<endl;
   cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<endl;
+
+  _pimpl->setData();
+  _pimpl->dataLoaded = true;
+
+  // _pimpl->clear();
 }
 
 void D3Widget::mousePressEvent(QMouseEvent *event) {
@@ -180,7 +281,7 @@ void D3Widget::mouseMoveEvent(QMouseEvent * event) {
 
     if (_pimpl->zRot < 0) _pimpl->zRot = 360;
     if (_pimpl->zRot > 360) _pimpl->zRot = 0;
-    if(!_pimpl->data.empty()) updateGL();
+    if(_pimpl->dataLoaded) updateGL();
   }
 }
 
