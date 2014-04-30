@@ -6,10 +6,13 @@
 #include "D3Widget.h"
 #include "mc/Triangle.h"
 
+#include <glm/vec3.hpp>
+
 // #include <GL/glut.h>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <limits>
+
 
 using namespace std;
 
@@ -63,8 +66,10 @@ public:
   // std::vector<std::vector<float> > points;
   // std::vector<short> indexes;
   GLushort *indexes;
-  GLfloat *points;
-  GLfloat *normals;
+  // GLfloat *points;
+  // GLfloat *normals;
+  glm::vec3* points;
+  glm::vec3* normals;
   int indexCount;
   int vertexCount;
 
@@ -98,7 +103,6 @@ public:
 
   void setData() 
   {
-    // std::cout<<vertexCount<<"*********"<<indexCount<<std::endl;
     glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertexCount * 3, points, GL_STATIC_DRAW);
 
@@ -114,7 +118,7 @@ public:
       glPushMatrix();
       glColor3i(244, 164, 96);
       glScalef(zoom, zoom, zoom);
-      glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
+      // glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
       glRotatef(zRot, 0.0f, 0.0f, 1.0f);
       glTranslated(-centerX, -centerY, -centerZ);
       
@@ -130,8 +134,8 @@ public:
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects[2]);
       glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
 
-      // glDisableClientState(GL_VERTEX_ARRAY);
-      // glDisableClientState(GL_NORMAL_ARRAY);
+      glDisableClientState(GL_VERTEX_ARRAY);
+      glDisableClientState(GL_NORMAL_ARRAY);
       glPopMatrix();
     }
   }
@@ -221,8 +225,8 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
 
   const unsigned int dataSize = data.size() * 3;
   _pimpl->indexes = new GLushort[dataSize];
-  _pimpl->points = new GLfloat[dataSize * 3];
-  _pimpl->normals = new GLfloat[dataSize * 3];
+  _pimpl->points = new glm::vec3[dataSize];
+  _pimpl->normals = new glm::vec3[dataSize];
 
   _pimpl->indexCount = 0;
   _pimpl->vertexCount = 0;
@@ -230,13 +234,11 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
     const std::vector<float> normal = triangle->normal();
     const std::vector<Vertex> vertices = triangle->vertices();
     for (auto vertex : vertices) {
-      _pimpl->points[_pimpl->vertexCount] = vertex.x();
-      _pimpl->points[_pimpl->vertexCount + 1] = vertex.y();
-      _pimpl->points[_pimpl->vertexCount + 2] = vertex.z();
-
-      _pimpl->normals[_pimpl->vertexCount] = normal.at(0);
-      _pimpl->normals[_pimpl->vertexCount + 1] = normal.at(1);
-      _pimpl->normals[_pimpl->vertexCount + 2] = normal.at(2);
+      _pimpl->points[_pimpl->vertexCount] = glm::vec3(vertex.x(), vertex.y(), vertex.z());
+      _pimpl->normals[_pimpl->vertexCount] = glm::vec3(normal.at(0), normal.at(1), normal.at(2));
+      _pimpl->indexes[_pimpl->indexCount] = _pimpl->vertexCount;
+      _pimpl->indexCount += 1;
+      _pimpl->vertexCount += 1;
 
       if (vertex.x() < _pimpl->minX) { _pimpl->minX = vertex.x(); }
       if (vertex.x() > _pimpl->maxX) { _pimpl->maxX = vertex.x(); }
@@ -245,10 +247,6 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
       if (vertex.z() < _pimpl->minZ) { _pimpl->minZ = vertex.z(); }
       if (vertex.z() > _pimpl->maxZ) { _pimpl->maxZ = vertex.z(); }
     }
-
-    _pimpl->indexes[_pimpl->indexCount] = _pimpl->vertexCount;
-    _pimpl->vertexCount += 3;
-    _pimpl->indexCount += 1;
   }
   _pimpl->centerX = (_pimpl->minX + _pimpl->maxX) / 2;
   _pimpl->centerY = (_pimpl->minY + _pimpl->maxY) / 2;
@@ -261,7 +259,7 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   _pimpl->setData();
   _pimpl->dataLoaded = true;
 
-  // _pimpl->clear();
+  _pimpl->clear();
 }
 
 void D3Widget::mousePressEvent(QMouseEvent *event) {
