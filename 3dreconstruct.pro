@@ -14,7 +14,7 @@ INCLUDEPATH += C:/glut-3.7.6
 INCLUDEPATH += C:/glm
 LIBS += "C:/boost_1_54_0/stage/lib/libboost_system-mgw48-1_54.a"
 LIBS += "C:/boost_1_54_0/stage/lib/libboost_filesystem-mgw48-1_54.a"
-LIBS += "C:/glut-3.7.6/libglut32.a"
+#LIBS += "C:/glut-3.7.6/libglut32.a"
 }
 
 unix {

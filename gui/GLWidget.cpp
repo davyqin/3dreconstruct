@@ -4,7 +4,6 @@
 #include "GLWidget.h"
 #include "model/Image.h"
 
-#include <GL/glut.h>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 

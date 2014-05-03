@@ -75,7 +75,9 @@ D3Widget::D3Widget(QWidget *parent)
   : QGLWidget(QGLFormat(QGL::DoubleBuffer), parent)
   , _pimpl(new Pimpl()) {}
 
-D3Widget::~D3Widget() {}
+D3Widget::~D3Widget() {
+  glDeleteLists(_pimpl->drawList, 1);
+}
 
 QSize D3Widget::minimumSizeHint() const
 {
@@ -101,6 +103,8 @@ void D3Widget::initializeGL()
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glEnable(GL_DEPTH_TEST);
+
+  _pimpl->drawList = glGenLists(1);
 }
 
 void D3Widget::paintGL()
@@ -146,7 +150,6 @@ void D3Widget::wheelEvent(QWheelEvent * event) {
 }
 
 void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& data) {
-
   _pimpl->data = data;
   if (data.empty()) return;
 
@@ -169,7 +172,6 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   cout <<_pimpl->minY<<" "<<_pimpl->centerY<<" "<<_pimpl->maxY<<endl;
   cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<endl;
 
-  _pimpl->drawList = glGenLists(1);
   glNewList(_pimpl->drawList, GL_COMPILE);
   _pimpl->drawData();
   glEndList();
