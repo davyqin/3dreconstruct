@@ -164,24 +164,42 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   cout <<_pimpl->minY<<" "<<_pimpl->centerY<<" "<<_pimpl->maxY<<endl;
   cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<endl;
   
-  int index = 0;
-  _pimpl->drawLists.push_back(glGenLists(data.size()));
-  for (auto triangle : data) {
-    _pimpl->drawLists.push_back(_pimpl->drawLists.at(0) + index);
-    glNewList(_pimpl->drawLists.at(index), GL_COMPILE);
+  #ifdef WIN32
+    _pimpl->drawLists.push_back(glGenLists(1));
+    glNewList(_pimpl->drawLists.at(0), GL_COMPILE);
     {
-      glBegin(GL_TRIANGLES);
-      const std::vector<float> normal = triangle->normal();
-      glNormal3fv(&normal[0]);
-      const std::vector<Vertex> vertices = triangle->vertices();
-      for (auto vertex : vertices) {
-        glVertex3f(vertex.x(), vertex.y(), vertex.z());
+      for (auto triangle : data) {
+        glBegin(GL_TRIANGLES);
+        const std::vector<float> normal = triangle->normal();
+        glNormal3fv(&normal[0]);
+        const std::vector<Vertex> vertices = triangle->vertices();
+        for (auto vertex : vertices) {
+          glVertex3f(vertex.x(), vertex.y(), vertex.z());
+        }
+        glEnd();
       }
-      glEnd();
     }
     glEndList();
-    ++index;
-  }
+  #else
+    _pimpl->drawLists.push_back(glGenLists(data.size()));
+    int index = 0;
+    for (auto triangle : data) {
+      _pimpl->drawLists.push_back(_pimpl->drawLists.at(0) + index);
+      glNewList(_pimpl->drawLists.at(index), GL_COMPILE);
+      {
+        glBegin(GL_TRIANGLES);
+        const std::vector<float> normal = triangle->normal();
+        glNormal3fv(&normal[0]);
+        const std::vector<Vertex> vertices = triangle->vertices();
+        for (auto vertex : vertices) {
+          glVertex3f(vertex.x(), vertex.y(), vertex.z());
+        }
+        glEnd();
+      }
+      glEndList();
+      ++index;
+    }
+  #endif
 }
 
 void D3Widget::mousePressEvent(QMouseEvent *event) {
