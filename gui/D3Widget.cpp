@@ -53,22 +53,7 @@ public:
   float zRot;
   bool rotFlag;
   QPoint lastPoint;
-  GLuint drawList;
-
-  void drawData() {
-    if (data.empty()) return;
-    glTranslated(-centerX, -centerY, -centerZ);
-    glBegin(GL_TRIANGLES);
-    for(auto triangle : data) {
-      const std::vector<float> normal = triangle->normal();
-      glNormal3fv(&normal[0]);
-      const std::vector<Vertex> vertices = triangle->vertices();
-      for (auto vertex : vertices) {
-        glVertex3f(vertex.x(), vertex.y(), vertex.z());
-      }
-    }
-    glEnd(); 
-  }
+  std::vector<GLuint> drawLists;
 };
 
 D3Widget::D3Widget(QWidget *parent)
@@ -76,7 +61,10 @@ D3Widget::D3Widget(QWidget *parent)
   , _pimpl(new Pimpl()) {}
 
 D3Widget::~D3Widget() {
-  glDeleteLists(_pimpl->drawList, 1);
+  if (!_pimpl->drawLists.empty()) {
+    glDeleteLists(_pimpl->drawLists.at(0), _pimpl->drawLists.size());
+    _pimpl->drawLists.clear();
+  }
 }
 
 QSize D3Widget::minimumSizeHint() const
@@ -103,24 +91,23 @@ void D3Widget::initializeGL()
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glEnable(GL_DEPTH_TEST);
-
-  _pimpl->drawList = glGenLists(1);
 }
 
 void D3Widget::paintGL()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  if (_pimpl->data.empty()) return;
 
   glPushMatrix();
   glColor3i(244, 164, 96);
   glScalef(_pimpl->zoom, _pimpl->zoom, _pimpl->zoom);
   glRotatef(_pimpl->xRot, 1.0f, 0.0f, 0.0f);
   glRotatef(_pimpl->zRot, 0.0f, 0.0f, 1.0f);
+  glTranslated(-_pimpl->centerX, -_pimpl->centerY, -_pimpl->centerZ);
 
-  glCallList(_pimpl->drawList);
+  for (auto drawList : _pimpl->drawLists) glCallList(drawList);
 
-  glPopMatrix();
-  
+  glPopMatrix();  
   glFlush(); /* clear buffers */
 }
 
@@ -150,6 +137,11 @@ void D3Widget::wheelEvent(QWheelEvent * event) {
 }
 
 void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& data) {
+  if (!_pimpl->drawLists.empty()) {
+    glDeleteLists(_pimpl->drawLists.at(0), _pimpl->drawLists.size());
+    _pimpl->drawLists.clear();
+  }
+
   _pimpl->data = data;
   if (data.empty()) return;
 
@@ -171,10 +163,25 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   cout <<_pimpl->minX<<" "<<_pimpl->centerX<<" "<<_pimpl->maxX<<endl;
   cout <<_pimpl->minY<<" "<<_pimpl->centerY<<" "<<_pimpl->maxY<<endl;
   cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<endl;
-
-  glNewList(_pimpl->drawList, GL_COMPILE);
-  _pimpl->drawData();
-  glEndList();
+  
+  int index = 0;
+  _pimpl->drawLists.push_back(glGenLists(data.size()));
+  for (auto triangle : data) {
+    _pimpl->drawLists.push_back(_pimpl->drawLists.at(0) + index);
+    glNewList(_pimpl->drawLists.at(index), GL_COMPILE);
+    {
+      glBegin(GL_TRIANGLES);
+      const std::vector<float> normal = triangle->normal();
+      glNormal3fv(&normal[0]);
+      const std::vector<Vertex> vertices = triangle->vertices();
+      for (auto vertex : vertices) {
+        glVertex3f(vertex.x(), vertex.y(), vertex.z());
+      }
+      glEnd();
+    }
+    glEndList();
+    ++index;
+  }
 }
 
 void D3Widget::mousePressEvent(QMouseEvent *event) {
