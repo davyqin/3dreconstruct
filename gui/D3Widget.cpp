@@ -21,7 +21,7 @@ namespace {
 class D3Widget::Pimpl {
 public:
   Pimpl()
-  , qtDark(QColor::fromRgb(0,0,0))
+  : qtDark(QColor::fromRgb(0,0,0))
   , zoom(1.0)
   , minX(std::numeric_limits<float>::max())
   , minY(std::numeric_limits<float>::max())
