@@ -54,6 +54,7 @@ public:
   bool rotFlag;
   QPoint lastPoint;
   std::vector<GLuint> drawLists;
+  GLuint drawList;
 };
 
 D3Widget::D3Widget(QWidget *parent)
@@ -65,6 +66,8 @@ D3Widget::~D3Widget() {
     glDeleteLists(_pimpl->drawLists.at(0), _pimpl->drawLists.size());
     _pimpl->drawLists.clear();
   }
+
+  glDeleteLists(_pimpl->drawList, 1);
 }
 
 QSize D3Widget::minimumSizeHint() const
@@ -91,6 +94,8 @@ void D3Widget::initializeGL()
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glEnable(GL_DEPTH_TEST);
+
+  _pimpl->drawList = glGenLists(1);
 }
 
 void D3Widget::paintGL()
@@ -103,9 +108,12 @@ void D3Widget::paintGL()
   glScalef(_pimpl->zoom, _pimpl->zoom, _pimpl->zoom);
   glRotatef(_pimpl->xRot, 1.0f, 0.0f, 0.0f);
   glRotatef(_pimpl->zRot, 0.0f, 0.0f, 1.0f);
+#ifdef WIN32
+  glCallList(_pimpl->drawList);
+#else
   glTranslated(-_pimpl->centerX, -_pimpl->centerY, -_pimpl->centerZ);
-
   for (auto drawList : _pimpl->drawLists) glCallList(drawList);
+#endif
 
   glPopMatrix();  
   glFlush(); /* clear buffers */
@@ -165,19 +173,19 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<endl;
   
   #ifdef WIN32
-    _pimpl->drawLists.push_back(glGenLists(1));
-    glNewList(_pimpl->drawLists.at(0), GL_COMPILE);
+    glNewList(_pimpl->drawList, GL_COMPILE);
     {
-      for (auto triangle : data) {
-        glBegin(GL_TRIANGLES);
+      glTranslated(-_pimpl->centerX, -_pimpl->centerY, -_pimpl->centerZ);
+      glBegin(GL_TRIANGLES);
+      for(auto triangle : data) {
         const std::vector<float> normal = triangle->normal();
         glNormal3fv(&normal[0]);
         const std::vector<Vertex> vertices = triangle->vertices();
         for (auto vertex : vertices) {
           glVertex3f(vertex.x(), vertex.y(), vertex.z());
         }
-        glEnd();
       }
+      glEnd(); 
     }
     glEndList();
   #else
