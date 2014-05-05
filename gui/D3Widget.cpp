@@ -21,9 +21,7 @@ namespace {
 class D3Widget::Pimpl {
 public:
   Pimpl()
-  : qtRed(QColor::fromRgb(255,0,0))
   , qtDark(QColor::fromRgb(0,0,0))
-  , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0))
   , zoom(1.0)
   , minX(std::numeric_limits<float>::max())
   , minY(std::numeric_limits<float>::max())
@@ -33,12 +31,10 @@ public:
   , maxZ(-2000.0)
   , xRot(270.0)
   , zRot(225.0)
-  , rotFlag(false) {}
+  , rotFlag(false)
+  , dataLoaded(false) {}
 
-  QColor qtRed;
   QColor qtDark;
-  QColor qtPurple;
-  std::vector<boost::shared_ptr<const Triangle> > data;
   GLfloat zoom;
   float minX;
   float minY;
@@ -55,6 +51,7 @@ public:
   QPoint lastPoint;
   std::vector<GLuint> drawLists;
   GLuint drawList;
+  bool dataLoaded;
 };
 
 D3Widget::D3Widget(QWidget *parent)
@@ -101,7 +98,7 @@ void D3Widget::initializeGL()
 void D3Widget::paintGL()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  if (_pimpl->data.empty()) return;
+  if (!_pimpl->dataLoaded) return;
 
   glPushMatrix();
   glColor3i(244, 164, 96);
@@ -150,7 +147,8 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
     _pimpl->drawLists.clear();
   }
 
-  _pimpl->data = data;
+  // _pimpl->data = data;
+  _pimpl->dataLoaded = false;
   if (data.empty()) return;
 
   for (auto triangle : data) {
@@ -208,6 +206,8 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
       ++index;
     }
   #endif
+
+    _pimpl->dataLoaded = true;
 }
 
 void D3Widget::mousePressEvent(QMouseEvent *event) {
@@ -236,7 +236,7 @@ void D3Widget::mouseMoveEvent(QMouseEvent * event) {
     if (_pimpl->xRot < 0) _pimpl->xRot = 360;
     if (_pimpl->xRot > 360) _pimpl->xRot = 0;
 
-    if (!_pimpl->data.empty()) updateGL();
+    if (_pimpl->dataLoaded) updateGL();
   }
 }
 
