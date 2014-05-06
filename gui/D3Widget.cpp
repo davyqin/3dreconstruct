@@ -147,7 +147,6 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
     _pimpl->drawLists.clear();
   }
 
-  // _pimpl->data = data;
   _pimpl->dataLoaded = false;
   if (data.empty()) return;
 
