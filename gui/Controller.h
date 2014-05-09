@@ -23,7 +23,7 @@ private slots:
   void onRequestImage(int index);
   void onUpdateWL(int window, int level);
   void onShow3d(int minValue, int maxValue, int qualityValue);
-  void onImageType(int index);
+  void onOrientation(int index);
 
 private:
   class Pimpl;

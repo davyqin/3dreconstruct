@@ -130,6 +130,14 @@ int Image::pixelLength() const {
   return _pimpl->pixelLength;
 }
 
+boost::shared_ptr<const unsigned short> Image::rawPixelData() const {
+  return _pimpl->pixelData;
+}
+
+boost::shared_ptr<const unsigned char> Image::rawPixelData8bit() const {
+  return _pimpl->pixelData8bit;
+}
+
 boost::shared_ptr<unsigned short> Image::pixelData() const {
   if (!_pimpl->outputPixel) {
     int nCount = _pimpl->pixelLength;

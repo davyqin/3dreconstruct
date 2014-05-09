@@ -14,12 +14,14 @@ public:
   Pimpl()
   : qtRed(QColor::fromRgb(255,0,0))
   , qtDark(QColor::fromRgb(0,0,0))
-  , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0)) {}
+  , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0))
+  , dataType(Image::SHORTBIT) {}
 
   QColor qtRed;
   QColor qtDark;
   QColor qtPurple;
   boost::shared_ptr<const Image> image;
+  Image::DataType dataType;
 };
 
 //! [0]
@@ -64,7 +66,10 @@ void GLWidget::paintGL()
 
     if (_pimpl->image) {
       const Image& image = *_pimpl->image;
-      if (image.dataType() == Image::SHORTBIT) {
+      if (image.width() > image.height()) glPixelZoom(1.0, image.width() / image.height());
+      if (image.width() < image.height()) glPixelZoom(image.height()/ image.width(), 1.0);
+
+      if (_pimpl->dataType == Image::SHORTBIT) {
         const unsigned short* pixel = image.pixelData().get();
         glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_SHORT, pixel);
       }
@@ -149,9 +154,12 @@ void GLWidget::wheelEvent(QWheelEvent * event) {
   else {
     emit requestPrevImage();
   }
-
 }
 
 void GLWidget::setImage(boost::shared_ptr<const Image> image) {
   _pimpl->image = image;
+}
+
+void GLWidget::setDataType(int dataType) {
+  _pimpl->dataType = static_cast<Image::DataType>(dataType);
 }

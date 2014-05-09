@@ -26,7 +26,7 @@ public:
 
   void set3dQuality(int value);
 
-  void setImageType(int index);
+  void setOrientation(int index);
 
 private:
   class Pimpl;

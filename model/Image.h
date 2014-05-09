@@ -41,6 +41,10 @@ public:
   int width() const;
 
   int pixelLength() const;
+
+  boost::shared_ptr<const unsigned short> rawPixelData() const;
+
+  boost::shared_ptr<const unsigned char> rawPixelData8bit() const;
   
   boost::shared_ptr<unsigned short> pixelData() const;
 

@@ -25,7 +25,7 @@ signals:
   void loadImageSignal(const QString& imageFolder);
   void requestImage(int index);
   void updateWLSignal(int window, int level);
-  void imageTypeSignal(int index);
+  void orientationSignal(int index);
 
 private slots:
   void onBrowseFolder();

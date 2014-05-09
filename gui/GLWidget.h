@@ -2,7 +2,6 @@
 #define GLWIDGET_H
 
 #include "mc/Triangle.h"
-
 #include <QGLWidget>
 
 #include <memory>
@@ -24,6 +23,7 @@ public:
     QSize sizeHint() const;
 
     void setImage(boost::shared_ptr<const Image> image);
+    void setDataType(int dataType);
 
 signals:
     void requestNextImage();

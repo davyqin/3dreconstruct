@@ -29,7 +29,7 @@ Controller::Controller(QObject *parent)
   connect(&_pimpl->viewDialog, SIGNAL(loadImageSignal(const QString&)), SLOT(onLoadImage(const QString&)));
   connect(&_pimpl->viewDialog, SIGNAL(requestImage(int)), SLOT(onRequestImage(int)));
   connect(&_pimpl->viewDialog, SIGNAL(updateWLSignal(int,int)), SLOT(onUpdateWL(int,int)));
-  connect(&_pimpl->viewDialog, SIGNAL(imageTypeSignal(int)), SLOT(onImageType(int)));
+  connect(&_pimpl->viewDialog, SIGNAL(orientationSignal(int)), SLOT(onOrientation(int)));
 
   connect(&_pimpl->view3dDialog, SIGNAL(show3DSignal(int,int,int)), SLOT(onShow3d(int,int,int)));
 }
@@ -70,7 +70,7 @@ void Controller::onShow3d(int minValue, int maxValue, int qualityValue) {
   _pimpl->view3dDialog.show3D(std::move(_pimpl->mcWorkshop.work()));
 }
 
-void Controller::onImageType(int index) {
-  _pimpl->imageStack->setImageType(index);
+void Controller::onOrientation(int index) {
+  _pimpl->imageStack->setOrientation(index);
   _pimpl->viewDialog.showImage(_pimpl->imageStack->fetchImage());
 }

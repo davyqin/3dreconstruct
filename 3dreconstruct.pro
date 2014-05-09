@@ -27,6 +27,7 @@ LIBS += -L/opt/boost-1.49.0-gcc-4.8.1-static/lib -lboost_system -lboost_filesyst
 
 # Input
 HEADERS += util/DicomUtil.h \
+           util/ImageFactory.h \
            model/Vertex.h \
            model/Image.h \
            model/ImageStack.h \
@@ -44,7 +45,8 @@ HEADERS += util/DicomUtil.h \
            mc/Triangle.h \
 
 SOURCES += main.cpp \
-  	       util/DicomUtil.cpp \
+           util/DicomUtil.cpp \
+           util/ImageFactory.cpp \
            model/Vertex.cpp \
 	         model/Image.cpp \
            model/ImageStack.cpp \

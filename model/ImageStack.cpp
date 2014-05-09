@@ -2,6 +2,7 @@
 #include "Image.h"
 
 #include "util/DicomUtil.h"
+#include "util/ImageFactory.h"
 
 #include <vector>
 #include <algorithm>
@@ -75,15 +76,41 @@ public:
   :currentIndex(0)
   ,minLevel(std::numeric_limits<int>::max())
   ,maxLevel(std::numeric_limits<int>::min())
-  ,quality(4) {}
+  ,quality(4)
+  ,ori(Image::TRAN) {}
 
   /* data */
   std::vector<boost::shared_ptr<Image> > images;
+  std::vector<boost::shared_ptr<Image> > coronalImages;
+  std::vector<boost::shared_ptr<Image> > sagittalImages;
   std::string imageFolder;
   unsigned int currentIndex;
   int minLevel;
   int maxLevel;
   int quality;
+  Image::Orientation ori;
+
+  std::vector<boost::shared_ptr<Image> > activeImages() {
+    std::vector<boost::shared_ptr<Image> > activeimages;
+    switch (ori) {
+      case Image::SAGI:
+      {
+        activeimages = sagittalImages;
+        break;
+      }
+      case Image::CORO:
+      {
+        activeimages = coronalImages;
+        break;
+      }
+      default:
+      {
+        activeimages = images;
+        break;
+      }
+    }
+    return activeimages;
+  }
 };
 
 ImageStack::ImageStack()
@@ -151,23 +178,34 @@ void ImageStack::loadImages(const std::string& imageFolder) {
   }
 
   std::sort(_pimpl->images.begin(), _pimpl->images.end(), compareImagePosition);
+
+  std::vector<boost::shared_ptr<const Image> > tempImages;
+  tempImages.insert(tempImages.end(), _pimpl->images.begin(), _pimpl->images.end());
+
+  ImageFactory imageFactory(tempImages);
+  _pimpl->coronalImages = imageFactory.coronalImages();
+  _pimpl->sagittalImages = imageFactory.sagittalImages();
 }
 
 boost::shared_ptr<const Image> ImageStack::fetchImage(int index) const {
-  if (static_cast<unsigned int>(index) >= _pimpl->images.size() || index < 0) {
+  std::vector<boost::shared_ptr<Image> > activeImages = std::move(_pimpl->activeImages());
+
+  if (static_cast<unsigned int>(index) >= activeImages.size() || index < 0) {
     return boost::shared_ptr<const Image>();
   }
 
   _pimpl->currentIndex = index;
-  return _pimpl->images.at(index);
+  return activeImages.at(index);
 }
 
 boost::shared_ptr<const Image> ImageStack::fetchImage() const {
-  if (_pimpl->images.empty()) {
+  std::vector<boost::shared_ptr<Image> > activeImages = std::move(_pimpl->activeImages());
+
+  if (activeImages.empty()) {
     return boost::shared_ptr<const Image>();
   }
-  
-  return _pimpl->images.at(_pimpl->currentIndex);
+
+  return activeImages.at(_pimpl->currentIndex);
 }
 
 int ImageStack::imageCount() const {
@@ -190,8 +228,6 @@ void ImageStack::set3dQuality(int value) {
   }
 }
 
-void ImageStack::setImageType(int index) {
-  for (auto image : _pimpl->images) {
-    image->setDataType(static_cast<Image::DataType>(index));
-  }
+void ImageStack::setOrientation(int index) {
+  _pimpl->ori = static_cast<Image::Orientation>(index);
 }

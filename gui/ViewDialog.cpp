@@ -31,6 +31,7 @@ ViewDialog::ViewDialog(QWidget *parent)
   connect(_pimpl->ui.glWidget, SIGNAL(requestPrevImage()), SLOT(onPrevImage()));
   connect(_pimpl->ui.applyWLButton, SIGNAL(clicked()), SLOT(onApplyWL()));
   connect(_pimpl->ui.imageTypeCombo, SIGNAL(currentIndexChanged(int)), SLOT(onImageType(int)));
+  connect(_pimpl->ui.orientationCombo, SIGNAL(currentIndexChanged(int)), SIGNAL(orientationSignal(int)));
 }
 
 ViewDialog::~ViewDialog() {}
@@ -81,5 +82,6 @@ void ViewDialog::onApplyWL() {
 
 void ViewDialog::onImageType(int index) {
   _pimpl->ui.applyWLButton->setEnabled(index == 0);
-  emit(imageTypeSignal(index));
+  _pimpl->ui.glWidget->setDataType(index);
+  emit(requestImage(_pimpl->ui.imagePosSlider->value()));
 }
