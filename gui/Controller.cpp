@@ -72,5 +72,6 @@ void Controller::onShow3d(int minValue, int maxValue, int qualityValue) {
 
 void Controller::onOrientation(int index) {
   _pimpl->imageStack->setOrientation(index);
+  _pimpl->viewDialog.setImageCount(_pimpl->imageStack->imageCount());
   _pimpl->viewDialog.showImage(_pimpl->imageStack->fetchImage());
 }

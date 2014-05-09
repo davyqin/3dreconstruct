@@ -209,11 +209,12 @@ boost::shared_ptr<const Image> ImageStack::fetchImage() const {
 }
 
 int ImageStack::imageCount() const {
-  if (_pimpl->images.empty()) {
+  std::vector<boost::shared_ptr<Image> > activeImages = std::move(_pimpl->activeImages());
+  if (activeImages.empty()) {
     return 0;
   }
   
-  return _pimpl->images.size();
+  return activeImages.size();
 }
 
 void ImageStack::updateWL(int window, int level) {
