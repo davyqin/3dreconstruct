@@ -15,13 +15,18 @@ public:
   : qtRed(QColor::fromRgb(255,0,0))
   , qtDark(QColor::fromRgb(0,0,0))
   , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0))
-  , dataType(Image::SHORTBIT) {}
+  , dataType(Image::SHORTBIT)
+  , zoomFlag(false)
+  , zoomValue(1.0) {}
 
   QColor qtRed;
   QColor qtDark;
   QColor qtPurple;
   boost::shared_ptr<const Image> image;
   Image::DataType dataType;
+  bool zoomFlag;
+  double zoomValue;
+  QPoint lastPoint;
 };
 
 //! [0]
@@ -66,8 +71,11 @@ void GLWidget::paintGL()
 
     if (_pimpl->image) {
       const Image& image = *_pimpl->image;
-      if (image.width() > image.height()) glPixelZoom(1.0, image.width() / image.height());
-      if (image.width() < image.height()) glPixelZoom(image.height()/ image.width(), 1.0);
+      double widthZoom = _pimpl->zoomValue;
+      double heightZoom = _pimpl->zoomValue;
+      if (image.width() > image.height()) heightZoom *= (double)image.width() / (double)image.height();
+      if (image.width() < image.height()) widthZoom *= (double)image.height() / (double)image.width();
+      glPixelZoom(widthZoom, heightZoom);
 
       if (_pimpl->dataType == Image::SHORTBIT) {
         const unsigned short* pixel = image.pixelData().get();
@@ -131,17 +139,6 @@ void GLWidget::resizeGL(int width, int height)
 
   glOrtho(-300.0, 300.0, -300.0, 300.0, -1000.0, 1000.0);
   glMatrixMode(GL_MODELVIEW);
-
-  if (_pimpl->image) {
-    const Image& image = *_pimpl->image;
-
-    double zoomSloat = std::min((double)width / (double)image.width(), 
-                                (double)height / (double)image.height());
-    if (zoomSloat > 1.0) {
-      glPixelZoom(zoomSloat, zoomSloat);
-      glFlush();
-    }
-  }
 }
 //! [8]
 
@@ -162,4 +159,47 @@ void GLWidget::setImage(boost::shared_ptr<const Image> image) {
 
 void GLWidget::setDataType(int dataType) {
   _pimpl->dataType = static_cast<Image::DataType>(dataType);
+}
+
+void GLWidget::mousePressEvent(QMouseEvent *event) {
+  if (!_pimpl->image) return;
+
+  if (event->button() == Qt::RightButton) {
+    _pimpl->lastPoint = event->pos();
+    _pimpl->zoomFlag = true;
+  }
+
+  if (event->button() == Qt::MidButton) {
+    _pimpl->zoomValue = 1.0;
+    updateGL();
+  }
+}
+
+void GLWidget::mouseMoveEvent(QMouseEvent * event) {
+  if (_pimpl->image && _pimpl->zoomFlag && (event->buttons() & Qt::RightButton)) {
+    const QPoint newPoint = event->pos();
+    bool needUpdate = false;
+    if (newPoint.x() < _pimpl->lastPoint.x()) {
+      _pimpl->zoomValue -= 0.1;
+      needUpdate = true;
+    }
+    
+    if (newPoint.x() > _pimpl->lastPoint.x()) {
+      _pimpl->zoomValue += 0.1;
+      needUpdate = true;
+    }
+
+    if (_pimpl->zoomValue < 1.0) {
+      _pimpl->zoomValue = 1.0;
+      needUpdate = false;
+    }
+
+    if (needUpdate) updateGL();
+  }
+}
+
+void GLWidget::mouseReleaseEvent(QMouseEvent *event) {
+  if (_pimpl->image && _pimpl->zoomFlag && (event->buttons() & Qt::RightButton)) {
+    _pimpl->zoomFlag = false;
+  }
 }
