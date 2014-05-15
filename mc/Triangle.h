@@ -2,7 +2,6 @@
 
 #include "model/Vertex.h"
 
-#include <boost/shared_ptr.hpp>
 #include <memory>
 #include <vector>
 

@@ -227,7 +227,7 @@ void McWorkshop::setImageStack(boost::shared_ptr<ImageStack> imageStack) {
 
 std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
   if (!_pimpl->triangles.empty()) return _pimpl->triangles;
-
+  _pimpl->imageStack->setOrientation(0);  // force to use axial images
   const int imageCount = _pimpl->imageStack->imageCount();
   if (imageCount == 0) {
     return std::vector<boost::shared_ptr<const Triangle> >();
