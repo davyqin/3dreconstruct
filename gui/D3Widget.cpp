@@ -1,12 +1,15 @@
 #include <QtGui>
 #include <QtOpenGL>
+#include <QGLShaderProgram>
 
 #include "D3Widget.h"
 #include "mc/Triangle.h"
+#include <glm/glm.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <limits>
+
 
 
 using namespace std;
@@ -32,7 +35,8 @@ public:
   , xRot(270.0)
   , zRot(225.0)
   , rotFlag(false)
-  , dataLoaded(false) {}
+  , dataLoaded(false)
+  {}
 
   QColor qtDark;
   GLfloat zoom;
@@ -49,23 +53,23 @@ public:
   float zRot;
   bool rotFlag;
   QPoint lastPoint;
-  std::vector<GLuint> drawLists;
-  GLuint drawList;
   bool dataLoaded;
+
+  GLuint* indexes;
+  glm::vec3* points;
+  glm::vec3* normals;
+  int vertexCount;
+  GLuint m_VertexArray;
+  GLuint m_IndexArray;
+  GLuint m_NormalArray;
+  GLuint bufferObjects[3];
 };
 
 D3Widget::D3Widget(QWidget *parent)
   : QGLWidget(QGLFormat(QGL::DoubleBuffer), parent)
   , _pimpl(new Pimpl()) {}
 
-D3Widget::~D3Widget() {
-  if (!_pimpl->drawLists.empty()) {
-    glDeleteLists(_pimpl->drawLists.at(0), _pimpl->drawLists.size());
-    _pimpl->drawLists.clear();
-  }
-
-  glDeleteLists(_pimpl->drawList, 1);
-}
+D3Widget::~D3Widget() {}
 
 QSize D3Widget::minimumSizeHint() const
 {
@@ -79,6 +83,8 @@ QSize D3Widget::sizeHint() const
 
 void D3Widget::initializeGL()
 {
+  initializeGLFunctions();
+  glGenBuffers(3, _pimpl->bufferObjects);
   qglClearColor(_pimpl->qtDark);
   glShadeModel (GL_SMOOTH);
 
@@ -91,8 +97,6 @@ void D3Widget::initializeGL()
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glEnable(GL_DEPTH_TEST);
-
-  _pimpl->drawList = glGenLists(1);
 }
 
 void D3Widget::paintGL()
@@ -105,15 +109,24 @@ void D3Widget::paintGL()
   glScalef(_pimpl->zoom, _pimpl->zoom, _pimpl->zoom);
   glRotatef(_pimpl->xRot, 1.0f, 0.0f, 0.0f);
   glRotatef(_pimpl->zRot, 0.0f, 0.0f, 1.0f);
-#ifdef WIN32
-  glCallList(_pimpl->drawList);
-#else
   glTranslated(-_pimpl->centerX, -_pimpl->centerY, -_pimpl->centerZ);
-  for (auto drawList : _pimpl->drawLists) glCallList(drawList);
-#endif
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_NORMAL_ARRAY);
 
-  glPopMatrix();  
-  glFlush(); /* clear buffers */
+  glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[0]);
+  glVertexPointer(3, GL_FLOAT, 0, 0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[1]);
+  glNormalPointer(GL_FLOAT, 0, 0);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _pimpl->bufferObjects[2]);
+  glDrawElements(GL_TRIANGLES, _pimpl->vertexCount, GL_UNSIGNED_INT, 0);
+
+  glDisableClientState(GL_VERTEX_ARRAY);
+  glDisableClientState(GL_NORMAL_ARRAY);
+
+  glPopMatrix();
+  glFlush();
 }
 
 void D3Widget::resizeGL(int width, int height)
@@ -142,17 +155,24 @@ void D3Widget::wheelEvent(QWheelEvent * event) {
 }
 
 void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& data) {
-  if (!_pimpl->drawLists.empty()) {
-    glDeleteLists(_pimpl->drawLists.at(0), _pimpl->drawLists.size());
-    _pimpl->drawLists.clear();
-  }
-
   _pimpl->dataLoaded = false;
   if (data.empty()) return;
 
+  const unsigned int dataSize = data.size() * 3;
+  _pimpl->indexes = new GLuint[dataSize];
+  _pimpl->points = new glm::vec3[dataSize];
+  _pimpl->normals = new glm::vec3[dataSize];
+
+  _pimpl->vertexCount = 0;
   for (auto triangle : data) {
+    const std::vector<float> normal = triangle->normal();
     const std::vector<Vertex> vertices = triangle->vertices();
     for (auto vertex : vertices) {
+      _pimpl->points[_pimpl->vertexCount] = glm::vec3(vertex.x(), vertex.y(), vertex.z());
+      _pimpl->normals[_pimpl->vertexCount] = glm::vec3(normal.at(0), normal.at(1), normal.at(2));
+      _pimpl->indexes[_pimpl->vertexCount] = _pimpl->vertexCount;
+      _pimpl->vertexCount += 1;
+
       if (vertex.x() < _pimpl->minX) { _pimpl->minX = vertex.x(); }
       if (vertex.x() > _pimpl->maxX) { _pimpl->maxX = vertex.x(); }
       if (vertex.y() < _pimpl->minY) { _pimpl->minY = vertex.y(); }
@@ -169,44 +189,23 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   cout <<_pimpl->minY<<" "<<_pimpl->centerY<<" "<<_pimpl->maxY<<endl;
   cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<endl;
   
-  #ifdef WIN32
-    glNewList(_pimpl->drawList, GL_COMPILE);
-    {
-      glTranslated(-_pimpl->centerX, -_pimpl->centerY, -_pimpl->centerZ);
-      glBegin(GL_TRIANGLES);
-      for(auto triangle : data) {
-        const std::vector<float> normal = triangle->normal();
-        glNormal3fv(&normal[0]);
-        const std::vector<Vertex> vertices = triangle->vertices();
-        for (auto vertex : vertices) {
-          glVertex3f(vertex.x(), vertex.y(), vertex.z());
-        }
-      }
-      glEnd(); 
-    }
-    glEndList();
-  #else
-    _pimpl->drawLists.push_back(glGenLists(data.size()));
-    int index = 0;
-    for (auto triangle : data) {
-      _pimpl->drawLists.push_back(_pimpl->drawLists.at(0) + index);
-      glNewList(_pimpl->drawLists.at(index), GL_COMPILE);
-      {
-        glBegin(GL_TRIANGLES);
-        const std::vector<float> normal = triangle->normal();
-        glNormal3fv(&normal[0]);
-        const std::vector<Vertex> vertices = triangle->vertices();
-        for (auto vertex : vertices) {
-          glVertex3f(vertex.x(), vertex.y(), vertex.z());
-        }
-        glEnd();
-      }
-      glEndList();
-      ++index;
-    }
-  #endif
+  glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[0]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * _pimpl->vertexCount * 3, _pimpl->points, GL_STATIC_DRAW);
 
-    _pimpl->dataLoaded = true;
+  glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[1]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * _pimpl->vertexCount * 3, _pimpl->normals, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _pimpl->bufferObjects[2]);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * _pimpl->vertexCount, _pimpl->indexes, GL_STATIC_DRAW);
+
+  delete [] _pimpl->normals;
+  _pimpl->normals = 0;
+  delete [] _pimpl->points;
+  _pimpl->points = 0;
+  delete [] _pimpl->indexes;
+  _pimpl->indexes = 0;
+
+  _pimpl->dataLoaded = true;
 }
 
 void D3Widget::mousePressEvent(QMouseEvent *event) {
