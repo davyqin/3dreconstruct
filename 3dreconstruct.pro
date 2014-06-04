@@ -39,8 +39,6 @@ HEADERS += util/DicomUtil.h \
            mc/common.h \
            mc/Cube.h \
            mc/CubeFactory.h \
-           mc/Grid.h \
-           mc/McFactory.h \
            mc/McWorkshop.h \
            mc/Triangle.h \
 
@@ -57,8 +55,6 @@ SOURCES += main.cpp \
            gui/View3DDialog.cpp \
            mc/Cube.cpp \
            mc/CubeFactory.cpp \
-           mc/Grid.cpp \
-           mc/McFactory.cpp \
            mc/McWorkshop.cpp \
            mc/Triangle.cpp \          
 

@@ -20,7 +20,6 @@ public:
   ViewDialog viewDialog;
   View3DDialog view3dDialog;
   boost::shared_ptr<ImageStack> imageStack;
-  McWorkshop mcWorkshop;
 };
 
 Controller::Controller(QObject *parent) 
@@ -50,7 +49,7 @@ void Controller::onLoadImage(const QString& imageFolder) {
   boost::progress_timer timer;
   _pimpl->imageStack->loadImages(imageFolder.toStdString());
   if (_pimpl->imageStack->imageCount() > 0) {
-    _pimpl->mcWorkshop.setImageStack(_pimpl->imageStack);
+    // _pimpl->mcWorkshop.setImageStack(_pimpl->imageStack);
     _pimpl->viewDialog.setImageCount(_pimpl->imageStack->imageCount());
     onRequestImage(0);
   }
@@ -67,9 +66,10 @@ void Controller::onUpdateWL(int window, int level) {
 
 void Controller::onShow3d(int minValue, int maxValue, int qualityValue) {
   boost::progress_timer timer;
-  _pimpl->mcWorkshop.set3dQuality(qualityValue);
-  _pimpl->mcWorkshop.setIsoMinMax(minValue, maxValue);
-  _pimpl->view3dDialog.show3D(std::move(_pimpl->mcWorkshop.work()));
+  McWorkshop mcWorkshop(_pimpl->imageStack);
+  mcWorkshop.set3dQuality(qualityValue);
+  mcWorkshop.setIsoMinMax(minValue, maxValue);
+  _pimpl->view3dDialog.show3D(std::move(mcWorkshop.work()));
 }
 
 void Controller::onOrientation(int index) {

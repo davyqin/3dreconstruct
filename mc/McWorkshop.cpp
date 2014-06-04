@@ -1,8 +1,6 @@
 #include "McWorkshop.h"
 
 #include "common.h"
-#include "Grid.h"
-#include "McFactory.h"
 #include "CubeFactory.h"
 #include "model/Vertex.h"
 #include "Triangle.h"
@@ -180,9 +178,11 @@ public:
       endPos = startPos + numberOfCubes;
     }
 
-    std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
-      std::async(std::launch::async, [=](){return triangleFunc(startPos, (cubeSize - 1));});
-    workerPool.push_back(std::move(worker));
+    if (startPos <= cubeSize - 1) {
+      std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
+        std::async(std::launch::async, [=](){return triangleFunc(startPos, (cubeSize - 1));});
+      workerPool.push_back(std::move(worker));
+    }
 
     for (auto& worker: workerPool) {
       const std::vector<boost::shared_ptr<const Triangle> > temp = worker.get();
