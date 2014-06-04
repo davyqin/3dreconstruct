@@ -68,3 +68,6 @@ MOCABLEHEADERS += gui/ViewDialog.h\
 FORMS += \
     gui/ViewDialog.ui \
     gui/View3DDialog.ui
+
+RESOURCES += \
+    shader.qrc

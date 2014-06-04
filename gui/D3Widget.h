@@ -44,5 +44,7 @@ protected:
 private:
     class Pimpl;
     std::unique_ptr<Pimpl> _pimpl;
+
+    void initShaders();
 };
 //! [3]
