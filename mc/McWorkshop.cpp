@@ -232,7 +232,7 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
   }
   std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = end - start;
-  std::cout<<std::endl<<"Finish generating triangels in "<<elapsed_seconds.count()<<"s"<<std::endl;
+  std::cout<<std::endl<<"Finish generating triangels in "<<elapsed_seconds.count()<<" s"<<std::endl;
 
   return _pimpl->triangles;
 }

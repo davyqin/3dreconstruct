@@ -23,7 +23,6 @@ public:
   ViewDialog viewDialog;
   View3DDialog view3dDialog;
   boost::shared_ptr<ImageStack> imageStack;
-  McWorkshop mcWorkshop;
 };
 
 Controller::Controller(QObject *parent) 
@@ -51,7 +50,7 @@ void Controller::onLoadImage(const QString& imageFolder) {
   boost::progress_timer timer;
   _pimpl->imageStack->loadImages(imageFolder.toStdString());
   if (_pimpl->imageStack->imageCount() > 0) {
-    _pimpl->mcWorkshop.setImageStack(_pimpl->imageStack);
+    // _pimpl->mcWorkshop.setImageStack(_pimpl->imageStack);
     _pimpl->viewDialog.setImageCount(_pimpl->imageStack->imageCount());
     onRequestImage(0);
   }
@@ -69,13 +68,14 @@ void Controller::onUpdateWL(int window, int level) {
 void Controller::onShow3d(int minValue, int maxValue, int qualityValue) {
   std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 
-  _pimpl->mcWorkshop.set3dQuality(qualityValue);
-  _pimpl->mcWorkshop.setIsoMinMax(minValue, maxValue);
-  _pimpl->view3dDialog.show3D(_pimpl->mcWorkshop.work());
+  McWorkshop mcWorkshop(_pimpl->imageStack);
+  mcWorkshop.set3dQuality(qualityValue);
+  mcWorkshop.setIsoMinMax(minValue, maxValue);
+  _pimpl->view3dDialog.show3D(mcWorkshop.work());
 
   std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = end - start;
-  std::cout<<std::endl<<"Finishe Controller::onShow3d(...) in "<<elapsed_seconds.count()<<"s"<<std::endl;
+  std::cout<<std::endl<<"Finishe Controller::onShow3d(...) in "<<elapsed_seconds.count()<<" s"<<std::endl;
 }
 
 void Controller::onOrientation(int index) {
