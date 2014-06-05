@@ -105,7 +105,6 @@ QSize D3Widget::sizeHint() const
 void D3Widget::initializeGL()
 {
   initializeGLFunctions();
-  glGenBuffers(3, _pimpl->bufferObjects);
   qglClearColor(_pimpl->qtDark);
   initShaders();
   _pimpl->initScene(); 
@@ -197,8 +196,10 @@ void D3Widget::wheelEvent(QWheelEvent * event) {
 
 void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& data) {
   _pimpl->dataLoaded = false;
+  glDeleteBuffers(3, _pimpl->bufferObjects);
   if (data.empty()) return;
 
+  glGenBuffers(3, _pimpl->bufferObjects);
   const unsigned int dataSize = data.size() * 3;
   _pimpl->indexes = new GLuint[dataSize];
   _pimpl->points = new glm::vec3[dataSize];

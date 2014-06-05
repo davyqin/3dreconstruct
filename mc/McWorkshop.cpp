@@ -11,8 +11,9 @@
 #include <boost/progress.hpp>
 #include <vector>
 #include <iostream>
-#include <functional>
 #include <future>
+#include <chrono>
+#include <ctime>
 
 using namespace std;
 
@@ -55,11 +56,9 @@ namespace {
 
   std::vector<boost::shared_ptr<const Triangle> > 
   generateTriangles(const std::vector<boost::shared_ptr<Cube> >& cubes,
-                    const int minValue, const int maxValue,
-                    const unsigned int startPos, const unsigned int endPos/*,
-                    boost::progress_display& pd*/) {
+                    const int minValue, const int maxValue) {
     std::vector<boost::shared_ptr<const Triangle> > triangles;
-    for (unsigned int i = startPos; i <= endPos; ++i) {
+    for (unsigned int i = 0; i < cubes.size(); ++i) {
       Cube& cube = *cubes.at(i);
       int cubeindex = 0;
       if (cube.vertex(0).value() >= minValue && cube.vertex(0).value() <= maxValue) cubeindex |= 1;
@@ -155,42 +154,6 @@ public:
   int maxValue;
   int quality;
   std::vector<boost::shared_ptr<const Triangle> > triangles;
-
-  std::vector<boost::shared_ptr<const Triangle> > 
-  triangleTask(const std::vector<boost::shared_ptr<Cube> >& cubes) const {
-   std::vector<boost::shared_ptr<const Triangle> > triangles;
-   unsigned int groupSize = std::thread::hardware_concurrency();
-   if (groupSize < 4) groupSize = 4;
-   const unsigned int cubeSize = cubes.size();
-   const unsigned int numberOfCubes = std::ceil(cubeSize / groupSize);
-   auto triangleFunc = std::bind(generateTriangles, std::ref(cubes), minValue, maxValue,
-                                 std::placeholders::_1, std::placeholders::_2);
-
-   unsigned int startPos = 0;
-   unsigned int endPos = numberOfCubes;
-   std::vector<std::future<std::vector<boost::shared_ptr<const Triangle> > > > workerPool;
-   while (endPos < cubeSize) {
-     std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
-       std::async(std::launch::async, [=](){return triangleFunc(startPos, endPos);});
-
-      workerPool.push_back(std::move(worker));
-      startPos = endPos + 1;
-      endPos = startPos + numberOfCubes;
-    }
-
-    if (startPos <= cubeSize - 1) {
-      std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
-        std::async(std::launch::async, [=](){return triangleFunc(startPos, (cubeSize - 1));});
-      workerPool.push_back(std::move(worker));
-    }
-
-    for (auto& worker: workerPool) {
-      const std::vector<boost::shared_ptr<const Triangle> > temp = worker.get();
-      triangles.insert(triangles.end(), temp.begin(), temp.end());
-    }
-
-    return triangles;
-  }
 };
 
 McWorkshop::McWorkshop()
@@ -233,19 +196,43 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
     return std::vector<boost::shared_ptr<const Triangle> >();
   }
 
-  cout<<endl<<"Calculating triangles..."<<endl;
+  cout<<endl<<"Generating triangles..."<<endl;
   cout<<"Min: "<<_pimpl->minValue<<" Max: "<<_pimpl->maxValue<<" Quality: "<<_pimpl->quality<<endl;
 
-  boost::progress_timer timer;
+  const unsigned int maxWorkerSize = std::thread::hardware_concurrency() * 2;
+  std::vector<std::future<std::vector<boost::shared_ptr<const Triangle> > > > workerPool;
+  std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
   boost::progress_display pd(imageCount);
   for (int i = 0; i < (imageCount - 1); ++i) {
     boost::shared_ptr<const Image> bottomImage = _pimpl->imageStack->fetchImage(i);
     boost::shared_ptr<const Image> topImage = _pimpl->imageStack->fetchImage(i+1);
-    CubeFactory cubeFactory(bottomImage, topImage);
-    const std::vector<boost::shared_ptr<const Triangle> >& temp = _pimpl->triangleTask(cubeFactory.cubes());
-    _pimpl->triangles.insert(_pimpl->triangles.end(), temp.begin(), temp.end());
-    ++pd;
+    const CubeFactory cubeFactory(bottomImage, topImage);
+    std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
+      std::async(std::launch::async, [=](){return generateTriangles(cubeFactory.cubes(),
+                                                                    _pimpl->minValue,
+                                                                    _pimpl->maxValue);});
+    workerPool.push_back(std::move(worker));
+    if (workerPool.size() == maxWorkerSize) {
+      for (auto& worker: workerPool) {
+        const std::vector<boost::shared_ptr<const Triangle> > temp = worker.get();
+        _pimpl->triangles.insert(_pimpl->triangles.end(), temp.begin(), temp.end());
+        ++pd;
+      }
+      workerPool.clear();
+    }
   }
+
+  if (!workerPool.empty()) {
+    for (auto& worker: workerPool) {
+      const std::vector<boost::shared_ptr<const Triangle> > temp = worker.get();
+      _pimpl->triangles.insert(_pimpl->triangles.end(), temp.begin(), temp.end());
+      ++pd;
+    }
+    workerPool.clear();
+  }
+  std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed_seconds = end - start;
+  std::cout<<std::endl<<"Finish generating triangels in "<<elapsed_seconds.count()<<"s"<<std::endl;
 
   return _pimpl->triangles;
 }
