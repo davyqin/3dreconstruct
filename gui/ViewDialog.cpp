@@ -22,6 +22,8 @@ ViewDialog::ViewDialog(QWidget *parent)
 {
   _pimpl->ui.setupUi(this);
 
+  _pimpl->ui.glWidget->setFocusPolicy(Qt::StrongFocus);
+
   setWindowTitle(tr("View Image"));
 
   connect(_pimpl->ui.browseButton, SIGNAL(clicked()), SLOT(onBrowseFolder()));

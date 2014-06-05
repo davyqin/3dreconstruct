@@ -20,6 +20,8 @@ View3DDialog::View3DDialog(QWidget *parent)
 {
   _pimpl->ui.setupUi(this);
 
+  _pimpl->ui.d3Widget->setFocusPolicy(Qt::StrongFocus);
+
   setWindowTitle(tr("View 3D Reconstruction"));
 
   connect(_pimpl->ui.show3DButton, SIGNAL(clicked()), SLOT(onShow3D()));

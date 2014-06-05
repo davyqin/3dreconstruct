@@ -372,7 +372,7 @@ public:
       makePos = 0;
     }
 
-    unsigned short pixelSize;
+    unsigned short pixelSize = 0;
     if ( nBitsAllocated <= 8 )
       pixelSize = 1;
     else if ( nBitsAllocated <= 16 )

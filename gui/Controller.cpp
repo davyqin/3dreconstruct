@@ -40,13 +40,11 @@ Controller::Controller(QObject *parent)
 Controller::~Controller() {}
 
 void Controller::activate() {
-  _pimpl->view3dDialog.show();
   _pimpl->view3dDialog.adjustSize();
-  _pimpl->view3dDialog.move(0, 0);
+  _pimpl->view3dDialog.show();
 
-  _pimpl->viewDialog.show();
   _pimpl->viewDialog.adjustSize();
-  _pimpl->viewDialog.move(_pimpl->view3dDialog.width() + 10, 0);
+  _pimpl->viewDialog.show();
 }
 
 void Controller::onLoadImage(const QString& imageFolder) {
