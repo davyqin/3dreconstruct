@@ -75,7 +75,7 @@ void Controller::onShow3d(int minValue, int maxValue, int qualityValue) {
 
   std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = end - start;
-  std::cout<<std::endl<<"Finishe Controller::onShow3d(...) in "<<elapsed_seconds.count()<<" s"<<std::endl;
+  std::cout<<std::endl<<"Finish Controller::onShow3d(...) in "<<elapsed_seconds.count()<<" s"<<std::endl;
 }
 
 void Controller::onOrientation(int index) {

@@ -3,6 +3,7 @@
 
 #include "mc/Triangle.h"
 #include <QGLWidget>
+#include <QGLFunctions>
 
 #include <memory>
 #include <boost/shared_ptr.hpp>
@@ -11,7 +12,7 @@ class Image;
 class Triangle;
 
 //! [0]
-class GLWidget : public QGLWidget
+class GLWidget : public QGLWidget, protected QGLFunctions
 {
     Q_OBJECT
 
@@ -58,6 +59,9 @@ protected:
 private:
     class Pimpl;
     std::unique_ptr<Pimpl> _pimpl;
+
+    void initShaders();
+    void initScene();
 };
 //! [3]
 

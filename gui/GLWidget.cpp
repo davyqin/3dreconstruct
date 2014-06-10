@@ -1,5 +1,7 @@
 #include <QtGui>
 #include <QtOpenGL>
+#include <QGLShaderProgram>
+#include <QMatrix4x4>
 
 #include "GLWidget.h"
 #include "model/Image.h"
@@ -8,6 +10,20 @@
 #include <vector>
 
 using namespace std;
+
+namespace {
+ GLfloat textCoord[] = {0.0f, 0.0f, 
+                        0.0f, 1.0f, 
+                        1.0f, 1.0f, 
+                        1.0f, 0.0f};
+
+ GLuint indexes[] = {0, 1, 2, 3};
+
+ // GLfloat vertices[] = {0.0f, 0.0f, 0.0f,
+ //                       0.0f, 0.0f, 0.0f,
+ //                       0.0f, 0.0f, 0.0f,
+ //                       0.0f, 0.0f, 0.0f};
+}
 
 class GLWidget::Pimpl {
 public:
@@ -27,6 +43,11 @@ public:
   bool zoomFlag;
   double zoomValue;
   QPoint lastPoint;
+
+  QGLShaderProgram program;
+  QMatrix4x4 view;
+  QMatrix4x4 projection;
+  GLuint bufferObjects[3];
 };
 
 //! [0]
@@ -58,7 +79,9 @@ QSize GLWidget::sizeHint() const
 //! [6]
 void GLWidget::initializeGL()
 {
+  initializeGLFunctions();
   qglClearColor(_pimpl->qtPurple);
+  initShaders();
   glEnable(GL_DEPTH_TEST);
 }
 //! [6]
@@ -71,20 +94,29 @@ void GLWidget::paintGL()
 
     if (_pimpl->image) {
       const Image& image = *_pimpl->image;
+      _pimpl->program.setUniformValue("texture", 0);
+
       double widthZoom = _pimpl->zoomValue;
       double heightZoom = _pimpl->zoomValue;
       if (image.width() > image.height()) heightZoom *= (double)image.width() / (double)image.height();
       if (image.width() < image.height()) widthZoom *= (double)image.height() / (double)image.width();
-      glPixelZoom(widthZoom, heightZoom);
 
-      if (_pimpl->dataType == Image::SHORTBIT) {
-        const unsigned short* pixel = image.pixelData().get();
-        glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_SHORT, pixel);
-      }
-      else {
-        const unsigned char* pixel = image.pixelData8bit().get();
-        glDrawPixels(image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_BYTE, pixel);
-      }
+      QMatrix4x4 model;
+      model.scale(widthZoom, heightZoom);
+      _pimpl->program.setUniformValue("MVP", _pimpl->projection * model);
+
+      glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[0]);
+      const int vertexLocation = _pimpl->program.attributeLocation("VertexPosition");
+      _pimpl->program.enableAttributeArray(vertexLocation);
+      glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+      glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[1]);
+      int texcoordLocation = _pimpl->program.attributeLocation("VertexTexCoord");
+      _pimpl->program.enableAttributeArray(texcoordLocation);
+      glVertexAttribPointer(texcoordLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _pimpl->bufferObjects[2]);
+      glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, 0);
     }
 
  #if 0
@@ -133,12 +165,15 @@ void GLWidget::resizeGL(int width, int height)
 {
   int side = qMin(width, height);
   glViewport((width - side) / 2, (height - side) / 2, side, side);
-
+#if 0
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  glOrtho(-300.0, 300.0, -300.0, 300.0, -1000.0, 1000.0);
+  glOrtho(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
   glMatrixMode(GL_MODELVIEW);
+#endif  
+  _pimpl->projection.setToIdentity();
+  _pimpl->projection.ortho(-300.0f, 300.0f, -300.0f, 300.0f, -300.0f, 300.0f);
 }
 //! [8]
 
@@ -155,6 +190,7 @@ void GLWidget::wheelEvent(QWheelEvent * event) {
 
 void GLWidget::setImage(boost::shared_ptr<const Image> image) {
   _pimpl->image = image;
+  initScene();
 }
 
 void GLWidget::setDataType(int dataType) {
@@ -202,4 +238,70 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event) {
   if (_pimpl->image && _pimpl->zoomFlag && (event->buttons() & Qt::RightButton)) {
     _pimpl->zoomFlag = false;
   }
+}
+
+void GLWidget::initShaders() {
+  // Override system locale until shaders are compiled
+  setlocale(LC_NUMERIC, "C");
+
+  // Compile vertex shader
+  if (!_pimpl->program.addShaderFromSourceFile(QGLShader::Vertex, ":/shader/glwidget.vs"))
+    close();
+
+  // Compile fragment shader
+  if (!_pimpl->program.addShaderFromSourceFile(QGLShader::Fragment, ":/shader/glwidget.fs"))
+    close();
+
+  // Link shader pipeline
+  if (!_pimpl->program.link())
+    close();
+
+  // Bind shader pipeline for use
+  if (!_pimpl->program.bind())
+    close();
+
+  // Restore system locale
+  setlocale(LC_ALL, "");
+}
+
+void GLWidget::initScene() {
+  if (!_pimpl->image) return;
+  glDeleteBuffers(3, _pimpl->bufferObjects);
+
+  _pimpl->view.lookAt(QVector3D(0.0f,0.0f,2.0f), QVector3D(0.0f,0.0f,0.0f), QVector3D(0.0f,1.0f,0.0f));
+  const Image& image = *_pimpl->image;
+  const float width = image.width();
+  const float height = image.height();
+
+  GLfloat vertices[] = 
+    {-width/2.0f, -height/2.0f, 0.0f,
+     -width/2.0f,  height/2.0f, 0.0f,
+     width/2.0f,  height/2.0f, 0.0f,
+     width/2.0f, -height/2.0f, 0.0f};
+
+  glGenBuffers(3, _pimpl->bufferObjects);
+  glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[0]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 12, vertices, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[1]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8,  textCoord, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _pimpl->bufferObjects[2]);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 4, indexes, GL_STATIC_DRAW);
+
+  GLuint texId;
+  glActiveTexture(GL_TEXTURE0);
+  glGenTextures(1, &texId);
+  glBindTexture(GL_TEXTURE_2D, texId);
+  if (_pimpl->dataType == Image::SHORTBIT) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_SHORT, image.pixelData().get());
+  }
+  else {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, image.pixelData8bit().get());
+  }
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_LINEAR); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
 }
