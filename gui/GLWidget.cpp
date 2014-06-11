@@ -19,10 +19,15 @@ namespace {
 
  GLuint indexes[] = {0, 1, 2, 3};
 
- // GLfloat vertices[] = {0.0f, 0.0f, 0.0f,
- //                       0.0f, 0.0f, 0.0f,
- //                       0.0f, 0.0f, 0.0f,
- //                       0.0f, 0.0f, 0.0f};
+ const QVector4D kernel[9] {QVector4D( 0.0,  0.0,  0.0,  1.0),
+                            QVector4D(-1.0, -1.0, -1.0,  1.0),
+                            QVector4D( 0.0,  0.0,  0.0,  1.0),
+                            QVector4D(-1.0, -1.0, -1.0,  1.0),
+                            QVector4D( 4.0,  4.0,  4.0,  1.0),
+                            QVector4D(-1.0, -1.0, -1.0,  1.0),
+                            QVector4D( 0.0,  0.0,  0.0,  1.0),
+                            QVector4D(-1.0, -1.0, -1.0,  1.0),
+                            QVector4D( 0.0,  0.0,  0.0,  1.0)};
 }
 
 class GLWidget::Pimpl {
@@ -33,7 +38,8 @@ public:
   , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0))
   , dataType(Image::SHORTBIT)
   , zoomFlag(false)
-  , zoomValue(1.0) {}
+  , zoomValue(1.0)
+  , edgeDetection(false) {}
 
   QColor qtRed;
   QColor qtDark;
@@ -48,6 +54,7 @@ public:
   QMatrix4x4 view;
   QMatrix4x4 projection;
   GLuint bufferObjects[3];
+  bool edgeDetection;
 };
 
 //! [0]
@@ -298,7 +305,7 @@ void GLWidget::initScene() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_SHORT, image.pixelData().get());
   }
   else {
-    _pimpl->program.setUniformValue("edgeDetection", true);
+    _pimpl->program.setUniformValue("edgeDetection", _pimpl->edgeDetection);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, image.pixelData8bit().get());
   }
 
@@ -307,21 +314,17 @@ void GLWidget::initScene() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  const QVector4D kernel[9] {QVector4D( 0.0,  0.0,  0.0,  1.0),
-                             QVector4D(-1.0, -1.0, -1.0,  1.0),
-                             QVector4D( 0.0,  0.0,  0.0,  1.0),
-                             QVector4D(-1.0, -1.0, -1.0,  1.0),
-                             QVector4D( 4.0,  4.0,  4.0,  1.0),
-                             QVector4D(-1.0, -1.0, -1.0,  1.0),
-                             QVector4D( 0.0,  0.0,  0.0,  1.0),
-                             QVector4D(-1.0, -1.0, -1.0,  1.0),
-                             QVector4D( 0.0,  0.0,  0.0,  1.0)};
-
   _pimpl->program.setUniformValueArray("kernelValue", kernel, 9);
 
-  const QVector2D offset[9] {QVector2D(-1.0/512.0, -1.0/512.0), QVector2D(0.0, -1.0/512.0), QVector2D(1.0/512.0, -1.0/512.0),
-                             QVector2D(-1.0/512.0,  0.0), QVector2D(0.0,  0.0), QVector2D(1.0/512.0,  0.0/512.0),
-                             QVector2D(-1.0/512.0,  1.0), QVector2D(0.0,  1.0/512.0), QVector2D(1.0/512.0,  1.0/512.0)};
+  const QVector2D offset[9] {QVector2D(-1.0/width, -1.0/height), QVector2D(0.0, -1.0/height), QVector2D(1.0/width, -1.0/height),
+                             QVector2D(-1.0/width,  0.0), QVector2D(0.0,  0.0), QVector2D(1.0/width,  0.0/height),
+                             QVector2D(-1.0/width,  1.0), QVector2D(0.0,  1.0/height), QVector2D(1.0/width,  1.0/height)};
 
   _pimpl->program.setUniformValueArray("texOffset", offset, 9);
+}
+
+void GLWidget::setEdgeDetection(bool flag) {
+  _pimpl->edgeDetection = flag;
+  _pimpl->program.setUniformValue("edgeDetection", flag);
+  updateGL();
 }

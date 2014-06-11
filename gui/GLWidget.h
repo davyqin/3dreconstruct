@@ -25,6 +25,7 @@ public:
 
     void setImage(boost::shared_ptr<const Image> image);
     void setDataType(int dataType);
+    void setEdgeDetection(bool flag);
 
 signals:
     void requestNextImage();

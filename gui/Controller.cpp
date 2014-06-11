@@ -41,9 +41,11 @@ Controller::~Controller() {}
 void Controller::activate() {
   _pimpl->view3dDialog.adjustSize();
   _pimpl->view3dDialog.show();
+  _pimpl->view3dDialog.resize(650,650);
 
   _pimpl->viewDialog.adjustSize();
   _pimpl->viewDialog.show();
+  _pimpl->viewDialog.resize(650,650);
 }
 
 void Controller::onLoadImage(const QString& imageFolder) {

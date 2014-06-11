@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>564</width>
-    <height>550</height>
+    <width>605</width>
+    <height>606</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -68,7 +68,7 @@
      <item>
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Image Type</string>
+        <string>Pixel: </string>
        </property>
       </widget>
      </item>
@@ -103,6 +103,16 @@
          <string>Sagittal</string>
         </property>
        </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="edgeCheckBox">
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
+       <property name="text">
+        <string>Edge</string>
+       </property>
       </widget>
      </item>
      <item>

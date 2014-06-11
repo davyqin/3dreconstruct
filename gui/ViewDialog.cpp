@@ -34,6 +34,7 @@ ViewDialog::ViewDialog(QWidget *parent)
   connect(_pimpl->ui.applyWLButton, SIGNAL(clicked()), SLOT(onApplyWL()));
   connect(_pimpl->ui.imageTypeCombo, SIGNAL(currentIndexChanged(int)), SLOT(onImageType(int)));
   connect(_pimpl->ui.orientationCombo, SIGNAL(currentIndexChanged(int)), SIGNAL(orientationSignal(int)));
+  connect(_pimpl->ui.edgeCheckBox, SIGNAL(stateChanged(int)), SLOT(onEdgeDetection(int)));
 }
 
 ViewDialog::~ViewDialog() {}
@@ -86,4 +87,8 @@ void ViewDialog::onImageType(int index) {
   _pimpl->ui.applyWLButton->setEnabled(index == 0);
   _pimpl->ui.glWidget->setDataType(index);
   emit(requestImage(_pimpl->ui.imagePosSlider->value()));
+}
+
+void ViewDialog::onEdgeDetection(int state) {
+  _pimpl->ui.glWidget->setEdgeDetection(state == Qt::Checked);
 }

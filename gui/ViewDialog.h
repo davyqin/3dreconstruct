@@ -34,6 +34,7 @@ private slots:
   void onNextImage();
   void onPrevImage();
   void onImageType(int index);
+  void onEdgeDetection(int state);
 
 private:
   class Pimpl;
