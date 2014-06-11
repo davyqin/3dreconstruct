@@ -325,6 +325,8 @@ void GLWidget::initScene() {
 
 void GLWidget::setEdgeDetection(bool flag) {
   _pimpl->edgeDetection = flag;
-  _pimpl->program.setUniformValue("edgeDetection", flag);
-  updateGL();
+  if (_pimpl->dataType == Image::CHARBIT) {
+    _pimpl->program.setUniformValue("edgeDetection", flag);
+    updateGL();
+  }
 }
