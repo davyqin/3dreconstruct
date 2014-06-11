@@ -294,14 +294,34 @@ void GLWidget::initScene() {
   glGenTextures(1, &texId);
   glBindTexture(GL_TEXTURE_2D, texId);
   if (_pimpl->dataType == Image::SHORTBIT) {
+    _pimpl->program.setUniformValue("edgeDetection", false);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_SHORT, image.pixelData().get());
   }
   else {
+    _pimpl->program.setUniformValue("edgeDetection", true);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, image.pixelData8bit().get());
   }
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR); 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_LINEAR); 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  const QVector4D kernel[9] {QVector4D( 0.0,  0.0,  0.0,  1.0),
+                             QVector4D(-1.0, -1.0, -1.0,  1.0),
+                             QVector4D( 0.0,  0.0,  0.0,  1.0),
+                             QVector4D(-1.0, -1.0, -1.0,  1.0),
+                             QVector4D( 4.0,  4.0,  4.0,  1.0),
+                             QVector4D(-1.0, -1.0, -1.0,  1.0),
+                             QVector4D( 0.0,  0.0,  0.0,  1.0),
+                             QVector4D(-1.0, -1.0, -1.0,  1.0),
+                             QVector4D( 0.0,  0.0,  0.0,  1.0)};
+
+  _pimpl->program.setUniformValueArray("kernelValue", kernel, 9);
+
+  const QVector2D offset[9] {QVector2D(-1.0/512.0, -1.0/512.0), QVector2D(0.0, -1.0/512.0), QVector2D(1.0/512.0, -1.0/512.0),
+                             QVector2D(-1.0/512.0,  0.0), QVector2D(0.0,  0.0), QVector2D(1.0/512.0,  0.0/512.0),
+                             QVector2D(-1.0/512.0,  1.0), QVector2D(0.0,  1.0/512.0), QVector2D(1.0/512.0,  1.0/512.0)};
+
+  _pimpl->program.setUniformValueArray("texOffset", offset, 9);
 }
