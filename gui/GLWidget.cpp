@@ -19,15 +19,7 @@ namespace {
 
  GLuint indexes[] = {0, 1, 2, 3};
 
- const QVector4D kernel[9] {QVector4D( 0.0,  0.0,  0.0,  1.0),
-                            QVector4D(-1.0, -1.0, -1.0,  1.0),
-                            QVector4D( 0.0,  0.0,  0.0,  1.0),
-                            QVector4D(-1.0, -1.0, -1.0,  1.0),
-                            QVector4D( 4.0,  4.0,  4.0,  1.0),
-                            QVector4D(-1.0, -1.0, -1.0,  1.0),
-                            QVector4D( 0.0,  0.0,  0.0,  1.0),
-                            QVector4D(-1.0, -1.0, -1.0,  1.0),
-                            QVector4D( 0.0,  0.0,  0.0,  1.0)};
+ const GLfloat kernel[9] {0.0, -1.0, 0.0, -1.0, 4.0, -1.0, 0.0, -1.0, 0.0};
 }
 
 class GLWidget::Pimpl {
@@ -314,7 +306,7 @@ void GLWidget::initScene() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  _pimpl->program.setUniformValueArray("kernelValue", kernel, 9);
+  _pimpl->program.setUniformValueArray("kernelValue", kernel, 9, 1);
 
   const QVector2D offset[9] {QVector2D(-1.0/width, -1.0/height), QVector2D(0.0, -1.0/height), QVector2D(1.0/width, -1.0/height),
                              QVector2D(-1.0/width,  0.0), QVector2D(0.0,  0.0), QVector2D(1.0/width,  0.0/height),
