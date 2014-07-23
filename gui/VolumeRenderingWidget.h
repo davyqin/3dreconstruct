@@ -30,7 +30,7 @@ protected:
     void initializeGL();
     void paintGL();
     void resizeGL(int width, int height);
-#if 0    
+#if 1    
     void wheelEvent(QWheelEvent * event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);

@@ -12,6 +12,7 @@
 using namespace std;
 
 namespace {
+  GLfloat dOrthoSize = 1.0f;
 #if 0  
  GLfloat textCoord[] = {0.0f, 0.0f, 
                         0.0f, 1.0f, 
@@ -32,7 +33,11 @@ public:
   , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0))
   , zoomFlag(false)
   , zoomValue(1.0)
-  , texId(0) {}
+  , texId(0)
+  , xRot(0.0)
+  , zRot(0.0)
+  , rotFlag(false)
+  , dataLoaded(false) {}
 
   QColor qtRed;
   QColor qtDark;
@@ -47,8 +52,17 @@ public:
   QMatrix4x4 view;
   QMatrix4x4 projection;
   GLuint bufferObjects[3];
-//  bool edgeDetection;
+
   GLuint texId;
+  int width;
+  int height;
+  int depth;
+
+  float xRot;
+  float zRot;
+  bool rotFlag;
+  bool dataLoaded;
+  QPoint lastPoint;
 };
 
 //! [0]
@@ -83,18 +97,59 @@ void VolumeRenderingWidget::initializeGL()
   initializeGLFunctions();
   qglClearColor(_pimpl->qtPurple);
   // initShaders();
-  glEnable(GL_DEPTH_TEST);
-
-  glEnable( GL_ALPHA_TEST );
-  glAlphaFunc( GL_GREATER, 0.05f );
+  //glEnable(GL_DEPTH_TEST);
 }
 //! [6]
+
+#define MAP_3DTEXT( TexIndex ) \
+        glTexCoord3f(0.0f, 0.0f, ((float)TexIndex+1.0f)/2.0f);  \
+        glVertex3f(-dOrthoSize,-dOrthoSize,TexIndex);\
+        glTexCoord3f(1.0f, 0.0f, ((float)TexIndex+1.0f)/2.0f);  \
+        glVertex3f(dOrthoSize,-dOrthoSize,TexIndex);\
+        glTexCoord3f(1.0f, 1.0f, ((float)TexIndex+1.0f)/2.0f);  \
+        glVertex3f(dOrthoSize,dOrthoSize,TexIndex);\
+        glTexCoord3f(0.0f, 1.0f, ((float)TexIndex+1.0f)/2.0f);  \
+        glVertex3f(-dOrthoSize,dOrthoSize,TexIndex);
 
 //! [7]
 void VolumeRenderingWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (!_pimpl->dataLoaded) return;
+
+    glEnable( GL_ALPHA_TEST );
+    glAlphaFunc( GL_GREATER, 0.05f );
+
+    glEnable(GL_BLEND);
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
     glLoadIdentity();
+
+    // Translate and make 0.5f as the center 
+    // (texture co ordinate is from 0 to 1. so center of rotation has to be 0.5f)
+    glMatrixMode( GL_TEXTURE );
+    glTranslatef( 0.5f, 0.5f, 0.5f );
+    glRotatef(_pimpl->xRot, 1.0, 0.0, 0.0);
+    glRotatef(_pimpl->zRot, 0.0, 0.0, 1.0);
+
+    // A scaling applied to normalize the axis 
+    // (Usually the number of slices will be less so if this is not - 
+    // normalized then the z axis will look bulky)
+    // Flipping of the y axis is done by giving a negative value in y axis.
+    // This can be achieved either by changing the y co ordinates in -
+    // texture mapping or by negative scaling of y axis
+    glScaled(1.0, -1.0, (float)_pimpl->width/(float)_pimpl->depth);
+    
+    glTranslatef( -0.5f,-0.5f, -0.5f );
+
+    glEnable(GL_TEXTURE_3D);
+    glBindTexture(GL_TEXTURE_3D, _pimpl->texId);
+    for ( float fIndx = -1.0f; fIndx <= 1.0f; fIndx+=0.005f )
+    {
+        glBegin(GL_QUADS);
+            MAP_3DTEXT( fIndx );
+        glEnd();
+     }
 }
 //! [7]
 
@@ -103,77 +158,74 @@ void VolumeRenderingWidget::resizeGL(int width, int height)
 {
   int side = qMin(width, height);
   glViewport((width - side) / 2, (height - side) / 2, side, side);
-#if 0
+#if 1
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  glOrtho(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+  //glOrtho(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+  glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
   glMatrixMode(GL_MODELVIEW);
 #endif  
-  _pimpl->projection.setToIdentity();
-  _pimpl->projection.ortho(-300.0f, 300.0f, -300.0f, 300.0f, -300.0f, 300.0f);
+  // _pimpl->projection.setToIdentity();
+  // _pimpl->projection.ortho(-300.0f, 300.0f, -300.0f, 300.0f, -300.0f, 300.0f);
 }
 //! [8]
-#if 0
+#if 1
 void VolumeRenderingWidget::wheelEvent(QWheelEvent * event) {
   // const QPoint angle = event->angleDelta();
   event->accept();
-  if (angle.y() > 0) {
-    emit requestNextImage();
-  }
-  else {
-    emit requestPrevImage();
-  }
+  // if (angle.y() > 0) {
+  //   emit requestNextImage();
+  // }
+  // else {
+  //   emit requestPrevImage();
+  // }
 }
 
 void VolumeRenderingWidget::mousePressEvent(QMouseEvent *event) {
-  if (!_pimpl->image) return;
-
-  if (event->button() == Qt::RightButton) {
+  if (event->button() == Qt::LeftButton) {
     _pimpl->lastPoint = event->pos();
-    _pimpl->zoomFlag = true;
-  }
-
-  if (event->button() == Qt::MidButton) {
-    _pimpl->zoomValue = 1.0;
-    updateGL();
+    _pimpl->rotFlag = true;
   }
 }
 
 void VolumeRenderingWidget::mouseMoveEvent(QMouseEvent * event) {
-  if (_pimpl->image && _pimpl->zoomFlag && (event->buttons() & Qt::RightButton)) {
+  if (_pimpl->rotFlag && (event->buttons() & Qt::LeftButton)) {
     const QPoint newPoint = event->pos();
-    bool needUpdate = false;
-    if (newPoint.x() < _pimpl->lastPoint.x()) {
-      _pimpl->zoomValue -= 0.1;
-      needUpdate = true;
-    }
-    
-    if (newPoint.x() > _pimpl->lastPoint.x()) {
-      _pimpl->zoomValue += 0.1;
-      needUpdate = true;
-    }
+    if (newPoint.x() < _pimpl->lastPoint.x())
+      _pimpl->zRot -= 1;
+    else
+      _pimpl->zRot += 1;
 
-    if (_pimpl->zoomValue < 1.0) {
-      _pimpl->zoomValue = 1.0;
-      needUpdate = false;
-    }
+    if (_pimpl->zRot < 0) _pimpl->zRot = 360;
+    if (_pimpl->zRot > 360) _pimpl->zRot = 0;
 
-    if (needUpdate) updateGL();
+    if (newPoint.y() < _pimpl->lastPoint.y())
+      _pimpl->xRot -= 1;
+    else
+      _pimpl->xRot += 1;
+
+    if (_pimpl->xRot < 0) _pimpl->xRot = 360;
+    if (_pimpl->xRot > 360) _pimpl->xRot = 0;
+
+    if (_pimpl->dataLoaded) updateGL();
   }
 }
 
 void VolumeRenderingWidget::mouseReleaseEvent(QMouseEvent *event) {
-  if (_pimpl->image && _pimpl->zoomFlag && (event->buttons() & Qt::RightButton)) {
-    _pimpl->zoomFlag = false;
+  if (_pimpl->rotFlag && (event->buttons() & Qt::LeftButton)) {
+    _pimpl->rotFlag = false;
   }
 }
 #endif
 
 void VolumeRenderingWidget::setImages(std::vector<boost::shared_ptr<const Image> >& images) {
   const int width = images.at(0)->width();
+  _pimpl->width = width;
   const int height = images.at(0)->height();
+  _pimpl->height = height;
   const int count = images.size();
+  _pimpl->depth = count;
 
   const int imageSize = width * height;
   const int bufferSize = imageSize * count;
@@ -214,6 +266,7 @@ void VolumeRenderingWidget::setImages(std::vector<boost::shared_ptr<const Image>
 
   delete[] rawBuffer;
   delete[] rgbaBuffer;
+  _pimpl->dataLoaded = true;
 }
 
 void VolumeRenderingWidget::initShaders() {
