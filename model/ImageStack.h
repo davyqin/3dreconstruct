@@ -28,6 +28,8 @@ public:
 
   void setOrientation(int index);
 
+  std::vector<boost::shared_ptr<const Image> > images() const;
+
 private:
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;

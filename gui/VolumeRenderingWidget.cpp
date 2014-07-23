@@ -12,6 +12,7 @@
 using namespace std;
 
 namespace {
+#if 0  
  GLfloat textCoord[] = {0.0f, 0.0f, 
                         0.0f, 1.0f, 
                         1.0f, 1.0f, 
@@ -20,6 +21,7 @@ namespace {
  GLuint indexes[] = {0, 1, 2, 3};
 
  const GLfloat kernel[9] {0.0, -1.0, 0.0, -1.0, 4.0, -1.0, 0.0, -1.0, 0.0};
+#endif 
 }
 
 class VolumeRenderingWidget::Pimpl {
@@ -28,25 +30,25 @@ public:
   : qtRed(QColor::fromRgb(255,0,0))
   , qtDark(QColor::fromRgb(0,0,0))
   , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0))
-  , dataType(Image::SHORTBIT)
   , zoomFlag(false)
   , zoomValue(1.0)
-  , edgeDetection(false) {}
+  , texId(0) {}
 
   QColor qtRed;
   QColor qtDark;
   QColor qtPurple;
-  boost::shared_ptr<const Image> image;
-  Image::DataType dataType;
+//  boost::shared_ptr<const Image> image;
+//  Image::DataType dataType;
   bool zoomFlag;
   double zoomValue;
-  QPoint lastPoint;
+//  QPoint lastPoint;
 
   QGLShaderProgram program;
   QMatrix4x4 view;
   QMatrix4x4 projection;
   GLuint bufferObjects[3];
-  bool edgeDetection;
+//  bool edgeDetection;
+  GLuint texId;
 };
 
 //! [0]
@@ -82,6 +84,9 @@ void VolumeRenderingWidget::initializeGL()
   qglClearColor(_pimpl->qtPurple);
   // initShaders();
   glEnable(GL_DEPTH_TEST);
+
+  glEnable( GL_ALPHA_TEST );
+  glAlphaFunc( GL_GREATER, 0.05f );
 }
 //! [6]
 
@@ -90,36 +95,6 @@ void VolumeRenderingWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-#if 0
-    if (_pimpl->image) {
-      const Image& image = *_pimpl->image;
-      _pimpl->program.setUniformValue("texture", 0);
-
-      double widthZoom = _pimpl->zoomValue;
-      double heightZoom = _pimpl->zoomValue;
-      if (image.width() > image.height()) heightZoom *= (double)image.width() / (double)image.height();
-      if (image.width() < image.height()) widthZoom *= (double)image.height() / (double)image.width();
-
-      QMatrix4x4 model;
-      model.scale(widthZoom, heightZoom);
-      _pimpl->program.setUniformValue("MVP", _pimpl->projection * model);
-
-      glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[0]);
-      const int vertexLocation = _pimpl->program.attributeLocation("VertexPosition");
-      _pimpl->program.enableAttributeArray(vertexLocation);
-      glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-      glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[1]);
-      int texcoordLocation = _pimpl->program.attributeLocation("VertexTexCoord");
-      _pimpl->program.enableAttributeArray(texcoordLocation);
-      glVertexAttribPointer(texcoordLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _pimpl->bufferObjects[2]);
-      glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, 0);
-    }
- 
-    glFlush(); /* clear buffers */
-#endif
 }
 //! [7]
 
@@ -139,24 +114,17 @@ void VolumeRenderingWidget::resizeGL(int width, int height)
   _pimpl->projection.ortho(-300.0f, 300.0f, -300.0f, 300.0f, -300.0f, 300.0f);
 }
 //! [8]
-
+#if 0
 void VolumeRenderingWidget::wheelEvent(QWheelEvent * event) {
   // const QPoint angle = event->angleDelta();
   event->accept();
-#if 0  
   if (angle.y() > 0) {
     emit requestNextImage();
   }
   else {
     emit requestPrevImage();
   }
-#endif  
 }
-
-// void VolumeRenderingWidget::setImage(boost::shared_ptr<const Image> image) {
-//   _pimpl->image = image;
-//   initScene();
-// }
 
 void VolumeRenderingWidget::mousePressEvent(QMouseEvent *event) {
   if (!_pimpl->image) return;
@@ -200,6 +168,53 @@ void VolumeRenderingWidget::mouseReleaseEvent(QMouseEvent *event) {
     _pimpl->zoomFlag = false;
   }
 }
+#endif
+
+void VolumeRenderingWidget::setImages(std::vector<boost::shared_ptr<const Image> >& images) {
+  const int width = images.at(0)->width();
+  const int height = images.at(0)->height();
+  const int count = images.size();
+
+  const int imageSize = width * height;
+  const int bufferSize = imageSize * count;
+
+  char* rawBuffer = new char[bufferSize];
+  int offset = 0;
+  for (auto image : images) {
+    memcpy(rawBuffer + offset, image->rawPixelData8bit().get(), imageSize);
+    offset += imageSize;
+  }
+
+  char* rgbaBuffer = new char[width * height * count * 4];
+  for(int nIndx = 0; nIndx < bufferSize; ++nIndx ) {
+    rgbaBuffer[nIndx*4] = rawBuffer[nIndx];
+    rgbaBuffer[nIndx*4+1] = rawBuffer[nIndx];
+    rgbaBuffer[nIndx*4+2] = rawBuffer[nIndx];
+    rgbaBuffer[nIndx*4+3] = rawBuffer[nIndx];
+  }
+
+  if(_pimpl->texId != 0) {
+    glDeleteTextures(1, &(_pimpl->texId));
+  }
+
+  glActiveTexture(GL_TEXTURE0);
+  glGenTextures(1, &(_pimpl->texId));
+  glBindTexture(GL_TEXTURE_3D, _pimpl->texId);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+  glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, width, height, count, 0,
+               GL_RGBA, GL_UNSIGNED_BYTE, rgbaBuffer);
+
+  glBindTexture(GL_TEXTURE_3D, 0);
+
+  delete[] rawBuffer;
+  delete[] rgbaBuffer;
+}
 
 void VolumeRenderingWidget::initShaders() {
   // Override system locale until shaders are compiled
@@ -226,6 +241,7 @@ void VolumeRenderingWidget::initShaders() {
 }
 
 void VolumeRenderingWidget::initScene() {
+#if 0  
   if (!_pimpl->image) return;
   glDeleteBuffers(3, _pimpl->bufferObjects);
 
@@ -275,4 +291,5 @@ void VolumeRenderingWidget::initScene() {
                              QVector2D(-1.0/width,  1.0), QVector2D(0.0,  1.0/height), QVector2D(1.0/width,  1.0/height)};
 
   _pimpl->program.setUniformValueArray("texOffset", offset, 9);
+#endif  
 }

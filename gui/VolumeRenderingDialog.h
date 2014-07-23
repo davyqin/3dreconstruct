@@ -4,6 +4,7 @@
 #include <QDialog>
 
 #include <memory>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 
@@ -16,7 +17,7 @@ public:
   explicit VolumeRenderingDialog(QWidget* parent = 0);
   ~VolumeRenderingDialog();
 
-  void show3D();
+  void show3D(std::vector<boost::shared_ptr<const Image> >& images);
 
 signals:
   void show3DSignal();

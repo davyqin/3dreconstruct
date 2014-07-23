@@ -33,9 +33,11 @@ HEADERS += util/DicomUtil.h \
            model/ImageStack.h \
            gui/GLWidget.h \
            gui/D3Widget.h \
+           gui/VolumeRenderingWidget.h \
            gui/Controller.h \
            gui/ViewDialog.h \
            gui/View3DDialog.h \
+           gui/VolumeRenderingDialog.h \
            mc/common.h \
            mc/Cube.h \
            mc/CubeFactory.h \
@@ -50,20 +52,24 @@ SOURCES += main.cpp \
            model/ImageStack.cpp \
            gui/GLWidget.cpp \
            gui/D3Widget.cpp \
+           gui/VolumeRenderingWidget.cpp \
 	         gui/Controller.cpp \
            gui/ViewDialog.cpp \
            gui/View3DDialog.cpp \
+           gui/VolumeRenderingDialog.cpp \
            mc/Cube.cpp \
            mc/CubeFactory.cpp \
            mc/McWorkshop.cpp \
            mc/Triangle.cpp \          
 
 MOCABLEHEADERS += gui/ViewDialog.h\
-                  gui/View3DDialog.h
+                  gui/View3DDialog.h\
+                  gui/VolumeRenderingDialog.h\
 
 FORMS += \
     gui/ViewDialog.ui \
-    gui/View3DDialog.ui
+    gui/View3DDialog.ui\
+    gui/VolumeRenderingDialog.ui\
 
 RESOURCES += \
     shader.qrc

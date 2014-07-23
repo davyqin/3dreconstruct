@@ -1,7 +1,6 @@
 #ifndef VOLUMERENDERINGWIDGET_H
 #define VOLUMERENDERINGWIDGET_H
 
-#include "mc/Triangle.h"
 #include <QGLWidget>
 #include <QGLFunctions>
 
@@ -22,7 +21,7 @@ public:
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
 
-    // void setImage(boost::shared_ptr<const Image> image);
+    void setImages(std::vector<boost::shared_ptr<const Image> >& images);
 
 //signals:
 
@@ -31,10 +30,12 @@ protected:
     void initializeGL();
     void paintGL();
     void resizeGL(int width, int height);
+#if 0    
     void wheelEvent(QWheelEvent * event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+#endif    
 //! [2]
 
 //! [3]

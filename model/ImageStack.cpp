@@ -232,3 +232,9 @@ void ImageStack::set3dQuality(int value) {
 void ImageStack::setOrientation(int index) {
   _pimpl->ori = static_cast<Image::Orientation>(index);
 }
+
+std::vector<boost::shared_ptr<const Image> > ImageStack::images() const {
+  std::vector<boost::shared_ptr<const Image> > result;
+  result.insert(result.end(), _pimpl->images.begin(), _pimpl->images.end());
+  return result;
+}

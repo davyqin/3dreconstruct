@@ -24,6 +24,7 @@ private slots:
   void onUpdateWL(int window, int level);
   void onShow3d(int minValue, int maxValue, int qualityValue);
   void onOrientation(int index);
+  void onVolumeRendering();
 
 private:
   class Pimpl;

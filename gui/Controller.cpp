@@ -2,6 +2,7 @@
 
 #include "ViewDialog.h"
 #include "View3DDialog.h"
+#include "VolumeRenderingDialog.h"
 #include "model/ImageStack.h"
 #include "mc/McWorkshop.h"
 
@@ -22,6 +23,7 @@ public:
   :imageStack(new ImageStack()) {}
   ViewDialog viewDialog;
   View3DDialog view3dDialog;
+  VolumeRenderingDialog volumeRenderingDialog;
   boost::shared_ptr<ImageStack> imageStack;
 };
 
@@ -34,11 +36,16 @@ Controller::Controller(QObject *parent)
   connect(&_pimpl->viewDialog, SIGNAL(orientationSignal(int)), SLOT(onOrientation(int)));
 
   connect(&_pimpl->view3dDialog, SIGNAL(show3DSignal(int,int,int)), SLOT(onShow3d(int,int,int)));
+  connect(&_pimpl-> volumeRenderingDialog, SIGNAL(show3DSignal()), SLOT(onVolumeRendering()));
 }
 
 Controller::~Controller() {}
 
 void Controller::activate() {
+  _pimpl->volumeRenderingDialog.adjustSize();
+  _pimpl->volumeRenderingDialog.show();
+  _pimpl->volumeRenderingDialog.resize(650,650);
+
   _pimpl->view3dDialog.adjustSize();
   _pimpl->view3dDialog.show();
   _pimpl->view3dDialog.resize(650,650);
@@ -84,4 +91,9 @@ void Controller::onOrientation(int index) {
   _pimpl->imageStack->setOrientation(index);
   _pimpl->viewDialog.setImageCount(_pimpl->imageStack->imageCount());
   _pimpl->viewDialog.showImage(_pimpl->imageStack->fetchImage());
+}
+
+void Controller::onVolumeRendering() {
+  std::vector<boost::shared_ptr<const Image> > images = std::move(_pimpl->imageStack->images());
+  _pimpl->volumeRenderingDialog.show3D(images);
 }

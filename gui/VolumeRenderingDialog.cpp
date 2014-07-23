@@ -27,4 +27,8 @@ VolumeRenderingDialog::VolumeRenderingDialog(QWidget *parent)
 
 VolumeRenderingDialog::~VolumeRenderingDialog() {}
 
-void VolumeRenderingDialog::show3D() {}
+void VolumeRenderingDialog::show3D(std::vector<boost::shared_ptr<const Image> >& images) {
+  if (images.empty()) return;
+  _pimpl->ui.vrWidget->setImages(images);
+  _pimpl->ui.vrWidget->update();
+}
