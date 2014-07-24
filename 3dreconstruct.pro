@@ -20,7 +20,7 @@ LIBS += "C:/boost_1_54_0/stage/lib/libboost_filesystem-mgw48-1_54.a"
 unix {
 INCLUDEPATH += /opt/boost-1.49.0-gcc-4.8.1-static/include
 INCLUDEPATH += /opt/glm
-LIBS += -lglut -lGLU
+LIBS += -lglut -lGLU -lGLEW
 LIBS += -L/opt/boost-1.49.0-gcc-4.8.1-static/lib -lboost_system -lboost_filesystem
 }
 

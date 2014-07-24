@@ -1,9 +1,9 @@
-#include <QtGui>
-#include <QtOpenGL>
+#include "VolumeRenderingWidget.h"
+
+#include <QMouseEvent>
 #include <QGLShaderProgram>
 #include <QMatrix4x4>
 
-#include "VolumeRenderingWidget.h"
 #include "model/Image.h"
 
 #include <boost/shared_ptr.hpp>
@@ -42,11 +42,8 @@ public:
   QColor qtRed;
   QColor qtDark;
   QColor qtPurple;
-//  boost::shared_ptr<const Image> image;
-//  Image::DataType dataType;
   bool zoomFlag;
   double zoomValue;
-//  QPoint lastPoint;
 
   QGLShaderProgram program;
   QMatrix4x4 view;
@@ -94,7 +91,9 @@ QSize VolumeRenderingWidget::sizeHint() const
 //! [6]
 void VolumeRenderingWidget::initializeGL()
 {
-  initializeGLFunctions();
+  glewExperimental = GL_TRUE;
+  glewInit();
+  // initializeGLFunctions();
   qglClearColor(_pimpl->qtPurple);
   // initShaders();
   //glEnable(GL_DEPTH_TEST);
@@ -233,7 +232,7 @@ void VolumeRenderingWidget::setImages(std::vector<boost::shared_ptr<const Image>
   char* rawBuffer = new char[bufferSize];
   int offset = 0;
   for (auto image : images) {
-    memcpy(rawBuffer + offset, image->rawPixelData8bit().get(), imageSize);
+    memcpy(&rawBuffer[offset], image->rawPixelData8bit().get(), imageSize);
     offset += imageSize;
   }
 

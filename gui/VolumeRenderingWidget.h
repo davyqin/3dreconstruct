@@ -1,8 +1,9 @@
 #ifndef VOLUMERENDERINGWIDGET_H
 #define VOLUMERENDERINGWIDGET_H
 
+#include <GL/glew.h>
+
 #include <QGLWidget>
-#include <QGLFunctions>
 
 #include <memory>
 #include <boost/shared_ptr.hpp>
@@ -10,7 +11,7 @@
 class Image;
 
 //! [0]
-class VolumeRenderingWidget : public QGLWidget, protected QGLFunctions
+class VolumeRenderingWidget : public QGLWidget
 {
     Q_OBJECT
 
