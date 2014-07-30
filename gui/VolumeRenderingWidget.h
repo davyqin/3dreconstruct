@@ -4,6 +4,8 @@
 #include <GL/glew.h>
 
 #include <QGLWidget>
+#include <QGLShaderProgram>
+//#include <QGLShader>
 
 #include <memory>
 #include <boost/shared_ptr.hpp>
@@ -46,6 +48,15 @@ private:
 
     void initShaders();
     void initScene();
+    void initVBO();
+    GLuint initTFF1DTex(const char* filename);
+    GLuint initFace2DTex(GLuint texWidth, GLuint texHeight);
+    void initFrameBuffer(GLuint, GLuint, GLuint);
+//    void linkShader(GLuint shaderPgm, GLuint newVertHandle, GLuint newFragHandle);
+    void linkShader(QGLShaderProgram& shaderPgm, QGLShader* vertShader, QGLShader* fragShader);
+    void render(GLenum cullFace);
+    void drawBox(GLenum cullFace);
+    void rcSetUinforms();
 };
 //! [3]
 

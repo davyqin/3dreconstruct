@@ -4,5 +4,9 @@
         <file>shader/basic.fs</file>
         <file>shader/glwidget.fs</file>
         <file>shader/glwidget.vs</file>
+        <file>shader/backface.vert</file>
+        <file>shader/backface.frag</file>
+        <file>shader/raycasting.vert</file>
+        <file>shader/raycasting.frag</file>
     </qresource>
 </RCC>
