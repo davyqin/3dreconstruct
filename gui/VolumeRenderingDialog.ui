@@ -50,6 +50,44 @@
       </spacer>
      </item>
      <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Min ISO</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="minIsoSpinBox">
+       <property name="maximum">
+        <number>255</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Max ISO</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="maxIsoSpinBox">
+       <property name="maximum">
+        <number>255</number>
+       </property>
+       <property name="value">
+        <number>255</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="isoButton">
+       <property name="text">
+        <string>Apply ISO</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="show3DButton">
        <property name="text">
         <string>Show 3D</string>

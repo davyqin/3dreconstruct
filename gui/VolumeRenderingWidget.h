@@ -25,6 +25,7 @@ public:
     QSize sizeHint() const;
 
     void setImages(std::vector<boost::shared_ptr<const Image> >& images);
+    void setISO(int minIso, int maxIso);
 
 //signals:
 
@@ -49,10 +50,9 @@ private:
     void initShaders();
     void initScene();
     void initVBO();
-    GLuint initTFF1DTex(const char* filename);
-    GLuint initFace2DTex(GLuint texWidth, GLuint texHeight);
+    void initTFF1DTex();
+    void initFace2DTex(GLuint texWidth, GLuint texHeight);
     void initFrameBuffer(GLuint, GLuint, GLuint);
-//    void linkShader(GLuint shaderPgm, GLuint newVertHandle, GLuint newFragHandle);
     void linkShader(QGLShaderProgram& shaderPgm, QGLShader* vertShader, QGLShader* fragShader);
     void render(GLenum cullFace);
     void drawBox(GLenum cullFace);

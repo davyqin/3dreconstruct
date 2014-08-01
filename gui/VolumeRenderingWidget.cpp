@@ -20,8 +20,7 @@
 using namespace std;
 
 namespace {
-  float g_stepSize = 0.005f;
-  // GLfloat dOrthoSize = 1.0f;
+  float g_stepSize = 0.001f;
 
   GLfloat vertices[24] = {
     0.0, 0.0, 0.0,
@@ -65,10 +64,10 @@ public:
   , qtDark(QColor::fromRgb(0,0,0))
   , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0))
   , zoomFlag(false)
-  , zoomValue(1.0)
+  , zoom(1.0)
   , texId(0)
-  , xRot(0.0)
-  , zRot(0.0)
+  , xRot(90.0)
+  , zRot(180.0)
   , rotFlag(false)
   , dataLoaded(false)
   , vao(0)
@@ -78,13 +77,15 @@ public:
   , winWidth(512)
   , winHeight(512)
   , texWidth(512)
-  , texHeight(512) {}
+  , texHeight(512)
+  , minIso(0)
+  , maxIso(255) {}
 
   QColor qtRed;
   QColor qtDark;
   QColor qtPurple;
   bool zoomFlag;
-  double zoomValue;
+  double zoom;
 
   QGLShaderProgram program;
   boost::shared_ptr<QGLShader> bfVertHandle;
@@ -117,6 +118,8 @@ public:
   GLuint winHeight;
   GLuint texWidth;
   GLuint texHeight;
+  int minIso;
+  int maxIso;
 };
 
 //! [0]
@@ -150,16 +153,11 @@ void VolumeRenderingWidget::initializeGL()
 {
   glewExperimental = GL_TRUE;
   glewInit();
-  // initializeGLFunctions();
   qglClearColor(_pimpl->qtPurple);
 
   initVBO();
   initShaders();
-  _pimpl->tffTexObj = initTFF1DTex("tff.dat");
-  _pimpl->bfTexObj = initFace2DTex(_pimpl->texWidth, _pimpl->texHeight);
-  // GL_ERROR();
-  initFrameBuffer(_pimpl->bfTexObj, _pimpl->texWidth, _pimpl->texHeight);
-  // GL_ERROR();
+  initTFF1DTex();
 }
 //! [6]
 
@@ -245,30 +243,24 @@ void VolumeRenderingWidget::resizeGL(int width, int height)
   _pimpl->texWidth = width;
   _pimpl->texHeight = height;
 
-  // int side = qMin(width, height);
-  // glViewport((width - side) / 2, (height - side) / 2, side, side);
-#if 0
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-
-  //glOrtho(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
-  glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-  glMatrixMode(GL_MODELVIEW);
-#endif  
-  // _pimpl->projection.setToIdentity();
-  // _pimpl->projection.ortho(-300.0f, 300.0f, -300.0f, 300.0f, -300.0f, 300.0f);
+  initFace2DTex(_pimpl->texWidth, _pimpl->texHeight);
+  initFrameBuffer(_pimpl->bfTexObj, _pimpl->texWidth, _pimpl->texHeight);
 }
 //! [8]
 #if 1
 void VolumeRenderingWidget::wheelEvent(QWheelEvent * event) {
-  // const QPoint angle = event->angleDelta();
+  const QPoint angle = event->angleDelta();
   event->accept();
-  // if (angle.y() > 0) {
-  //   emit requestNextImage();
-  // }
-  // else {
-  //   emit requestPrevImage();
-  // }
+  if (!_pimpl->dataLoaded) return;
+
+  if (angle.y() > 0) {
+    _pimpl->zoom *= 1.1;
+  }
+  else {
+    _pimpl->zoom /= 1.1;
+  }
+
+  updateGL();
 }
 
 void VolumeRenderingWidget::mousePressEvent(QMouseEvent *event) {
@@ -325,7 +317,7 @@ void VolumeRenderingWidget::setImages(std::vector<boost::shared_ptr<const Image>
     memcpy(&rawBuffer[offset], image->rawPixelData8bit().get(), imageSize);
     offset += imageSize;
   }
-
+#if 0
   char* rgbaBuffer = new char[width * height * count * 4];
   for(int nIndx = 0; nIndx < bufferSize; ++nIndx ) {
     rgbaBuffer[nIndx*4] = rawBuffer[nIndx];
@@ -333,7 +325,7 @@ void VolumeRenderingWidget::setImages(std::vector<boost::shared_ptr<const Image>
     rgbaBuffer[nIndx*4+2] = rawBuffer[nIndx];
     rgbaBuffer[nIndx*4+3] = rawBuffer[nIndx];
   }
-
+#endif
   if(_pimpl->texId != 0) {
     glDeleteTextures(1, &(_pimpl->texId));
   }
@@ -348,8 +340,6 @@ void VolumeRenderingWidget::setImages(std::vector<boost::shared_ptr<const Image>
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-  // glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, width, height, count, 0,
-  //              GL_RGBA, GL_UNSIGNED_BYTE, rgbaBuffer);
 
   glTexImage3D(GL_TEXTURE_3D, 0, GL_LUMINANCE, width, height, count, 0,
                GL_LUMINANCE, GL_UNSIGNED_BYTE, rawBuffer);
@@ -357,7 +347,7 @@ void VolumeRenderingWidget::setImages(std::vector<boost::shared_ptr<const Image>
   glBindTexture(GL_TEXTURE_3D, 0);
 
   delete[] rawBuffer;
-  delete[] rgbaBuffer;
+  // delete[] rgbaBuffer;
   _pimpl->dataLoaded = true;
 }
 
@@ -373,30 +363,6 @@ void VolumeRenderingWidget::initShaders() {
 
   _pimpl->rcFragHandle = boost::shared_ptr<QGLShader>(new QGLShader(QGLShader::Fragment));
   _pimpl->rcFragHandle->compileSourceFile(":/shader/raycasting.frag");
-
-#if 0  
-  // Override system locale until shaders are compiled
-  setlocale(LC_NUMERIC, "C");
-
-  // Compile vertex shader
-  if (!_pimpl->program.addShaderFromSourceFile(QGLShader::Vertex, ":/shader/VolumeRenderingWidget.vs"))
-    close();
-
-  // Compile fragment shader
-  if (!_pimpl->program.addShaderFromSourceFile(QGLShader::Fragment, ":/shader/VolumeRenderingWidget.fs"))
-    close();
-
-  // Link shader pipeline
-  if (!_pimpl->program.link())
-    close();
-
-  // Bind shader pipeline for use
-  if (!_pimpl->program.bind())
-    close();
-
-  // Restore system locale
-  setlocale(LC_ALL, "");
-#endif  
 }
 
 void VolumeRenderingWidget::initScene() {
@@ -481,13 +447,14 @@ void VolumeRenderingWidget::initVBO() {
   _pimpl->vao = vao;
 }
 
-GLuint VolumeRenderingWidget::initTFF1DTex(const char* filename) {
+void VolumeRenderingWidget::initTFF1DTex() {
+#if 0  
   ifstream inFile(filename, ifstream::in);
   if (!inFile) {
     cerr << "Error openning file: " << filename << endl;
     return 0;
   }
-    
+
   const int MAX_CNT = 10000;
   GLubyte *tff = (GLubyte *) calloc(MAX_CNT, sizeof(GLubyte));
   inFile.read(reinterpret_cast<char *>(tff), MAX_CNT);
@@ -513,18 +480,54 @@ GLuint VolumeRenderingWidget::initTFF1DTex(const char* filename) {
   glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA8, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, tff);
   free(tff);    
   return tff1DTex;
+#endif
+
+  GLubyte transfer[256][4];
+  int i;
+  const float fSlope = 255.0f / (float)(_pimpl->maxIso - _pimpl->minIso);
+  for (i = 0; i < 256; ++i) {
+    if(i < _pimpl->minIso || i > _pimpl->maxIso) {
+      transfer[i][0] = (GLubyte)0;
+      transfer[i][1] = (GLubyte)0;
+      transfer[i][2] = (GLubyte)0;
+      transfer[i][3] = (GLubyte)0;
+    }
+    else {
+      const GLubyte value = (i - _pimpl->minIso) * fSlope;
+      transfer[i][0] = value;
+      transfer[i][1] = value;
+      transfer[i][2] = value;
+      transfer[i][3] = value;
+    }
+  }
+
+  if (_pimpl->tffTexObj != 0) {
+    glDeleteTextures(1, &(_pimpl->tffTexObj));
+  }
+
+  glEnable(GL_TEXTURE_1D);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glGenTextures(1, &(_pimpl->tffTexObj));
+  glBindTexture(GL_TEXTURE_1D, _pimpl->tffTexObj);
+  glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+  glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, transfer);
 }
 
-GLuint VolumeRenderingWidget::initFace2DTex(GLuint texWidth, GLuint texHeight) {
-  GLuint backFace2DTex;
-  glGenTextures(1, &backFace2DTex);
-  glBindTexture(GL_TEXTURE_2D, backFace2DTex);
+void VolumeRenderingWidget::initFace2DTex(GLuint texWidth, GLuint texHeight) {
+  if (_pimpl->bfTexObj != 0) {
+    glDeleteTextures(1, &(_pimpl->bfTexObj));
+  }
+
+  //GLuint backFace2DTex;
+  glGenTextures(1, &(_pimpl->bfTexObj));
+  glBindTexture(GL_TEXTURE_2D, _pimpl->bfTexObj);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, texWidth, texHeight, 0, GL_RGBA, GL_FLOAT, NULL);
-  return backFace2DTex;
 }
 
 void VolumeRenderingWidget::initFrameBuffer(GLuint texObj, GLuint texWidth, GLuint texHeight) {
@@ -555,8 +558,6 @@ void VolumeRenderingWidget::render(GLenum cullFace) {
 
   //  transform the box
   glm::mat4 projection = glm::perspective(50.0f, (GLfloat)_pimpl->winWidth/_pimpl->winHeight, 0.1f, 400.f);
-  //glm::mat4 projection = glm::perspective(60.0f, (GLfloat)_pimpl->winWidth/_pimpl->winHeight, 0.1f, 200.f);
-  // glm::mat4 projection = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, -2.0f, 2.0f);
   glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 2.0f),
                                glm::vec3(0.0f, 0.0f, 0.0f), 
                                glm::vec3(0.0f, 1.0f, 0.0f));
@@ -564,7 +565,7 @@ void VolumeRenderingWidget::render(GLenum cullFace) {
   glm::mat4 model = glm::mat4(1.0f);
 
  // to make the "head256.raw" i.e. the volume data stand up.
-  // model *= glm::scale(glm::mat4(1.0), glm::vec3(3.0f, 3.0f, 3.0f));
+  model *= glm::scale(glm::mat4(1.0), glm::vec3(_pimpl->zoom, _pimpl->zoom, _pimpl->zoom));
   model *= glm::rotate(_pimpl->zRot, glm::vec3(0.0f, 0.0f, 1.0f));
   model *= glm::rotate(_pimpl->xRot, glm::vec3(1.0f, 0.0f, 0.0f));
   model *= glm::translate(glm::vec3(-0.5f, -0.5f, -0.5f)); 
@@ -584,54 +585,6 @@ void VolumeRenderingWidget::drawBox(GLenum glFaces)
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (GLuint *)NULL);
     glDisable(GL_CULL_FACE);
 }
-
-// link the shader objects using the shader program
-#if 0
-void VolumeRenderingWidget::linkShader(GLuint shaderPgm, GLuint newVertHandle, GLuint newFragHandle)
-{
-    // setlocale(LC_NUMERIC, "C");
-    const GLsizei maxCount = 2;
-    GLsizei count;
-    GLuint shaders[maxCount];
-    glGetAttachedShaders(shaderPgm, maxCount, &count, shaders);
-    // cout << "get VertHandle: " << shaders[0] << endl;
-    // cout << "get FragHandle: " << shaders[1] << endl;
-    // GL_ERROR();
-    for (int i = 0; i < count; i++) {
-      glDetachShader(shaderPgm, shaders[i]);
-    }
-    // Bind index 0 to the shader input variable "VerPos"
-    glBindAttribLocation(shaderPgm, 0, "VerPos");
-    // Bind index 1 to the shader input variable "VerClr"
-    glBindAttribLocation(shaderPgm, 1, "VerClr");
-    // GL_ERROR();
-    glAttachShader(shaderPgm,newVertHandle);
-    glAttachShader(shaderPgm,newFragHandle);
-
-    // Link shader pipeline
-    if (!_pimpl->program.link())
-      close();
-
-    // Bind shader pipeline for use
-    if (!_pimpl->program.bind())
-      close();
-
-    // Restore system locale
-    // setlocale(LC_ALL, "");
-
-
-
-    // GL_ERROR();
-    // glLinkProgram(shaderPgm);
-
-    if (!_pimpl->program.isLinked())
-    {
-      cerr << "Failed to relink shader program!" << endl;
-      return;
-    }
-    // GL_ERROR();
-}
-#endif
 
 void VolumeRenderingWidget::linkShader(QGLShaderProgram& shaderPgm, QGLShader* vertShader, QGLShader* fragShader) {
   setlocale(LC_NUMERIC, "C");
@@ -657,8 +610,6 @@ void VolumeRenderingWidget::linkShader(QGLShaderProgram& shaderPgm, QGLShader* v
     cerr<<"Failed to rebind shader program!"<<endl;
     close();
   }
-
-  // cout<<"Link shaders successfully!"<<endl;
 
   // Restore system locale
   setlocale(LC_ALL, "");
@@ -736,6 +687,12 @@ void VolumeRenderingWidget::rcSetUinforms()
   cout << "VolumeTex"
        << "is not bind to the uniform"
        << endl;
-    }
-    
+    }    
+}
+
+void VolumeRenderingWidget::setISO(int minIso, int maxIso) {
+  _pimpl->minIso = minIso;
+  _pimpl->maxIso = maxIso;
+
+  initTFF1DTex();
 }

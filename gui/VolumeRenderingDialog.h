@@ -22,6 +22,9 @@ public:
 signals:
   void show3DSignal();
 
+private slots:
+  void onApplyISO();
+
 private:
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;

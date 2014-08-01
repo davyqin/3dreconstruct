@@ -23,6 +23,7 @@ VolumeRenderingDialog::VolumeRenderingDialog(QWidget *parent)
   setWindowTitle(tr("Volume Rendering"));
 
   connect(_pimpl->ui.show3DButton, SIGNAL(clicked()), SIGNAL(show3DSignal()));
+  connect(_pimpl->ui.isoButton, SIGNAL(clicked()), SLOT(onApplyISO()));
 }
 
 VolumeRenderingDialog::~VolumeRenderingDialog() {}
@@ -30,5 +31,12 @@ VolumeRenderingDialog::~VolumeRenderingDialog() {}
 void VolumeRenderingDialog::show3D(std::vector<boost::shared_ptr<const Image> >& images) {
   if (images.empty()) return;
   _pimpl->ui.vrWidget->setImages(images);
+  _pimpl->ui.vrWidget->update();
+}
+
+void VolumeRenderingDialog::onApplyISO() {
+  _pimpl->ui.vrWidget->setISO(_pimpl->ui.minIsoSpinBox->text().toInt(),
+                              _pimpl->ui.maxIsoSpinBox->text().toInt());
+
   _pimpl->ui.vrWidget->update();
 }

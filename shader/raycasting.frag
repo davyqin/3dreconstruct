@@ -1,6 +1,4 @@
 #version 400
-// 杜绝声明未使用的变量，避免bug的产生。
-
 
 in vec3 EntryPoint;
 in vec4 ExitPointCoord;
@@ -14,8 +12,7 @@ layout (location = 0) out vec4 FragColor;
 
 void main()
 {
-    // ExitPointCoord 的坐标是设备规范化坐标
-    // 出现了和纹理坐标有关的问题。
+    // ExitPointCoord
     vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
     // that will actually give you clip-space coordinates rather than
     // normalised device coordinates, since you're not performing the perspective
@@ -33,15 +30,16 @@ void main()
     vec3 voxelCoord = EntryPoint;
     vec4 colorAcum = vec4(0.0); // The dest color
     float alphaAcum = 0.0;                // The  dest alpha for blending
-    /* 定义颜色查找的坐标 */
+
     float intensity;
     float lengthAcum = 0.0;
     vec4 colorSample; // The src color 
     float alphaSample; // The src alpha
+    
     // backgroundColor
     vec4 bgColor = vec4(1.0, 1.0, 1.0, 0.0);
  
-    for(int i = 0; i < 1600; ++i)
+    for(int i = 0; i < 2000; ++i)
     {
     	// 获得体数据中的标量值scaler value
     	intensity =  texture(VolumeTex, voxelCoord).x;
