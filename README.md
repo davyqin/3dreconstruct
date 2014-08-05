@@ -12,4 +12,5 @@ Hardware requirements: It is alway good to use best hardware to compile and run 
 Information: Use my [weibo](http://www.weibo.com/u/1410620001) and [blog](http://blog.sina.com.cn/davyqin) to contact me.
 
 v1.0 is tagged. The surface rendering of marching cubes is finished.
+
 v1.1 is tagged. The volume rendering using glsl with gray scale transfer function is finished.
