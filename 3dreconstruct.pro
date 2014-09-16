@@ -10,12 +10,13 @@ CONFIG += c++11 console
 
 win32 {
 INCLUDEPATH += C:/boost_1_54_0
-INCLUDEPATH += C:/glut-3.7.6
 INCLUDEPATH += C:/glm
-LIBS += libglew32
+INCLUDEPATH += C:/glew-1.10.0/include
+#LIBS += libglew32
 LIBS += "C:/boost_1_54_0/stage/lib/libboost_system-mgw48-1_54.a"
 LIBS += "C:/boost_1_54_0/stage/lib/libboost_filesystem-mgw48-1_54.a"
-#LIBS += "C:/glut-3.7.6/libglut32.a"
+LIBS += "C:/glew-1.10.0/lib/libglew32.a"
+LIBS += "C:/glew-1.10.0/lib/libglew32.dll.a"
 }
 
 unix {
