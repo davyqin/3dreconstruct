@@ -4,6 +4,7 @@
 #include <boost/shared_ptr.hpp>
 #include <memory>
 #include <string>
+#include <vector>
 
 class Image;
 

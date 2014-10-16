@@ -1,10 +1,15 @@
 #include "Vertex.h"
 
+#include <boost/assign/list_of.hpp>
+
 using namespace std;
 
 class Vertex::Pimpl
 {
 public:
+
+  Pimpl()
+  :value(0) {}
 
   Pimpl(const vector<float>& position,
   	    const int value)
@@ -17,10 +22,10 @@ public:
 };
 
 Vertex::Vertex()
-:_pimpl(new Pimpl({0.0, 0.0, 0.0}, 0)) {}
+:_pimpl(new Pimpl()) {}
 
 Vertex::Vertex(float x, float y, float z, int value) 
-:_pimpl(new Pimpl({x, y, z}, value)) {}
+:_pimpl(new Pimpl(boost::assign::list_of(x)(y)(z), value)) {}
 
 Vertex::Vertex(const Vertex& vertex)
 :_pimpl(new Pimpl(vertex.position(), vertex.value())) {}

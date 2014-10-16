@@ -12,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <limits>
+#include <iostream>
 
 
 using namespace std;
@@ -226,10 +227,10 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   _pimpl->centerX = (_pimpl->minX + _pimpl->maxX) / 2;
   _pimpl->centerY = (_pimpl->minY + _pimpl->maxY) / 2;
   _pimpl->centerZ = (_pimpl->minZ + _pimpl->maxZ) / 2;
-  cout <<"Input "<<data.size()<<" triangles"<<endl;
-  cout <<_pimpl->minX<<" "<<_pimpl->centerX<<" "<<_pimpl->maxX<<endl;
-  cout <<_pimpl->minY<<" "<<_pimpl->centerY<<" "<<_pimpl->maxY<<endl;
-  cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<endl;
+  std::cout <<"Input "<<data.size()<<" triangles"<<endl;
+  std::cout <<_pimpl->minX<<" "<<_pimpl->centerX<<" "<<_pimpl->maxX<<std::endl;
+  std::cout <<_pimpl->minY<<" "<<_pimpl->centerY<<" "<<_pimpl->maxY<<std::endl;
+  std::cout <<_pimpl->minZ<<" "<<_pimpl->centerZ<<" "<<_pimpl->maxZ<<std::endl;
   
   glBindBuffer(GL_ARRAY_BUFFER, _pimpl->bufferObjects[0]);
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * _pimpl->vertexCount * 3, _pimpl->points, GL_STATIC_DRAW);

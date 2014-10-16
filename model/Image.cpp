@@ -1,6 +1,7 @@
 #include "Image.h"
 
 #include <vector>
+#include <boost/assign/list_of.hpp>
 
 using namespace std;
 
@@ -9,9 +10,9 @@ bool doublesAreEqual(double d1, double d2) {
   return std::fabs(d1 - d2) < std::numeric_limits<double>::epsilon();
 }
 
-const std::vector<double> transOri = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0};
-const std::vector<double> coroOri = {1.0, 0.0, 0.0, 0.0, 0.0, 1.0};
-const std::vector<double> sagiOri = {0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+const std::vector<double> transOri = boost::assign::list_of(1.0)(0.0)(0.0)(0.0)(1.0)(0.0);
+const std::vector<double> coroOri = boost::assign::list_of(1.0)(0.0)(0.0)(0.0)(0.0)(1.0);
+const std::vector<double> sagiOri = boost::assign::list_of(0.0)(1.0)(0.0)(0.0)(0.0)(1.0);
 }
 
 class Image::Pimpl

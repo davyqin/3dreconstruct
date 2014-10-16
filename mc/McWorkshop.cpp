@@ -9,6 +9,7 @@
 #include "model/ImageStack.h"
 
 #include <boost/progress.hpp>
+#include <boost/assign/list_of.hpp>
 #include <vector>
 #include <iostream>
 #include <future>
@@ -58,8 +59,8 @@ namespace {
   generateTriangles(const std::vector<boost::shared_ptr<Cube> >& cubes,
                     const int minValue, const int maxValue) {
     std::vector<boost::shared_ptr<const Triangle> > triangles;
-    for (unsigned int i = 0; i < cubes.size(); ++i) {
-      Cube& cube = *cubes.at(i);
+    for (unsigned int j = 0; j < cubes.size(); ++j) {
+      Cube& cube = *cubes.at(j);
       int cubeindex = 0;
       if (cube.vertex(0).value() >= minValue && cube.vertex(0).value() <= maxValue) cubeindex |= 1;
       if (cube.vertex(1).value() >= minValue && cube.vertex(1).value() <= maxValue) cubeindex |= 2;
@@ -124,14 +125,15 @@ namespace {
         vertList[11] = interpolate(cube.vertex(3), cube.vertex(7), minValue, maxValue);
       }
 
-      const vector<int> vertices = TriangleTable[cubeindex];
-      for (unsigned int i = 0; i < vertices.size(); ++i) {
-        if (vertices.at(i) == -1) continue;
-
-        triangles.push_back(
-          boost::shared_ptr<const Triangle>(new Triangle({vertList[vertices.at(i)], 
-                                                          vertList[vertices.at(++i)],
-                                                          vertList[vertices.at(++i)]})));
+      const int* vertices = TriangleTable[cubeindex];
+      for (unsigned int i = 0; i < 16; ++i) {
+        if (*(vertices + i) == -1) continue;
+        const int a = *(vertices + i);
+        const int b = *(vertices + i + 1);
+        const int c = *(vertices + i + 2);
+        const std::vector<Vertex> temp = boost::assign::list_of(vertList[a])(vertList[b])(vertList[c]);
+        triangles.push_back(boost::shared_ptr<const Triangle>(new Triangle(temp)));
+        i = i + 2;
       }
     }
 
@@ -207,6 +209,7 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
     boost::shared_ptr<const Image> bottomImage = _pimpl->imageStack->fetchImage(i);
     boost::shared_ptr<const Image> topImage = _pimpl->imageStack->fetchImage(i+1);
     const CubeFactory cubeFactory(bottomImage, topImage);
+
     std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
       std::async(std::launch::async, [=](){return generateTriangles(cubeFactory.cubes(),
                                                                     _pimpl->minValue,

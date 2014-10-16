@@ -19,7 +19,7 @@ namespace {
 
  GLuint indexes[] = {0, 1, 2, 3};
 
- const GLfloat kernel[9] {0.0, -1.0, 0.0, -1.0, 4.0, -1.0, 0.0, -1.0, 0.0};
+ const GLfloat kernel[9] = {0.0, -1.0, 0.0, -1.0, 4.0, -1.0, 0.0, -1.0, 0.0};
 }
 
 class GLWidget::Pimpl {
@@ -308,9 +308,9 @@ void GLWidget::initScene() {
 
   _pimpl->program.setUniformValueArray("kernelValue", kernel, 9, 1);
 
-  const QVector2D offset[9] {QVector2D(-1.0/width, -1.0/height), QVector2D(0.0, -1.0/height), QVector2D(1.0/width, -1.0/height),
-                             QVector2D(-1.0/width,  0.0), QVector2D(0.0,  0.0), QVector2D(1.0/width,  0.0/height),
-                             QVector2D(-1.0/width,  1.0), QVector2D(0.0,  1.0/height), QVector2D(1.0/width,  1.0/height)};
+  const QVector2D offset[9] = {QVector2D(-1.0/width, -1.0/height), QVector2D(0.0, -1.0/height), QVector2D(1.0/width, -1.0/height),
+                               QVector2D(-1.0/width,  0.0), QVector2D(0.0,  0.0), QVector2D(1.0/width,  0.0/height),
+                               QVector2D(-1.0/width,  1.0), QVector2D(0.0,  1.0/height), QVector2D(1.0/width,  1.0/height)};
 
   _pimpl->program.setUniformValueArray("texOffset", offset, 9);
 }

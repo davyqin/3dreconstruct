@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/normal.hpp>
 
+#include <boost/assign/list_of.hpp>
+
 using namespace std;
 
 class Triangle::Pimpl
@@ -56,5 +58,5 @@ std::vector<Vertex> Triangle::vertices() const {
 }
 
 std::vector<float> Triangle::normal() const {
-  return std::vector<float>({_pimpl->normal[0], _pimpl->normal[1], _pimpl->normal[2]});
+  return boost::assign::list_of(_pimpl->normal[0])(_pimpl->normal[1])(_pimpl->normal[2]);
 }
