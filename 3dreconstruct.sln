@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3dreconstruct", "3dreconstruct\3dreconstruct.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{96AF470E-9382-4FE6-853B-EE17A8AB4672} = {96AF470E-9382-4FE6-853B-EE17A8AB4672}
+		{4466823C-EAC2-4BBB-A334-1CDBB63F257F} = {4466823C-EAC2-4BBB-A334-1CDBB63F257F}
+		{BED50C5D-DE9E-4EA4-AFF7-10B647C6EAEE} = {BED50C5D-DE9E-4EA4-AFF7-10B647C6EAEE}
+		{B3DEB980-5686-4E2C-92A3-56A038378260} = {B3DEB980-5686-4E2C-92A3-56A038378260}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "model", "model\model.vcxproj", "{96AF470E-9382-4FE6-853B-EE17A8AB4672}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "util", "util\util.vcxproj", "{4466823C-EAC2-4BBB-A334-1CDBB63F257F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mc", "mc\mc.vcxproj", "{BED50C5D-DE9E-4EA4-AFF7-10B647C6EAEE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gui", "gui\gui.vcxproj", "{B3DEB980-5686-4E2C-92A3-56A038378260}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Debug|Win32.Build.0 = Debug|Win32
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|Win32.ActiveCfg = Release|Win32
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|Win32.Build.0 = Release|Win32
+		{96AF470E-9382-4FE6-853B-EE17A8AB4672}.Debug|Win32.ActiveCfg = Debug|Win32
+		{96AF470E-9382-4FE6-853B-EE17A8AB4672}.Debug|Win32.Build.0 = Debug|Win32
+		{96AF470E-9382-4FE6-853B-EE17A8AB4672}.Release|Win32.ActiveCfg = Release|Win32
+		{96AF470E-9382-4FE6-853B-EE17A8AB4672}.Release|Win32.Build.0 = Release|Win32
+		{4466823C-EAC2-4BBB-A334-1CDBB63F257F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4466823C-EAC2-4BBB-A334-1CDBB63F257F}.Debug|Win32.Build.0 = Debug|Win32
+		{4466823C-EAC2-4BBB-A334-1CDBB63F257F}.Release|Win32.ActiveCfg = Release|Win32
+		{4466823C-EAC2-4BBB-A334-1CDBB63F257F}.Release|Win32.Build.0 = Release|Win32
+		{BED50C5D-DE9E-4EA4-AFF7-10B647C6EAEE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BED50C5D-DE9E-4EA4-AFF7-10B647C6EAEE}.Debug|Win32.Build.0 = Debug|Win32
+		{BED50C5D-DE9E-4EA4-AFF7-10B647C6EAEE}.Release|Win32.ActiveCfg = Release|Win32
+		{BED50C5D-DE9E-4EA4-AFF7-10B647C6EAEE}.Release|Win32.Build.0 = Release|Win32
+		{B3DEB980-5686-4E2C-92A3-56A038378260}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B3DEB980-5686-4E2C-92A3-56A038378260}.Debug|Win32.Build.0 = Debug|Win32
+		{B3DEB980-5686-4E2C-92A3-56A038378260}.Release|Win32.ActiveCfg = Release|Win32
+		{B3DEB980-5686-4E2C-92A3-56A038378260}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
