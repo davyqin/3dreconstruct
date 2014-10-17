@@ -74,6 +74,9 @@
      </item>
      <item>
       <widget class="QComboBox" name="imageTypeCombo">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
        <item>
         <property name="text">
          <string>16Bits</string>
@@ -151,6 +154,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="applyWLButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Apply W/L</string>
        </property>

@@ -28,7 +28,7 @@ public:
   : qtRed(QColor::fromRgb(255,0,0))
   , qtDark(QColor::fromRgb(0,0,0))
   , qtPurple(QColor::fromCmykF(0.39, 0.39, 0.0, 0.0))
-  , dataType(Image::SHORTBIT)
+  , dataType(Image::CHARBIT)
   , zoomFlag(false)
   , zoomValue(1.0)
   , edgeDetection(false) {}

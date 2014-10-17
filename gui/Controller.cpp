@@ -59,7 +59,6 @@ void Controller::onLoadImage(const QString& imageFolder) {
   boost::progress_timer timer;
   _pimpl->imageStack->loadImages(imageFolder.toStdString());
   if (_pimpl->imageStack->imageCount() > 0) {
-    // _pimpl->mcWorkshop.setImageStack(_pimpl->imageStack);
     _pimpl->viewDialog.setImageCount(_pimpl->imageStack->imageCount());
     onRequestImage(0);
   }
