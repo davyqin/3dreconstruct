@@ -5,9 +5,13 @@
 
 #include "GLWidget.h"
 #include "model/Image.h"
+#include "cuda/cuda_kernels.h"
+#include "cuda/cuda_common.h"
 
 #include <boost/shared_ptr.hpp>
 #include <vector>
+#include <cuda_runtime.h>
+#include <cuda_gl_interop.h>
 
 using namespace std;
 
@@ -31,7 +35,9 @@ public:
   , dataType(Image::CHARBIT)
   , zoomFlag(false)
   , zoomValue(1.0)
-  , edgeDetection(false) {}
+  , edgeDetection(false)
+  , cudaFilter(true)
+  , filterType(GLWidget::NONE) {}
 
   QColor qtRed;
   QColor qtDark;
@@ -46,7 +52,13 @@ public:
   QMatrix4x4 view;
   QMatrix4x4 projection;
   GLuint bufferObjects[3];
+  GLuint cudaBuffer;
   bool edgeDetection;
+  bool cudaFilter;
+  GLuint texId;
+  FilterType filterType;
+
+  struct cudaGraphicsResource* cuda_pbo_resource;
 };
 
 //! [0]
@@ -93,6 +105,25 @@ void GLWidget::paintGL()
 
     if (_pimpl->image) {
       const Image& image = *_pimpl->image;
+
+      if (_pimpl->dataType == Image::CHARBIT && _pimpl->filterType == GLWidget::CUDA) {
+         // Sobel operation
+        unsigned char *data = NULL;
+
+        // map PBO to get CUDA device pointer
+        cudaGraphicsMapResources(1, &_pimpl->cuda_pbo_resource, 0);
+        size_t num_bytes;
+        cudaGraphicsResourceGetMappedPointer((void **)&data, &num_bytes, _pimpl->cuda_pbo_resource);
+
+        sobelFilter(data, image.width(), image.height());
+        cudaGraphicsUnmapResources(1, &_pimpl->cuda_pbo_resource, 0);
+
+        glBindTexture(GL_TEXTURE_2D, _pimpl->texId);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _pimpl->cudaBuffer);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width(), image.height(), GL_LUMINANCE, GL_UNSIGNED_BYTE, NULL);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+      }
+      
       _pimpl->program.setUniformValue("texture", 0);
 
       double widthZoom = _pimpl->zoomValue;
@@ -288,17 +319,44 @@ void GLWidget::initScene() {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _pimpl->bufferObjects[2]);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 4, indexes, GL_STATIC_DRAW);
 
-  GLuint texId;
+  initImageTexture(_pimpl->filterType);
+}
+
+void GLWidget::initImageTexture(FilterType filterType) {
+  if (!_pimpl->image) return;
+
+  const Image& image = *_pimpl->image;
+  const float width = image.width();
+  const float height = image.height();
+
+  //GLuint texId;
   glActiveTexture(GL_TEXTURE0);
-  glGenTextures(1, &texId);
-  glBindTexture(GL_TEXTURE_2D, texId);
+  glGenTextures(1, &_pimpl->texId);
+  glBindTexture(GL_TEXTURE_2D, _pimpl->texId);
+
+  // no edge detection
   if (_pimpl->dataType == Image::SHORTBIT) {
     _pimpl->program.setUniformValue("edgeDetection", false);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_SHORT, image.pixelData().get());
   }
-  else {
-    _pimpl->program.setUniformValue("edgeDetection", _pimpl->edgeDetection);
+
+  if (_pimpl->dataType == Image::CHARBIT && _pimpl->filterType == GLWidget::NONE) {
+    _pimpl->program.setUniformValue("edgeDetection", false);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, image.pixelData8bit().get());
+  }
+
+  // glsl edge detection
+  if (_pimpl->dataType == Image::CHARBIT && _pimpl->filterType == GLWidget::GLSL) {
+    _pimpl->program.setUniformValue("edgeDetection", true);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, image.pixelData8bit().get());
+
+    _pimpl->program.setUniformValueArray("kernelValue", kernel, 9, 1);
+
+    const QVector2D offset[9] = {QVector2D(-1.0/width, -1.0/height), QVector2D(0.0, -1.0/height), QVector2D(1.0/width, -1.0/height),
+                                 QVector2D(-1.0/width,  0.0), QVector2D(0.0,  0.0), QVector2D(1.0/width,  0.0/height),
+                                 QVector2D(-1.0/width,  1.0), QVector2D(0.0,  1.0/height), QVector2D(1.0/width,  1.0/height)};
+
+    _pimpl->program.setUniformValueArray("texOffset", offset, 9);
   }
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR); 
@@ -306,19 +364,33 @@ void GLWidget::initScene() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  _pimpl->program.setUniformValueArray("kernelValue", kernel, 9, 1);
+  // cuda edge detection
+  if (_pimpl->dataType == Image::CHARBIT && _pimpl->filterType == GLWidget::CUDA) {
+    _pimpl->program.setUniformValue("edgeDetection", false);
 
-  const QVector2D offset[9] = {QVector2D(-1.0/width, -1.0/height), QVector2D(0.0, -1.0/height), QVector2D(1.0/width, -1.0/height),
-                               QVector2D(-1.0/width,  0.0), QVector2D(0.0,  0.0), QVector2D(1.0/width,  0.0/height),
-                               QVector2D(-1.0/width,  1.0), QVector2D(0.0,  1.0/height), QVector2D(1.0/width,  1.0/height)};
+    setupTexture(width, height, image.pixelData8bit().get());
+    glGenBuffers(1, &_pimpl->cudaBuffer);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _pimpl->cudaBuffer);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, sizeof(unsigned char) * width * height, image.pixelData8bit().get(), GL_STREAM_DRAW);
 
-  _pimpl->program.setUniformValueArray("texOffset", offset, 9);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+    // register this buffer object with CUDA
+    checkCudaErrors(cudaGraphicsGLRegisterBuffer(&_pimpl->cuda_pbo_resource,  _pimpl->cudaBuffer, cudaGraphicsMapFlagsWriteDiscard));
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  }
 }
 
-void GLWidget::setEdgeDetection(bool flag) {
-  _pimpl->edgeDetection = flag;
-  if (_pimpl->dataType == Image::CHARBIT) {
-    _pimpl->program.setUniformValue("edgeDetection", flag);
-    updateGL();
-  }
+void GLWidget::setFilter(int filter) {
+  if (filter == 0) _pimpl->filterType = NONE;
+  if (filter == 1) _pimpl->filterType = GLSL;
+  if (filter == 2) _pimpl->filterType = CUDA;
+
+  initImageTexture(_pimpl->filterType);
+  updateGL();
 }

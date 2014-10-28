@@ -109,13 +109,22 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="edgeCheckBox">
-       <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
-       </property>
-       <property name="text">
-        <string>Edge</string>
-       </property>
+      <widget class="QComboBox" name="filterComboBox">
+       <item>
+        <property name="text">
+         <string>No Filter</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>GLSL Filter</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>CUDA Filter</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item>

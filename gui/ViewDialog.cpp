@@ -1,9 +1,11 @@
 #include "ViewDialog.h"
 #include "model/Image.h"
+#include "cuda/cuda_info.h"
 
 #include "ui_ViewDialog.h"
 
 #include <QFileDialog>
+#include <QMessageBox>
 
 
 class ViewDialog::Pimpl
@@ -34,7 +36,7 @@ ViewDialog::ViewDialog(QWidget *parent)
   connect(_pimpl->ui.applyWLButton, SIGNAL(clicked()), SLOT(onApplyWL()));
   connect(_pimpl->ui.imageTypeCombo, SIGNAL(currentIndexChanged(int)), SLOT(onImageType(int)));
   connect(_pimpl->ui.orientationCombo, SIGNAL(currentIndexChanged(int)), SIGNAL(orientationSignal(int)));
-  connect(_pimpl->ui.edgeCheckBox, SIGNAL(stateChanged(int)), SLOT(onEdgeDetection(int)));
+  connect(_pimpl->ui.filterComboBox, SIGNAL(currentIndexChanged(int)), SLOT(onFilter(int)));
 }
 
 ViewDialog::~ViewDialog() {}
@@ -85,10 +87,18 @@ void ViewDialog::onApplyWL() {
 
 void ViewDialog::onImageType(int index) {
   _pimpl->ui.applyWLButton->setEnabled(index == 0);
+  _pimpl->ui.filterComboBox->setEnabled(index == 1);
   _pimpl->ui.glWidget->setDataType(index);
   emit(requestImage(_pimpl->ui.imagePosSlider->value()));
 }
 
-void ViewDialog::onEdgeDetection(int state) {
-  _pimpl->ui.glWidget->setEdgeDetection(state == Qt::Checked);
+void ViewDialog::onFilter(int filter) {
+  if (filter == 2 && cudaAvaliable() == 0) {
+    QMessageBox::warning(this, tr("CUDA Warning"),
+                               tr("NO CUDA device is avaliable!"),
+                                  QMessageBox::Ok, QMessageBox::Ok);
+    return;
+  }
+
+  _pimpl->ui.glWidget->setFilter(filter);
 }

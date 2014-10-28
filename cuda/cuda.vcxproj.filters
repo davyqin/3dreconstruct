@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CudaCompile Include="cuda_kernels.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cuda_kernels.h" />
+    <ClInclude Include="cuda_info.h" />
+    <ClInclude Include="cuda_common.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="cuda_info.cpp" />
+  </ItemGroup>
+</Project>

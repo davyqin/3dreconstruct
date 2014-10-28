@@ -17,6 +17,12 @@ class GLWidget : public QGLWidget, protected QGLFunctions
     Q_OBJECT
 
 public:
+  enum FilterType {
+    NONE,
+    GLSL,
+    CUDA
+  };
+
     GLWidget(QWidget *parent = 0);
     ~GLWidget();
 
@@ -25,7 +31,7 @@ public:
 
     void setImage(boost::shared_ptr<const Image> image);
     void setDataType(int dataType);
-    void setEdgeDetection(bool flag);
+    void setFilter(int filter);
 
 signals:
     void requestNextImage();
@@ -63,6 +69,7 @@ private:
 
     void initShaders();
     void initScene();
+    void initImageTexture(FilterType filterType);
 };
 //! [3]
 
