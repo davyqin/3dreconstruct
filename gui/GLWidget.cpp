@@ -23,7 +23,8 @@ namespace {
 
  GLuint indexes[] = {0, 1, 2, 3};
 
- const GLfloat kernel[9] = {0.0, -1.0, 0.0, -1.0, 4.0, -1.0, 0.0, -1.0, 0.0};
+ const GLfloat hKernel[9] = {1.0, 2.0, 1.0, 0.0, 0.0, 0.0, -1.0, -2.0, -1.0};
+ const GLfloat vKernel[9] = {-1.0, 0.0, 1.0, -2.0, 0.0, 2.0, -1.0, 0.0, 1.0};
 }
 
 class GLWidget::Pimpl {
@@ -350,7 +351,8 @@ void GLWidget::initImageTexture(FilterType filterType) {
     _pimpl->program.setUniformValue("edgeDetection", true);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, image.pixelData8bit().get());
 
-    _pimpl->program.setUniformValueArray("kernelValue", kernel, 9, 1);
+    _pimpl->program.setUniformValueArray("horKernel", hKernel, 9, 1);
+    _pimpl->program.setUniformValueArray("verKernel", vKernel, 9, 1);
 
     const QVector2D offset[9] = {QVector2D(-1.0/width, -1.0/height), QVector2D(0.0, -1.0/height), QVector2D(1.0/width, -1.0/height),
                                  QVector2D(-1.0/width,  0.0), QVector2D(0.0,  0.0), QVector2D(1.0/width,  0.0/height),
