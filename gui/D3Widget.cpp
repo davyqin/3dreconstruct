@@ -209,19 +209,19 @@ void D3Widget::setData(const std::vector<boost::shared_ptr<const Triangle> >& da
   _pimpl->vertexCount = 0;
   for (auto triangle : data) {
     const std::vector<float> normal = triangle->normal();
-    const std::vector<Vertex> vertices = triangle->vertices();
+    const std::vector<boost::shared_ptr<const Vertex> > vertices = triangle->vertices();
     for (auto vertex : vertices) {
-      _pimpl->points[_pimpl->vertexCount] = glm::vec3(vertex.x(), vertex.y(), vertex.z());
+      _pimpl->points[_pimpl->vertexCount] = glm::vec3(vertex->x(), vertex->y(), vertex->z());
       _pimpl->normals[_pimpl->vertexCount] = glm::vec3(normal.at(0), normal.at(1), normal.at(2));
       _pimpl->indexes[_pimpl->vertexCount] = _pimpl->vertexCount;
       _pimpl->vertexCount += 1;
 
-      if (vertex.x() < _pimpl->minX) { _pimpl->minX = vertex.x(); }
-      if (vertex.x() > _pimpl->maxX) { _pimpl->maxX = vertex.x(); }
-      if (vertex.y() < _pimpl->minY) { _pimpl->minY = vertex.y(); }
-      if (vertex.y() > _pimpl->maxY) { _pimpl->maxY = vertex.y(); }
-      if (vertex.z() < _pimpl->minZ) { _pimpl->minZ = vertex.z(); }
-      if (vertex.z() > _pimpl->maxZ) { _pimpl->maxZ = vertex.z(); }
+      if (vertex->x() < _pimpl->minX) { _pimpl->minX = vertex->x(); }
+      if (vertex->x() > _pimpl->maxX) { _pimpl->maxX = vertex->x(); }
+      if (vertex->y() < _pimpl->minY) { _pimpl->minY = vertex->y(); }
+      if (vertex->y() > _pimpl->maxY) { _pimpl->maxY = vertex->y(); }
+      if (vertex->z() < _pimpl->minZ) { _pimpl->minZ = vertex->z(); }
+      if (vertex->z() > _pimpl->maxZ) { _pimpl->maxZ = vertex->z(); }
     }
   }
   _pimpl->centerX = (_pimpl->minX + _pimpl->maxX) / 2;

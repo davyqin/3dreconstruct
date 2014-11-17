@@ -72,6 +72,8 @@ public:
 
   void setDataType(const DataType dataType);
 
+  void calcVetexPos();
+
 private:
   class Pimpl;
   std::unique_ptr<Pimpl> _pimpl;

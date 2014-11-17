@@ -62,14 +62,14 @@ namespace {
     for (unsigned int j = 0; j < cubes.size(); ++j) {
       Cube& cube = *cubes.at(j);
       int cubeindex = 0;
-      if (cube.vertex(0).value() >= minValue && cube.vertex(0).value() <= maxValue) cubeindex |= 1;
-      if (cube.vertex(1).value() >= minValue && cube.vertex(1).value() <= maxValue) cubeindex |= 2;
-      if (cube.vertex(2).value() >= minValue && cube.vertex(2).value() <= maxValue) cubeindex |= 4;
-      if (cube.vertex(3).value() >= minValue && cube.vertex(3).value() <= maxValue) cubeindex |= 8;
-      if (cube.vertex(4).value() >= minValue && cube.vertex(4).value() <= maxValue) cubeindex |= 16;
-      if (cube.vertex(5).value() >= minValue && cube.vertex(5).value() <= maxValue) cubeindex |= 32;
-      if (cube.vertex(6).value() >= minValue && cube.vertex(6).value() <= maxValue) cubeindex |= 64;
-      if (cube.vertex(7).value() >= minValue && cube.vertex(7).value() <= maxValue) cubeindex |= 128;
+      if (cube.vertex(0)->value() >= minValue && cube.vertex(0)->value() <= maxValue) cubeindex |= 1;
+      if (cube.vertex(1)->value() >= minValue && cube.vertex(1)->value() <= maxValue) cubeindex |= 2;
+      if (cube.vertex(2)->value() >= minValue && cube.vertex(2)->value() <= maxValue) cubeindex |= 4;
+      if (cube.vertex(3)->value() >= minValue && cube.vertex(3)->value() <= maxValue) cubeindex |= 8;
+      if (cube.vertex(4)->value() >= minValue && cube.vertex(4)->value() <= maxValue) cubeindex |= 16;
+      if (cube.vertex(5)->value() >= minValue && cube.vertex(5)->value() <= maxValue) cubeindex |= 32;
+      if (cube.vertex(6)->value() >= minValue && cube.vertex(6)->value() <= maxValue) cubeindex |= 64;
+      if (cube.vertex(7)->value() >= minValue && cube.vertex(7)->value() <= maxValue) cubeindex |= 128;
 
       if (EdgeTable[cubeindex] == 0 ) 
       {
@@ -78,51 +78,51 @@ namespace {
 
       Vertex vertList[12];
       if ((EdgeTable[cubeindex] & 1) != 0) {
-        vertList[0] = interpolate(cube.vertex(0), cube.vertex(1), minValue, maxValue);
+        vertList[0] = interpolate(*cube.vertex(0), *cube.vertex(1), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 2) != 0) {
-        vertList[1] = interpolate(cube.vertex(1), cube.vertex(2), minValue, maxValue);
+        vertList[1] = interpolate(*cube.vertex(1), *cube.vertex(2), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 4) != 0) {
-        vertList[2] = interpolate(cube.vertex(2), cube.vertex(3), minValue, maxValue);
+        vertList[2] = interpolate(*cube.vertex(2), *cube.vertex(3), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 8) != 0) {
-        vertList[3] = interpolate(cube.vertex(3), cube.vertex(0), minValue, maxValue);
+        vertList[3] = interpolate(*cube.vertex(3), *cube.vertex(0), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 16) != 0) {
-        vertList[4] = interpolate(cube.vertex(4), cube.vertex(5), minValue, maxValue);
+        vertList[4] = interpolate(*cube.vertex(4), *cube.vertex(5), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 32) != 0) {
-        vertList[5] = interpolate(cube.vertex(5), cube.vertex(6), minValue, maxValue);
+        vertList[5] = interpolate(*cube.vertex(5), *cube.vertex(6), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 64) != 0) {
-        vertList[6] = interpolate(cube.vertex(6), cube.vertex(7), minValue, maxValue);
+        vertList[6] = interpolate(*cube.vertex(6), *cube.vertex(7), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 128) != 0) {
-        vertList[7] = interpolate(cube.vertex(7), cube.vertex(4), minValue, maxValue);
+        vertList[7] = interpolate(*cube.vertex(7), *cube.vertex(4), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 256) != 0) {
-        vertList[8] = interpolate(cube.vertex(0), cube.vertex(4), minValue, maxValue);
+        vertList[8] = interpolate(*cube.vertex(0), *cube.vertex(4), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 512) != 0) {
-        vertList[9] = interpolate(cube.vertex(1), cube.vertex(5), minValue, maxValue);
+        vertList[9] = interpolate(*cube.vertex(1), *cube.vertex(5), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 1024) != 0) {
-        vertList[10] = interpolate(cube.vertex(2), cube.vertex(6), minValue, maxValue);
+        vertList[10] = interpolate(*cube.vertex(2), *cube.vertex(6), minValue, maxValue);
       }
 
       if ((EdgeTable[cubeindex] & 2048) != 0) {
-        vertList[11] = interpolate(cube.vertex(3), cube.vertex(7), minValue, maxValue);
+        vertList[11] = interpolate(*cube.vertex(3), *cube.vertex(7), minValue, maxValue);
       }
 
       const int* vertices = TriangleTable[cubeindex];
@@ -131,7 +131,11 @@ namespace {
         const int a = *(vertices + i);
         const int b = *(vertices + i + 1);
         const int c = *(vertices + i + 2);
-        const std::vector<Vertex> temp = boost::assign::list_of(vertList[a])(vertList[b])(vertList[c]);
+        //const std::vector<Vertex> temp = boost::assign::list_of(vertList[a])(vertList[b])(vertList[c]);
+        std::vector<boost::shared_ptr<const Vertex> > temp;// = boost::assign::list_of(boost::shared_ptr<vertList[a])(vertList[b])(vertList[c]);
+        temp.push_back(boost::shared_ptr<const Vertex>(new Vertex(vertList[a])));
+        temp.push_back(boost::shared_ptr<const Vertex>(new Vertex(vertList[b])));
+        temp.push_back(boost::shared_ptr<const Vertex>(new Vertex(vertList[c])));
         triangles.push_back(boost::shared_ptr<const Triangle>(new Triangle(temp)));
         i = i + 2;
       }
@@ -217,7 +221,7 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
     workerPool.push_back(std::move(worker));
     if (workerPool.size() == maxWorkerSize) {
       for (auto& worker: workerPool) {
-        const std::vector<boost::shared_ptr<const Triangle> > temp = worker.get();
+        std::vector<boost::shared_ptr<const Triangle> > temp = worker.get();
         _pimpl->triangles.insert(_pimpl->triangles.end(), temp.begin(), temp.end());
         ++pd;
       }

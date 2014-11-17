@@ -27,7 +27,7 @@ public:
 
   void setVertices(const std::vector<boost::shared_ptr<const Vertex> >& vertices);
 
-  Vertex vertex(unsigned int index) const;
+  boost::shared_ptr<const Vertex> vertex(unsigned int index) const;
 
 private:
   class Pimpl;

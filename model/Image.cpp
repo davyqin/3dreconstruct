@@ -1,5 +1,8 @@
 #include "Image.h"
 
+#include "cuda/cuda_info.h"
+#include "cuda/cuda_kernels.h"
+
 #include <vector>
 #include <boost/assign/list_of.hpp>
 
@@ -28,6 +31,8 @@ public:
   , level(32768)
   , sampleStep(4)
   , dataType(Image::SHORTBIT)
+  , xPos(boost::shared_ptr<float>())
+  , yPos(boost::shared_ptr<float>())
   {
 //    computerMinAndMax();
   }
@@ -49,6 +54,8 @@ public:
   boost::shared_ptr<unsigned short> outputPixel;
   boost::shared_ptr<unsigned char> outputPixel8bit;
   Image::DataType dataType;
+  boost::shared_ptr<float> xPos;
+  boost::shared_ptr<float> yPos;
 
   std::vector<boost::shared_ptr<const Vertex> > generateVertices() {
     const double xInc = pixelSpacing.at(0);
@@ -57,6 +64,22 @@ public:
     const int rows = height;
     std::vector<boost::shared_ptr<const Vertex> > vertices;
 
+#if 1
+    const int size = width * height;
+    float zPos = position.at(2);
+
+    for (int i = 0; i < rows; i += sampleStep) {
+      for (int j = 0; j < cols; j += sampleStep) {
+        const unsigned int index = i * rows + j;
+        const int value = *(pixelData8bit.get() + index);
+        vertices.push_back(boost::shared_ptr<Vertex>(new Vertex(xPos.get()[index], yPos.get()[index], zPos, value)));
+      }
+    }
+
+#endif
+
+
+#if 0
     for (int i = 0; i < rows; i += sampleStep) {
       for (int j = 0; j < cols; j += sampleStep) {
         const unsigned int index = i * rows + j;
@@ -81,6 +104,7 @@ public:
                                                vertexPosition.at(2), value)));
       }
     }
+#endif
     return vertices;
   }
 
@@ -245,7 +269,6 @@ void Image::updateWL(int window, int level) {
 
   if (wlChanged) {
     _pimpl->outputPixel.reset();
-    // _pimpl->vertices.clear();
   }
 }
 
@@ -281,4 +304,30 @@ Image::DataType Image::dataType() const {
 
 void Image::setDataType(const Image::DataType dataType) {
   _pimpl->dataType = dataType;
+}
+
+void Image::calcVetexPos() {
+  if (_pimpl->xPos.get() != nullptr || _pimpl->yPos.get() != nullptr) return;
+
+  const double xInc = _pimpl->pixelSpacing.at(0);
+  const double yInc = _pimpl->pixelSpacing.at(1);
+  const int cols = _pimpl->width;
+  const int rows = _pimpl->height;
+
+  const int size = _pimpl->width * _pimpl->height;
+  _pimpl->xPos.reset(new float[size]);
+  _pimpl->yPos.reset(new float[size]);
+
+  // CUDA not efficient now
+  // calcPos(_pimpl->width, _pimpl->height, _pimpl->position.at(0), _pimpl->position.at(1),
+     //      xInc, yInc, size, _pimpl->xPos.get(), _pimpl->yPos.get());
+
+  // CPU
+  for (int i = 0; i < rows; i += 1) {
+    for (int j = 0; j < cols; j += 1) {
+      const unsigned int index = i * rows + j;
+      _pimpl->xPos.get()[index] = _pimpl->position.at(0) + xInc * j;
+      _pimpl->yPos.get()[index] = _pimpl->position.at(1) +  yInc * i;
+    }
+  }
 }

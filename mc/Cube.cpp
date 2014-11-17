@@ -45,10 +45,10 @@ std::vector<boost::shared_ptr<const Vertex> > Cube::vertices() const {
   return _pimpl->vertices;
 }
 
-Vertex Cube::vertex(unsigned int index) const {
+boost::shared_ptr<const Vertex> Cube::vertex(unsigned int index) const {
   if (index > 7) {
     throw std::runtime_error("wrong index of vertex");
   }
 
-  return *(_pimpl->vertices.at(index));
+  return _pimpl->vertices.at(index);
 }

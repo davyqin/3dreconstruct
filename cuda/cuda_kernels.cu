@@ -80,3 +80,30 @@ extern "C" void sobelFilter(Pixel *odata, int iw, int ih)
 
   checkCudaErrors(cudaUnbindTexture(tex));
 }
+
+__global__ void
+doCalcPos(float xPos, float yPos, float xInc, float yInc, float* xResult, float* yResult)
+{
+	int index = blockDim.x * blockIdx.x + threadIdx.x;
+	xResult[index] = xPos + threadIdx.x * xInc;
+	yResult[index] = yPos + blockIdx.x * yInc;
+}
+
+extern "C" void calcPos(int iw, int ih, float xStartPos, float yStartPos, float xInc, float yInc,
+	                    int size, float* xResult, float* yResult)
+{
+	float* d_xResult;
+	float* d_yResult;
+
+	checkCudaErrors(cudaMalloc((void**)&d_xResult, size * sizeof(float)));
+	checkCudaErrors(cudaMalloc((void**)&d_yResult, size * sizeof(float)));
+
+	// kernel works
+	doCalcPos << <ih, iw >> >(xStartPos, yStartPos, xInc, yInc, d_xResult, d_yResult);
+
+	checkCudaErrors(cudaMemcpy(xResult, d_xResult, size * sizeof(float), cudaMemcpyDeviceToHost));
+	checkCudaErrors(cudaMemcpy(yResult, d_yResult, size * sizeof(float), cudaMemcpyDeviceToHost));
+
+	checkCudaErrors(cudaFree(d_xResult));
+	checkCudaErrors(cudaFree(d_yResult));
+}

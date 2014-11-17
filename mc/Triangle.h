@@ -10,7 +10,7 @@ class Vertex;
 class Triangle
 {
 public:
-  Triangle(const std::vector<Vertex> vertices);
+  Triangle(const std::vector<boost::shared_ptr<const Vertex> >& vertices);
 
   Triangle(const Triangle& triangle);
 
@@ -18,7 +18,7 @@ public:
 
   ~Triangle();
 
-  std::vector<Vertex> vertices() const;
+  std::vector<boost::shared_ptr<const Vertex> > vertices() const;
 
   std::vector<float> normal() const;
 
