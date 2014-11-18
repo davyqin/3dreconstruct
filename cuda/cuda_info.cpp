@@ -8,9 +8,9 @@
 
 int cudaAvaliable(void) {
   int deviceCount = 0;
-  checkCudaErrors(cudaGetDeviceCount(&deviceCount));
+  cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
   
-  if (deviceCount == 0) {
+  if (error_id != cudaSuccess || deviceCount == 0) {
     printf("There are no available device(s) that support CUDA\n");
   }
 

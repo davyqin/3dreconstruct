@@ -3,6 +3,8 @@
 
 #include "util/DicomUtil.h"
 #include "util/ImageFactory.h"
+#include "cuda/cuda_info.h"
+#include "cuda/cuda_kernels.h"
 
 #include <vector>
 #include <algorithm>
@@ -141,6 +143,41 @@ std::vector<std::vector<std::string> > groupFileNames(
 
   return fileGroups;
 }
+
+void calcVetexPos(std::vector<boost::shared_ptr<Image> >& images) {
+  if (images.empty()) return;
+
+  const double xInc = images.front()->pixelSpacing().at(0);
+  const double yInc = images.front()->pixelSpacing().at(1);
+  const double x0Pos = images.front()->position().at(0);
+  const double y0Pos = images.front()->position().at(1);
+  const int cols = images.front()->width();
+  const int rows = images.front()->height();
+
+  const int size = images.front()->width() * images.front()->height();
+  boost::shared_ptr<float> xPos(new float[size]);
+  boost::shared_ptr<float> yPos(new float[size]);
+
+  if (cudaAvaliable() != 0) {
+    // CUDA not efficient now
+    calcPos(images.front()->width(), images.front()->height(), 
+            x0Pos, y0Pos, xInc, yInc, size, xPos.get(), yPos.get());
+  }
+  else {
+    // CPU
+    for (int i = 0; i < rows; i += 1) {
+      for (int j = 0; j < cols; j += 1) {
+        const unsigned int index = i * rows + j;
+        xPos.get()[index] = x0Pos + xInc * j;
+        yPos.get()[index] = y0Pos +  yInc * i;
+      }
+    }
+  }
+
+  for (auto image : images) {
+    image->setVertexPosition(xPos, yPos);
+  }
+}
 }
 
 void ImageStack::loadImages(const std::string& imageFolder) {
@@ -178,6 +215,7 @@ void ImageStack::loadImages(const std::string& imageFolder) {
   }
 
   std::sort(_pimpl->images.begin(), _pimpl->images.end(), compareImagePosition);
+  calcVetexPos(_pimpl->images);
 
   std::vector<boost::shared_ptr<const Image> > tempImages;
   tempImages.insert(tempImages.end(), _pimpl->images.begin(), _pimpl->images.end());

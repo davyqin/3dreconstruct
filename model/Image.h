@@ -72,7 +72,9 @@ public:
 
   void setDataType(const DataType dataType);
 
-  void calcVetexPos();
+  //void calcVetexPos();
+
+  void setVertexPosition(boost::shared_ptr<float> xPos, boost::shared_ptr<float> yPos);
 
 private:
   class Pimpl;

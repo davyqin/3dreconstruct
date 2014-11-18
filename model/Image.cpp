@@ -1,8 +1,5 @@
 #include "Image.h"
 
-#include "cuda/cuda_info.h"
-#include "cuda/cuda_kernels.h"
-
 #include <vector>
 #include <boost/assign/list_of.hpp>
 
@@ -306,28 +303,7 @@ void Image::setDataType(const Image::DataType dataType) {
   _pimpl->dataType = dataType;
 }
 
-void Image::calcVetexPos() {
-  if (_pimpl->xPos.get() != nullptr || _pimpl->yPos.get() != nullptr) return;
-
-  const double xInc = _pimpl->pixelSpacing.at(0);
-  const double yInc = _pimpl->pixelSpacing.at(1);
-  const int cols = _pimpl->width;
-  const int rows = _pimpl->height;
-
-  const int size = _pimpl->width * _pimpl->height;
-  _pimpl->xPos.reset(new float[size]);
-  _pimpl->yPos.reset(new float[size]);
-
-  // CUDA not efficient now
-  // calcPos(_pimpl->width, _pimpl->height, _pimpl->position.at(0), _pimpl->position.at(1),
-     //      xInc, yInc, size, _pimpl->xPos.get(), _pimpl->yPos.get());
-
-  // CPU
-  for (int i = 0; i < rows; i += 1) {
-    for (int j = 0; j < cols; j += 1) {
-      const unsigned int index = i * rows + j;
-      _pimpl->xPos.get()[index] = _pimpl->position.at(0) + xInc * j;
-      _pimpl->yPos.get()[index] = _pimpl->position.at(1) +  yInc * i;
-    }
-  }
+void Image::setVertexPosition(boost::shared_ptr<float> xPos, boost::shared_ptr<float> yPos) {
+  _pimpl->xPos = xPos;
+  _pimpl->yPos = yPos;
 }
