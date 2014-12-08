@@ -14,11 +14,12 @@ typedef unsigned char uchar;
 
 #define SKIP_EMPTY_VOXELS 0
 
-#define DEBUG_BUFFERS 0
 
-extern "C" void initMC(int min, int max);
+extern "C" void initMC(int min, int max, int xyValue, int zValue);
 
-extern "C" void computeIsosurface(unsigned char *volume, float x, float y, float z, float* xResult, float* yResult, float* zResult, uint& totalVertices);
+extern "C" void computeIsosurface(unsigned char *volume, float x, float y, float z, 
+                                  float* xResult, float* yResult, float* zResult, 
+                                  uint& totalVertices);
 
 extern "C" void cleanup();
 

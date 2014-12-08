@@ -133,8 +133,8 @@ namespace {
         const int a = *(vertices + i);
         const int b = *(vertices + i + 1);
         const int c = *(vertices + i + 2);
-        //const std::vector<Vertex> temp = boost::assign::list_of(vertList[a])(vertList[b])(vertList[c]);
-        std::vector<boost::shared_ptr<const Vertex> > temp;// = boost::assign::list_of(boost::shared_ptr<vertList[a])(vertList[b])(vertList[c]);
+
+        std::vector<boost::shared_ptr<const Vertex> > temp;
         temp.push_back(boost::shared_ptr<const Vertex>(new Vertex(vertList[a])));
         temp.push_back(boost::shared_ptr<const Vertex>(new Vertex(vertList[b])));
         temp.push_back(boost::shared_ptr<const Vertex>(new Vertex(vertList[c])));
@@ -206,13 +206,14 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
 
   cout<<endl<<"Generating triangles..."<<endl;
   cout<<"Min: "<<_pimpl->minValue<<" Max: "<<_pimpl->maxValue<<" Quality: "<<_pimpl->quality<<endl;
-
-  // Initialize CUDA buffers for Marching Cubes
-  initMC(_pimpl->minValue, _pimpl->maxValue);
   std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
+
 #if 1
+  // Initialize CUDA buffers for Marching Cubes
+  boost::shared_ptr<const Image> tmpImage = _pimpl->imageStack->fetchImage(0);
+  initMC(_pimpl->minValue, _pimpl->maxValue, tmpImage->width(), 2);
   boost::progress_display pd(imageCount - 1);
-  const int imageSize = 512 * 512;
+  const int imageSize = tmpImage->width() * tmpImage->height();
   const int bufferSize = imageSize * 2;
   boost::shared_ptr<unsigned char> buffer(new unsigned char[bufferSize]);
   const int maxVerts = 512 * 512 * 50;
@@ -244,6 +245,7 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
     }
     ++pd;
   }
+  cleanup();
 #endif
 
 #if 0
@@ -282,7 +284,6 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
   }
 #endif
 
-  cleanup();
   std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = end - start;
   std::cout<<std::endl<<"Finish generating triangels in "<<elapsed_seconds.count()<<" s"<<std::endl;

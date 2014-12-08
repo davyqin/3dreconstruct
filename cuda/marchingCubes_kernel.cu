@@ -29,44 +29,46 @@
 #include "helper_math.h"
 #include "marching_cubes_kernel.h"
 
-uint3 gridSizeShift;
-uint3 gridSize;
-uint3 gridSizeMask;
+namespace {
+  uint3 gridSizeShift;
+  uint3 gridSize;
+  uint3 gridSizeMask;
 
-float3 voxelSize;
-uint numVoxels    = 0;
-uint maxVerts     = 0;
-uint activeVoxels = 0;
-uint totalVerts   = 0;
+  float3 voxelSize;
+  uint numVoxels = 0;
+  uint maxVerts = 0;
+  uint activeVoxels = 0;
+  uint totalVerts = 0;
 
-float minIso = 0.102f;
-float maxIso = 0.902f;
-float3 startPos;
+  float minIso = 0.102f;
+  float maxIso = 0.902f;
+  float3 startPos;
 
-float *d_xResult = 0;
-float *d_yResult = 0;
-float *d_zResult = 0;
+  float *d_xResult = 0;
+  float *d_yResult = 0;
+  float *d_zResult = 0;
 
-uchar *d_volume = 0;
-uint *d_voxelVerts = 0;
-uint *d_voxelVertsScan = 0;
-uint *d_voxelOccupied = 0;
-uint *d_voxelOccupiedScan = 0;
-uint *d_compVoxelArray;
+  uchar *d_volume = 0;
+  uint *d_voxelVerts = 0;
+  uint *d_voxelVertsScan = 0;
+  uint *d_voxelOccupied = 0;
+  uint *d_voxelOccupiedScan = 0;
+  uint *d_compVoxelArray;
 
-// tables
-int *d_numVertsTable = 0;
-short *d_edgeTable = 0;
-int *d_triTable = 0;
+  // tables
+  int *d_numVertsTable = 0;
+  short *d_edgeTable = 0;
+  int *d_triTable = 0;
 
 
-// textures containing look-up tables
-texture<short, 1, cudaReadModeElementType> edgeTex;
-texture<int, 1, cudaReadModeElementType> triTex;
-texture<int, 1, cudaReadModeElementType> numVertsTex;
+  // textures containing look-up tables
+  texture<short, 1, cudaReadModeElementType> edgeTex;
+  texture<int, 1, cudaReadModeElementType> triTex;
+  texture<int, 1, cudaReadModeElementType> numVertsTex;
 
-// volume data
-texture<unsigned char, 1, cudaReadModeNormalizedFloat> volumeTex;
+  // volume data
+  texture<unsigned char, 1, cudaReadModeNormalizedFloat> volumeTex;
+}
 
 extern "C"
 void allocateTextures()
@@ -332,8 +334,6 @@ generateTriangles2(uint *numVertsScanned, uint *compactedVoxelArray, uchar *volu
         float3 v[3];
         int edge;
         edge = tex1Dfetch(triTex, (cubeindex*16) + i);
-        if (edge == -1) edge = 255;
-
 #if USE_SHARED
         v[0] = vertlist[(edge*NTHREADS)+threadIdx.x];
 #else
@@ -341,8 +341,6 @@ generateTriangles2(uint *numVertsScanned, uint *compactedVoxelArray, uchar *volu
 #endif
 
         edge = tex1Dfetch(triTex, (cubeindex*16) + i + 1);
-        if (edge == -1) edge = 255;
-
 #if USE_SHARED
         v[1] = vertlist[(edge*NTHREADS)+threadIdx.x];
 #else
@@ -351,7 +349,6 @@ generateTriangles2(uint *numVertsScanned, uint *compactedVoxelArray, uchar *volu
 
 
         edge = tex1Dfetch(triTex, (cubeindex*16) + i + 2);
-        if (edge == -1) edge = 255;
 #if USE_SHARED
         v[2] = vertlist[(edge*NTHREADS)+threadIdx.x];
 #else
@@ -394,15 +391,15 @@ extern "C" void ThrustScanWrapper(unsigned int *output, unsigned int *input, uns
                          thrust::device_ptr<unsigned int>(output));
 }
 
-extern "C" void initMC(int min, int max)
+extern "C" void initMC(int min, int max, int xyValue, int zValue)
 {
   allocateTextures();
 
   minIso = (float)(min)/255.0f;
   maxIso = (float)(max)/255.0f;
-  gridSize = make_uint3(512, 512, 2);
+  gridSize = make_uint3(xyValue, xyValue, zValue);
   gridSizeMask = make_uint3(gridSize.x-1, gridSize.y-1, gridSize.z-1);
-  gridSizeShift = make_uint3(0, 9, 18);
+  gridSizeShift = make_uint3(0, log2(xyValue), log2(xyValue)*2);
 
   numVoxels = gridSize.x*gridSize.y*gridSize.z;
   voxelSize = make_float3(0.98f, 0.98f, 2.5f);
@@ -460,11 +457,6 @@ extern "C" void computeIsosurface(unsigned char *volume, float x, float y, float
 #if SKIP_EMPTY_VOXELS
     // scan voxel occupied array
     ThrustScanWrapper(d_voxelOccupiedScan, d_voxelOccupied, numVoxels);
-
-#if DEBUG_BUFFERS
-    printf("voxelOccupiedScan:\n");
-    dumpBuffer(d_voxelOccupiedScan, numVoxels, sizeof(uint));
-#endif
 
     // read back values to calculate total number of non-empty voxels
     // since we are using an exclusive scan, the total is the last value of
