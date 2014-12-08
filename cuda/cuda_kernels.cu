@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda_runtime.h>
@@ -109,3 +111,4 @@ extern "C" void calcPos(int iw, int ih, float xStartPos, float yStartPos, float 
 	checkCudaErrors(cudaFree(d_xResult));
 	checkCudaErrors(cudaFree(d_yResult));
 }
+

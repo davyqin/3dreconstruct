@@ -7,6 +7,8 @@
 #include "Cube.h"
 
 #include "model/ImageStack.h"
+#include "model/Image.h"
+#include "cuda/marching_cubes_kernel.h"
 
 #include <boost/progress.hpp>
 #include <boost/assign/list_of.hpp>
@@ -205,9 +207,49 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
   cout<<endl<<"Generating triangles..."<<endl;
   cout<<"Min: "<<_pimpl->minValue<<" Max: "<<_pimpl->maxValue<<" Quality: "<<_pimpl->quality<<endl;
 
+  // Initialize CUDA buffers for Marching Cubes
+  initMC(_pimpl->minValue, _pimpl->maxValue);
+  std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
+#if 1
+  boost::progress_display pd(imageCount - 1);
+  const int imageSize = 512 * 512;
+  const int bufferSize = imageSize * 2;
+  boost::shared_ptr<unsigned char> buffer(new unsigned char[bufferSize]);
+  const int maxVerts = 512 * 512 * 50;
+  boost::shared_ptr<float> xPos(new float[maxVerts]);
+  boost::shared_ptr<float> yPos(new float[maxVerts]);
+  boost::shared_ptr<float> zPos(new float[maxVerts]);
+  unsigned int totalVertices = 0;
+  for (int i = 0; i < (imageCount - 1); ++i) {
+    boost::shared_ptr<const Image> bottomImage = _pimpl->imageStack->fetchImage(i);
+    boost::shared_ptr<const Image> topImage = _pimpl->imageStack->fetchImage(i+1);
+
+    memcpy(&(buffer.get()[0]), bottomImage->pixelData8bit().get(), imageSize);
+    memcpy(&(buffer.get()[imageSize]), topImage->pixelData8bit().get(), imageSize); 
+
+    const std::vector<double> startPos = bottomImage->position();
+    totalVertices = 0;
+    computeIsosurface(buffer.get(), startPos.at(0), startPos.at(1), startPos.at(2), xPos.get(), yPos.get(), zPos.get(), totalVertices);
+
+    const unsigned int startIndex = 0;
+    const unsigned int endIndex = totalVertices;
+    for (unsigned int j = startIndex; j < endIndex; ++j) {
+      std::vector<boost::shared_ptr<const Vertex> > vertices;
+      vertices.push_back(boost::shared_ptr<Vertex>(new Vertex(xPos.get()[j], yPos.get()[j], zPos.get()[j])));
+      ++j;
+      vertices.push_back(boost::shared_ptr<Vertex>(new Vertex(xPos.get()[j], yPos.get()[j], zPos.get()[j])));
+      ++j;
+      vertices.push_back(boost::shared_ptr<Vertex>(new Vertex(xPos.get()[j], yPos.get()[j], zPos.get()[j])));
+      _pimpl->triangles.push_back(boost::shared_ptr<Triangle>(new Triangle(vertices)));
+    }
+    ++pd;
+  }
+#endif
+
+#if 0
   const unsigned int maxWorkerSize = std::thread::hardware_concurrency() * 2;
   std::vector<std::future<std::vector<boost::shared_ptr<const Triangle> > > > workerPool;
-  std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
+  
   boost::progress_display pd(imageCount);
   for (int i = 0; i < (imageCount - 1); ++i) {
     boost::shared_ptr<const Image> bottomImage = _pimpl->imageStack->fetchImage(i);
@@ -215,10 +257,11 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
     const CubeFactory cubeFactory(bottomImage, topImage);
 
     std::future<std::vector<boost::shared_ptr<const Triangle> > > worker = 
-      std::async(std::launch::async, [=](){return generateTriangles(cubeFactory.cubes(),
-                                                                    _pimpl->minValue,
-                                                                    _pimpl->maxValue);});
+        std::async(std::launch::async, [=](){return generateTriangles(cubeFactory.cubes(),
+                                                                      _pimpl->minValue,
+                                                                      _pimpl->maxValue);});
     workerPool.push_back(std::move(worker));
+    
     if (workerPool.size() == maxWorkerSize) {
       for (auto& worker: workerPool) {
         std::vector<boost::shared_ptr<const Triangle> > temp = worker.get();
@@ -237,6 +280,9 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work() {
     }
     workerPool.clear();
   }
+#endif
+
+  cleanup();
   std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = end - start;
   std::cout<<std::endl<<"Finish generating triangels in "<<elapsed_seconds.count()<<" s"<<std::endl;

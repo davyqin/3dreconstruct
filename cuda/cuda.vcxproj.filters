@@ -2,11 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <CudaCompile Include="cuda_kernels.cu" />
+    <CudaCompile Include="marchingCubes_kernel.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cuda_kernels.h" />
     <ClInclude Include="cuda_info.h" />
     <ClInclude Include="cuda_common.h" />
+    <ClInclude Include="marching_cubes_kernel.h" />
+    <ClInclude Include="helper_math.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cuda_info.cpp" />
