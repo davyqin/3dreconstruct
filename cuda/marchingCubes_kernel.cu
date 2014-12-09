@@ -22,6 +22,7 @@
 #include <thrust/device_vector.h>
 #include <thrust/scan.h>
 #include <thrust/execution_policy.h>
+#include <cmath>
 
 #include <mc/common.h>
 
@@ -391,7 +392,7 @@ extern "C" void ThrustScanWrapper(unsigned int *output, unsigned int *input, uns
                          thrust::device_ptr<unsigned int>(output));
 }
 
-extern "C" void initMC(int min, int max, int xyValue, int zValue)
+extern "C" void initMC(int min, int max, int xyValue, int zValue, float xSpaceing, float ySpacing, float zSpacing)
 {
   allocateTextures();
 
@@ -399,10 +400,11 @@ extern "C" void initMC(int min, int max, int xyValue, int zValue)
   maxIso = (float)(max)/255.0f;
   gridSize = make_uint3(xyValue, xyValue, zValue);
   gridSizeMask = make_uint3(gridSize.x-1, gridSize.y-1, gridSize.z-1);
-  gridSizeShift = make_uint3(0, log2(xyValue), log2(xyValue)*2);
+  const int logBase2 = log10(xyValue) / log10(2);
+  gridSizeShift = make_uint3(0, logBase2, logBase2*2);
 
   numVoxels = gridSize.x*gridSize.y*gridSize.z;
-  voxelSize = make_float3(0.98f, 0.98f, 2.5f);
+  voxelSize = make_float3(xSpaceing, ySpacing, zSpacing);
   maxVerts = gridSize.x * gridSize.y * 50;
 
   int size = gridSize.x*gridSize.y*gridSize.z*sizeof(uchar);
@@ -455,6 +457,25 @@ extern "C" void computeIsosurface(unsigned char *volume, float x, float y, float
                        numVoxels, voxelSize);
 
 #if SKIP_EMPTY_VOXELS
+#if _DEBUG
+    {
+    uint* voxelOccupied = new uint[numVoxels];
+    checkCudaErrors(cudaMemcpy(voxelOccupied, d_voxelOccupied, numVoxels * sizeof(uint), cudaMemcpyDeviceToHost));
+  
+    uint* voxelOccupiedScan = new uint[numVoxels+1];
+    voxelOccupiedScan[0] = 0;
+    for (int i = 1; i <= numVoxels; ++i) {
+      voxelOccupiedScan[i] = voxelOccupiedScan[i - 1] + voxelOccupied[i -1];
+    }
+
+    activeVoxels = voxelOccupiedScan[numVoxels];
+    checkCudaErrors(cudaMemcpy(d_voxelOccupiedScan, voxelOccupiedScan, numVoxels * sizeof(uint), cudaMemcpyHostToDevice));
+
+    delete [] voxelOccupied;
+    delete [] voxelOccupiedScan;
+  }
+#else
+
     // scan voxel occupied array
     ThrustScanWrapper(d_voxelOccupiedScan, d_voxelOccupied, numVoxels);
 
@@ -471,7 +492,7 @@ extern "C" void computeIsosurface(unsigned char *volume, float x, float y, float
                                    sizeof(uint), cudaMemcpyDeviceToHost));
         activeVoxels = lastElement + lastScanElement;
     }
-
+#endif
     if (activeVoxels==0)
     {
         // return if there are no full voxels
@@ -485,7 +506,26 @@ extern "C" void computeIsosurface(unsigned char *volume, float x, float y, float
 
 #endif // SKIP_EMPTY_VOXELS
 
-  // scan voxel vertex count array
+#if _DEBUG
+  
+  uint* voxelVerts = new uint[numVoxels];
+  checkCudaErrors(cudaMemcpy(voxelVerts, d_voxelVerts, numVoxels * sizeof(uint), cudaMemcpyDeviceToHost));
+  
+  uint* voxelVertsScan = new uint[numVoxels+1];
+  voxelVertsScan[0] = 0;
+  for (int i = 1; i <= numVoxels; ++i) {
+    voxelVertsScan[i] = voxelVertsScan[i - 1] + voxelVerts[i -1];
+  }
+
+  totalVerts = voxelVertsScan[numVoxels];
+  totalVertices = totalVerts;
+  checkCudaErrors(cudaMemcpy(d_voxelVertsScan, voxelVertsScan, numVoxels * sizeof(uint), cudaMemcpyHostToDevice));
+
+  delete [] voxelVerts;
+  delete [] voxelVertsScan;
+  
+#else
+   // scan voxel vertex count array
   ThrustScanWrapper(d_voxelVertsScan, d_voxelVerts, numVoxels);
 
   // readback total number of vertices
@@ -500,22 +540,7 @@ extern "C" void computeIsosurface(unsigned char *volume, float x, float y, float
       totalVerts = lastElement + lastScanElement;
       totalVertices = totalVerts;
   }
-
-  //uint* voxelVerts = new uint[numVoxels];
-  //checkCudaErrors(cudaMemcpy(voxelVerts, d_voxelVerts, numVoxels * sizeof(uint), cudaMemcpyDeviceToHost));
-  //
-  //uint* voxelVertsScan = new uint[numVoxels+1];
-  //voxelVertsScan[0] = 0;
-  //for (int i = 1; i <= numVoxels; ++i) {
-  //  voxelVertsScan[i] = voxelVertsScan[i - 1] + voxelVerts[i -1];
-  //}
-
-  //totalVerts = voxelVertsScan[numVoxels];
-  //totalVertices = totalVerts;
-  //checkCudaErrors(cudaMemcpy(d_voxelVertsScan, voxelVertsScan, numVoxels * sizeof(uint), cudaMemcpyHostToDevice));
-
-  //delete [] voxelVerts;
-  //delete [] voxelVertsScan;
+#endif
 
   dim3 grid2((int) ceil(numVoxels / (float) NTHREADS), 1, 1);
 

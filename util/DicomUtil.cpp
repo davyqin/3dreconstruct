@@ -238,7 +238,7 @@ class DicomUtil::Pimpl {
 public:
   Pimpl()
   :nCols(0),nRows(0),nBytesP(0),nFrameSize(0),nNumFrames(1),nHighBit(0),bIsSigned(false),nBitsAllocated(0)
-  ,fWindowCenter(-1.0), fWindowWidth(-1.0), fRescaleSlope(1.0), fRescaleIntercept(0),nLength(0) {}
+  ,fWindowCenter(-1.0), fWindowWidth(-1.0), fRescaleSlope(1.0), fRescaleIntercept(0), nLength(0), sliceThickness(0.0) {}
 
   /* data */
   int nCols;
@@ -261,6 +261,7 @@ public:
   boost::shared_ptr<unsigned short> pixelData16;
   boost::shared_ptr<unsigned char> pixelData8;
   std::string fileName;
+  double sliceThickness;
 
   void imageAdjuestment() {
 
@@ -737,8 +738,7 @@ void DicomUtil::readFile()
         case 0x0050: //Slice Thickness DS
           {
             //                        string sTemp;
-            //double nThickness =
-            ReadDS(fp, nDataEndian, bImplicitVR);
+            _pimpl->sliceThickness = ReadDS(fp, nDataEndian, bImplicitVR);
             break;
           }
         case 0x0060: //KVP [Peak KV] DS
@@ -930,7 +930,7 @@ void DicomUtil::readFile()
           {
             const std::string pixelSpacing = WriteToString(fp,&sHeader,"0028,0030 Pixel Spacing: ", nDataEndian, bImplicitVR);
              _pimpl->pixelSpacing = convertDicomValue(pixelSpacing);
-            // break;
+             _pimpl->pixelSpacing.push_back(_pimpl->sliceThickness);
             break;
           }
         case 0x0100: //Bits Allocated US

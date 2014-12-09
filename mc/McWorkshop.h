@@ -27,7 +27,7 @@ public:
 
   void setImageStack(boost::shared_ptr<ImageStack> imageStack);
 
-  std::vector<boost::shared_ptr<const Triangle> > work();
+  std::vector<boost::shared_ptr<const Triangle> > work(int engine);
 
 private:
   class Pimpl;

@@ -56,7 +56,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Max Iso</string>
+        <string>Max Iso:</string>
        </property>
       </widget>
      </item>
@@ -110,6 +110,27 @@
        <item>
         <property name="text">
          <string>Poor</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Engine:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="engineComboBox">
+       <item>
+        <property name="text">
+         <string>CPU</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>CUDA</string>
         </property>
        </item>
       </widget>

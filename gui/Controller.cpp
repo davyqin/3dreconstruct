@@ -35,7 +35,7 @@ Controller::Controller(QObject *parent)
   connect(&_pimpl->viewDialog, SIGNAL(updateWLSignal(int,int)), SLOT(onUpdateWL(int,int)));
   connect(&_pimpl->viewDialog, SIGNAL(orientationSignal(int)), SLOT(onOrientation(int)));
 
-  connect(&_pimpl->view3dDialog, SIGNAL(show3DSignal(int,int,int)), SLOT(onShow3d(int,int,int)));
+  connect(&_pimpl->view3dDialog, SIGNAL(show3DSignal(int,int,int,int)), SLOT(onShow3d(int,int,int,int)));
   connect(&_pimpl-> volumeRenderingDialog, SIGNAL(show3DSignal()), SLOT(onVolumeRendering()));
 }
 
@@ -73,13 +73,13 @@ void Controller::onUpdateWL(int window, int level) {
   _pimpl->viewDialog.showImage(_pimpl->imageStack->fetchImage());
 }
 
-void Controller::onShow3d(int minValue, int maxValue, int qualityValue) {
+void Controller::onShow3d(int minValue, int maxValue, int qualityValue, int engine) {
   std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 
   McWorkshop mcWorkshop(_pimpl->imageStack);
   mcWorkshop.set3dQuality(qualityValue);
   mcWorkshop.setIsoMinMax(minValue, maxValue);
-  _pimpl->view3dDialog.show3D(mcWorkshop.work());
+  _pimpl->view3dDialog.show3D(mcWorkshop.work(engine));
 
   std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = end - start;

@@ -15,7 +15,7 @@ typedef unsigned char uchar;
 #define SKIP_EMPTY_VOXELS 0
 
 
-extern "C" void initMC(int min, int max, int xyValue, int zValue);
+extern "C" void initMC(int min, int max, int xyValue, int zValue, float xSpaceing, float ySpacing, float zSpacing);
 
 extern "C" void computeIsosurface(unsigned char *volume, float x, float y, float z, 
                                   float* xResult, float* yResult, float* zResult, 
