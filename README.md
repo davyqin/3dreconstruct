@@ -14,3 +14,5 @@ Information: Use my [weibo](http://www.weibo.com/u/1410620001) and [blog](http:/
 v1.0 is tagged. The surface rendering of marching cubes is finished.
 
 v1.1 is tagged. The volume rendering using glsl with gray scale transfer function is finished.
+
+v1.2 is tagged. The CUDA can be used for surface rendering and edge detection.
