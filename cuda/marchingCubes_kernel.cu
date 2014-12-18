@@ -199,11 +199,6 @@ launch_compactVoxels(dim3 grid, dim3 threads, uint *compactedVoxelArray, uint *v
 __device__
 float3 vertexInterp(float minIso, float maxIso, float3 p0, float3 p1, float f0, float f1)
 {
-#if 0
-    float t = (maxIso - f0) / (f1 - f0);
-    return lerp(p0, p1, t);
-#else
-    
     float dv = f0 - f1;
     float dValMax1 = f0 - maxIso;
     float dMaxVal2 = maxIso - f1;
@@ -224,7 +219,6 @@ float3 vertexInterp(float minIso, float maxIso, float3 p0, float3 p1, float f0, 
     else {
       return (p1 * dValMin1 + p0 * dMinVal2) / dv;
     }
-#endif
 }
 
 // version that calculates flat surface normal for each triangle
@@ -403,7 +397,7 @@ extern "C" void initMC(int min, int max, int xyValue, int zValue, float xSpacein
   const int logBase2 = log10(xyValue) / log10(2);
   gridSizeShift = make_uint3(0, logBase2, logBase2*2);
 
-  numVoxels = gridSize.x*gridSize.y*gridSize.z;
+  numVoxels = gridSize.x*gridSize.y*(gridSize.z - 1);
   voxelSize = make_float3(xSpaceing, ySpacing, zSpacing);
   maxVerts = gridSize.x * gridSize.y * 50;
 

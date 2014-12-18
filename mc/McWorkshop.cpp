@@ -205,10 +205,11 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work(int engine) {
   }
 
   cout<<endl<<"Generating triangles..."<<endl;
-  cout<<"Min: "<<_pimpl->minValue<<" Max: "<<_pimpl->maxValue<<" Quality: "<<_pimpl->quality<<endl;
+  cout << "Min: " << _pimpl->minValue << " Max: " << _pimpl->maxValue;
   std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 
   if (engine == 1) {
+    cout << " Quality: 1" << " Enginee: CUDA/GPU" << endl;
     // Initialize CUDA buffers for Marching Cubes
     boost::shared_ptr<const Image> tmpImage = _pimpl->imageStack->fetchImage(0);
     initMC(_pimpl->minValue, _pimpl->maxValue, tmpImage->width(), 2, tmpImage->pixelSpacing().at(0), tmpImage->pixelSpacing().at(1), tmpImage->pixelSpacing().at(2));
@@ -249,6 +250,7 @@ std::vector<boost::shared_ptr<const Triangle> > McWorkshop::work(int engine) {
   }
 
   if (engine == 0) {
+    cout << " Quality: "<< _pimpl->quality << " Enginee: CPU" << endl;
     const unsigned int maxWorkerSize = std::thread::hardware_concurrency() * 2;
     std::vector<std::future<std::vector<boost::shared_ptr<const Triangle> > > > workerPool;
   
