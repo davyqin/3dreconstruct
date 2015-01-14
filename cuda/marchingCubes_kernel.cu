@@ -57,36 +57,35 @@ namespace {
   uint *d_compVoxelArray;
 
   // tables
-  int *d_numVertsTable = 0;
-  short *d_edgeTable = 0;
   int *d_triTable = 0;
 
 
   // textures containing look-up tables
-  texture<short, 1, cudaReadModeElementType> edgeTex;
   texture<int, 1, cudaReadModeElementType> triTex;
-  texture<int, 1, cudaReadModeElementType> numVertsTex;
 
   // volume data
   texture<unsigned char, 1, cudaReadModeNormalizedFloat> volumeTex;
+
+  __constant__ int deviceNumVertsTable[256] =  
+  {0, 3, 3, 6, 3, 6, 6, 9, 3, 6, 6, 9, 6, 9, 9, 6, 3, 6, 6, 9, 6, 9, 9, 12, 6, 9, 9, 12, 9,
+   12, 12, 9, 3, 6, 6, 9, 6, 9, 9, 12, 6, 9, 9, 12, 9, 12, 12, 9, 6, 9, 9, 6, 9, 12, 12, 9,
+   9, 12, 12, 9, 12, 15, 15, 6, 3, 6, 6, 9, 6, 9, 9, 12, 6, 9, 9, 12, 9, 12, 12, 9, 6, 9, 9,
+   12, 9, 12, 12, 15, 9, 12, 12, 15, 12, 15, 15, 12, 6, 9, 9, 12, 9, 12, 6, 9, 9, 12, 12, 15,
+   12, 15, 9, 6, 9, 12, 12, 9, 12, 15, 9, 6, 12, 15, 15, 12, 15, 6, 12, 3, 3, 6, 6, 9, 6, 9,
+   9, 12, 6, 9, 9, 12, 9, 12, 12, 9, 6, 9, 9, 12, 9, 12, 12, 15, 9, 6, 12, 9, 12, 9, 15, 6, 6,
+   9, 9, 12, 9, 12, 12, 15, 9, 12, 12, 15, 12, 15, 15, 12, 9, 12, 12, 9, 12, 15, 15, 12, 12, 9,
+   15, 6, 15, 12, 6, 3, 6, 9, 9, 12, 9, 12, 12, 15, 9, 12, 12, 15, 6, 9, 9, 6, 9, 12, 12, 15, 12,
+   15, 15, 6, 12, 9, 15, 12, 9, 6, 12, 3, 9, 12, 12, 15, 12, 15, 9, 12, 12, 15, 15, 6, 9, 12, 6,
+   3, 6, 9, 9, 6, 9, 12, 6, 3, 9, 6, 12, 3, 6, 3, 3, 0};
 }
 
 extern "C"
 void allocateTextures()
 {
-    checkCudaErrors(cudaMalloc((void **)&d_edgeTable, 256*sizeof(short)));
-    checkCudaErrors(cudaMemcpy((void *)d_edgeTable, (void *)EdgeTable, 256*sizeof(short), cudaMemcpyHostToDevice));
-    cudaChannelFormatDesc channelShortDesc = cudaCreateChannelDesc(16, 0, 0, 0, cudaChannelFormatKindSigned);
-    checkCudaErrors(cudaBindTexture(0, edgeTex, d_edgeTable, channelShortDesc));
-
     cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindSigned);
     checkCudaErrors(cudaMalloc((void **)&d_triTable, 256*16*sizeof(int)));
     checkCudaErrors(cudaMemcpy((void *)d_triTable, (void *)TriangleTable, 256*16*sizeof(int), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaBindTexture(0, triTex, d_triTable, channelDesc));
-
-    checkCudaErrors(cudaMalloc((void **)&d_numVertsTable, 256*sizeof(int)));
-    checkCudaErrors(cudaMemcpy((void *)d_numVertsTable, (void *)numVertsTable, 256*sizeof(int), cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaBindTexture(0, numVertsTex, d_numVertsTable, channelDesc));
 }
 
 // sample volume data set at a point
@@ -151,7 +150,7 @@ classifyVoxel(uint *voxelVerts, uint *voxelOccupied, uchar *volume,
     __syncthreads();
 
     // read number of vertices from texture
-    uint numVerts = tex1Dfetch(numVertsTex, cubeindex);
+    uint numVerts = deviceNumVertsTable[cubeindex];
 
     if (i < numVoxels)
     {
@@ -320,7 +319,7 @@ generateTriangles2(uint *numVertsScanned, uint *compactedVoxelArray, uchar *volu
 #endif
 
     // output triangle vertices
-    uint numVerts = tex1Dfetch(numVertsTex, cubeindex);
+    uint numVerts = deviceNumVertsTable[cubeindex];
 
     for (int i = 0; i < numVerts; i+=3)
     {
@@ -555,9 +554,7 @@ extern "C" void computeIsosurface(unsigned char *volume, float x, float y, float
 
 extern "C" void cleanup()
 {
-  checkCudaErrors(cudaFree(d_edgeTable));
   checkCudaErrors(cudaFree(d_triTable));
-  checkCudaErrors(cudaFree(d_numVertsTable));
 
   checkCudaErrors(cudaFree(d_voxelVerts));
   checkCudaErrors(cudaFree(d_voxelVertsScan));
