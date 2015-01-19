@@ -1,21 +1,8 @@
-/*
- * Copyright 1993-2014 NVIDIA Corporation.  All rights reserved.
- *
- * Please refer to the NVIDIA end user license agreement (EULA) associated
- * with this source code for terms and conditions that govern your use of
- * this software. Any use, reproduction, disclosure, or distribution of
- * this software and related documentation outside the terms of the EULA
- * is strictly prohibited.
- *
- */
-
 #ifndef _MARCHING_CUBES_KERNEL_CU_
 #define _MARCHING_CUBES_KERNEL_CU_
 
 #include <stdio.h>
 #include <string.h>
-//#include <helper_cuda.h>    // includes for helper CUDA functions
-//#include <helper_math.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include <device_launch_parameters.h>
@@ -66,17 +53,7 @@ namespace {
   // volume data
   texture<unsigned char, 1, cudaReadModeNormalizedFloat> volumeTex;
 
-  __constant__ int deviceNumVertsTable[256] =  
-  {0, 3, 3, 6, 3, 6, 6, 9, 3, 6, 6, 9, 6, 9, 9, 6, 3, 6, 6, 9, 6, 9, 9, 12, 6, 9, 9, 12, 9,
-   12, 12, 9, 3, 6, 6, 9, 6, 9, 9, 12, 6, 9, 9, 12, 9, 12, 12, 9, 6, 9, 9, 6, 9, 12, 12, 9,
-   9, 12, 12, 9, 12, 15, 15, 6, 3, 6, 6, 9, 6, 9, 9, 12, 6, 9, 9, 12, 9, 12, 12, 9, 6, 9, 9,
-   12, 9, 12, 12, 15, 9, 12, 12, 15, 12, 15, 15, 12, 6, 9, 9, 12, 9, 12, 6, 9, 9, 12, 12, 15,
-   12, 15, 9, 6, 9, 12, 12, 9, 12, 15, 9, 6, 12, 15, 15, 12, 15, 6, 12, 3, 3, 6, 6, 9, 6, 9,
-   9, 12, 6, 9, 9, 12, 9, 12, 12, 9, 6, 9, 9, 12, 9, 12, 12, 15, 9, 6, 12, 9, 12, 9, 15, 6, 6,
-   9, 9, 12, 9, 12, 12, 15, 9, 12, 12, 15, 12, 15, 15, 12, 9, 12, 12, 9, 12, 15, 15, 12, 12, 9,
-   15, 6, 15, 12, 6, 3, 6, 9, 9, 12, 9, 12, 12, 15, 9, 12, 12, 15, 6, 9, 9, 6, 9, 12, 12, 15, 12,
-   15, 15, 6, 12, 9, 15, 12, 9, 6, 12, 3, 9, 12, 12, 15, 12, 15, 9, 12, 12, 15, 15, 6, 9, 12, 6,
-   3, 6, 9, 9, 6, 9, 12, 6, 3, 9, 6, 12, 3, 6, 3, 3, 0};
+  __constant__ int deviceNumVertsTable[256];
 }
 
 extern "C"
@@ -413,6 +390,7 @@ extern "C" void initMC(int min, int max, int xyValue, int zValue, float xSpacein
   checkCudaErrors(cudaMalloc((void **) &(d_xResult),             maxVerts*sizeof(float)));
   checkCudaErrors(cudaMalloc((void **) &(d_yResult),             maxVerts*sizeof(float)));
   checkCudaErrors(cudaMalloc((void **) &(d_zResult),             maxVerts*sizeof(float)));
+  checkCudaErrors(cudaMemcpyToSymbol(deviceNumVertsTable, numVertsTable, sizeof(int) * 256));
 }
 
 extern "C"
