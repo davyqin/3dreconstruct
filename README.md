@@ -11,8 +11,13 @@ Hardware requirements: It is alway good to use best hardware to compile and run 
 
 Information: Use my [weibo](http://www.weibo.com/u/1410620001) and [blog](http://blog.sina.com.cn/davyqin) to contact me.
 
-v1.0 is tagged. The surface rendering of marching cubes is finished.
+* v1.0 is tagged. The surface rendering of marching cubes is finished.
 
-v1.1 is tagged. The volume rendering using glsl with gray scale transfer function is finished.
+* v1.1 is tagged. The volume rendering using glsl with gray scale transfer function is finished.
 
-v1.2 is tagged. The CUDA can be used for surface rendering and edge detection.
+* v1.2 is tagged. The CUDA can be used for surface rendering and edge detection.
+
+**Here are screen shots**   
+![Convollution](https://github.com/davyqin/3dreconstruct/blob/master/co.png)
+![sr](https://github.com/davyqin/3dreconstruct/blob/master/sr.png)
+![vr](https://github.com/davyqin/3dreconstruct/blob/master/vr.png)
