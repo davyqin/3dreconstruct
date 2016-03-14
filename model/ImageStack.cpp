@@ -1,7 +1,7 @@
 #include "ImageStack.h"
 #include "Image.h"
 
-#include "util/DicomUtil.h"
+#include "util/DcmtkUtil.h"
 #include "util/ImageFactory.h"
 #include "cuda/cuda_info.h"
 #include "cuda/cuda_kernels.h"
@@ -124,8 +124,8 @@ namespace {
 std::vector<std::vector<std::string> > groupFileNames(
   const std::vector<std::string>& fileNames/*, unsigned int groupSize*/)
 {
-  const unsigned int groupSize = std::thread::hardware_concurrency();
-  unsigned int numberOfFiles = std::ceil(fileNames.size() / groupSize);
+  const unsigned int groupSize = 1; // std::thread::hardware_concurrency();
+  const unsigned int numberOfFiles = static_cast<unsigned int>(std::ceil(fileNames.size() / groupSize));
   std::vector<std::vector<std::string> > fileGroups;
   
   std::vector<std::string> temp;
@@ -197,9 +197,9 @@ void ImageStack::loadImages(const std::string& imageFolder) {
     std::async(std::launch::async, [fileGroup, &pd]() {
       std::vector<boost::shared_ptr<Image> > images;
       for (auto file : fileGroup) {
-        DicomUtil dicomUtil(file);
-        if (dicomUtil.hasPixelData()) {
-          images.push_back(dicomUtil.fetchImage());
+        boost::shared_ptr<DicomUtil> dicomUtil(new DcmtkUtil(file));
+        if (dicomUtil->hasPixelData()) {
+          images.push_back(dicomUtil->fetchImage());
         }
         ++pd;
       }  
@@ -252,7 +252,7 @@ int ImageStack::imageCount() const {
     return 0;
   }
   
-  return activeImages.size();
+  return static_cast<int>(activeImages.size());
 }
 
 void ImageStack::updateWL(int window, int level) {

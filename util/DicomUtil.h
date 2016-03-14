@@ -2,40 +2,26 @@
 #define DICOMUTIL_H
 
 #include <boost/shared_ptr.hpp>
-#include <string>
-#include <memory>
 
 class Image;
 
 class DicomUtil
 {
 public:
-    DicomUtil();
 
-    DicomUtil(const std::string& fileName);
+    virtual ~DicomUtil() {}
 
-    ~DicomUtil();
+    virtual boost::shared_ptr<unsigned short> pixel() = 0;
 
-    void setFileName(const std::string& filename);
+    virtual boost::shared_ptr<Image> fetchImage() const = 0;
 
-    boost::shared_ptr<unsigned short> pixel();
+    virtual int pixelLength() const = 0;
 
-    boost::shared_ptr<Image> fetchImage() const;
+    virtual int imageHeight() const = 0;
 
-    int pixelLength() const;
+    virtual int imageWidth() const = 0;
 
-    int imageHeight() const;
-
-    int imageWidth() const;
-
-    bool hasPixelData() const;
-
-private:
-
-    void readFile();
-
-    class Pimpl;
-    std::unique_ptr<Pimpl> _pimpl;
+    virtual bool hasPixelData() const = 0;
 };
 
 #endif // DicomUtil_H

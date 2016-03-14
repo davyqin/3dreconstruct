@@ -1,12 +1,21 @@
 #pragma once
 
-//#include <boost/shared_ptr.hpp>
+#include "DicomUtil.h"
+#include "Exception.h"
+
+#include <boost/shared_ptr.hpp>
 #include <string>
 #include <memory>
 
 class Image;
 
-class DcmtkUtil
+class DcmtkUtilException : public Exception
+{
+public:
+  DcmtkUtilException() {};
+};
+
+class DcmtkUtil : public DicomUtil
 {
 public:
   DcmtkUtil();
@@ -15,19 +24,19 @@ public:
 
   ~DcmtkUtil();
 
-  //void setFileName(const std::string& filename);
+  void setFileName(const std::string& filename);
 
-  //boost::shared_ptr<unsigned short> pixel();
+  boost::shared_ptr<unsigned short> pixel();
 
-  //boost::shared_ptr<Image> fetchImage() const;
+  boost::shared_ptr<Image> fetchImage() const;
 
-  //int pixelLength() const;
+  int pixelLength() const;
 
-  //int imageHeight() const;
+  int imageHeight() const;
 
-  //int imageWidth() const;
+  int imageWidth() const;
 
-  //bool hasPixelData() const;
+  bool hasPixelData() const;
 
 private:
 

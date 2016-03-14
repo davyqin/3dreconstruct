@@ -94,16 +94,17 @@
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtGui;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(SolutionDir);C:\boost;$(QTDIR)\include\QtCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtGui;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(SolutionDir);C:\boost;$(QTDIR)\include\QtCore;C:\dcmtk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;$(SolutionDir)$(Configuration)\;$(SolutionDir)$(Platform)\$(Configuration)\;$(CudaToolkitLibDir);C:\boost\lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;$(SolutionDir)$(Configuration)\;$(SolutionDir)$(Platform)\$(Configuration)\;$(CudaToolkitLibDir);C:\boost\lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\lib\x64;C:\boost\lib64-msvc-12.0;D:\DCMTK\INSTALL_x64_debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5OpenGLd.lib;opengl32.lib;glu32.lib;Qt5Widgetsd.lib;glew32.lib;util.lib;model.lib;mc.lib;gui.lib;cuda_util.lib;cudart_static.lib;Qt5Cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5OpenGLd.lib;opengl32.lib;glu32.lib;Qt5Widgetsd.lib;glew32.lib;util.lib;model.lib;mc.lib;gui.lib;cuda_util.lib;cudart_static.lib;Qt5Cored.lib;wsock32.lib;netapi32.lib;ofstd.lib;oflog.lib;dcmdata.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <TargetMachine>NotSet</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -134,9 +135,9 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;$(SolutionDir)\$(Configuration);$(SolutionDir)$(Platform)\$(Configuration);C:\boost\x64\lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\lib\x64;C:\glew-1.11.0\lib\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;$(SolutionDir)\$(Configuration);$(SolutionDir)$(Platform)\$(Configuration);C:\boost\x64\lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\lib\x64;C:\glew-1.11.0\lib\Release\x64;D:\DCMTK\INSTALL_x64_release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Gui.lib;Qt5OpenGL.lib;opengl32.lib;glu32.lib;Qt5Widgets.lib;glew32.lib;util.lib;model.lib;mc.lib;gui.lib;cuda_util.lib;cudart_static.lib;Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Gui.lib;Qt5OpenGL.lib;opengl32.lib;glu32.lib;Qt5Widgets.lib;glew32.lib;util.lib;model.lib;mc.lib;gui.lib;cuda_util.lib;cudart_static.lib;Qt5Core.lib;wsock32.lib;netapi32.lib;ofstd.lib;oflog.lib;dcmdata.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

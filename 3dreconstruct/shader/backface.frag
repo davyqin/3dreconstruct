@@ -1,5 +1,5 @@
-// for raycasting
 #version 400
+// for raycasting
 
 in vec3 Color;
 layout (location = 0) out vec4 FragColor;

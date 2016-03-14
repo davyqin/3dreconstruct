@@ -36,7 +36,7 @@ Controller::Controller(QObject *parent)
   connect(&_pimpl->viewDialog, SIGNAL(orientationSignal(int)), SLOT(onOrientation(int)));
 
   connect(&_pimpl->view3dDialog, SIGNAL(show3DSignal(int,int,int,int)), SLOT(onShow3d(int,int,int,int)));
-  connect(&_pimpl-> volumeRenderingDialog, SIGNAL(show3DSignal()), SLOT(onVolumeRendering()));
+  connect(&_pimpl->volumeRenderingDialog, SIGNAL(show3DSignal()), SLOT(onVolumeRendering()));
 }
 
 Controller::~Controller() {}

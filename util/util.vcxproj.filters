@@ -18,10 +18,16 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DicomUtil.cpp">
+    <ClCompile Include="ImageFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImageFactory.cpp">
+    <ClCompile Include="DcmtkUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Exception.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QZJDicomUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -30,6 +36,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ImageFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DcmtkUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QZJDicomUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

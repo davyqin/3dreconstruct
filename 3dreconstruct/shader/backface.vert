@@ -1,5 +1,5 @@
-// for raycasting
 #version 400
+// for raycasting
 
 layout(location = 0) in vec3 VerPos;
 layout(location = 1) in vec3 VerClr;
