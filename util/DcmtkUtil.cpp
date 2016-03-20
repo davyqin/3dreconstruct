@@ -100,14 +100,14 @@ public:
     , fWindowCenter(-1.0), fWindowWidth(-1.0), fRescaleSlope(1.0), fRescaleIntercept(0), nLength(0), sliceThickness(0.0) {}
 
   /* data */
-  int nCols;
-  int nRows;
+  unsigned short nCols;
+  unsigned short nRows;
   int nBytesP;
   int nFrameSize;
   int nNumFrames;
   int nHighBit;
   bool bIsSigned;
-  int nBitsAllocated;
+  unsigned short nBitsAllocated;
   double fWindowCenter;
   double fWindowWidth;
   double fRescaleSlope;
@@ -370,17 +370,17 @@ void DcmtkUtil::readFile()
   }
 
   //Rows US
-  _pimpl->nRows = readDicomValue<unsigned short>(DCM_Rows, srcDset);
+  srcDset->findAndGetUint16(DCM_Rows, _pimpl->nRows);
 
   //Columns US
-  _pimpl->nCols = readDicomValue<unsigned short>(DCM_Columns, srcDset);
+  srcDset->findAndGetUint16(DCM_Columns, _pimpl->nCols);
 
   //Pixel Spacing DS
   _pimpl->pixelSpacing = readDicomValueArray(DCM_PixelSpacing, srcDset);
   _pimpl->pixelSpacing.push_back(_pimpl->sliceThickness);
 
   //Bits Allocated US
-  _pimpl->nBitsAllocated = readDicomValue<unsigned short>(DCM_BitsAllocated, srcDset);
+  srcDset->findAndGetUint16(DCM_BitsAllocated, _pimpl->nBitsAllocated);
 
   //High Bit US
   _pimpl->nHighBit = readDicomValue<unsigned short>(DCM_HighBit, srcDset);
@@ -414,7 +414,8 @@ void DcmtkUtil::readFile()
   //Rescale Slope DS
   _pimpl->fRescaleSlope = readDicomValue<double>(DCM_RescaleSlope, srcDset);
 
-  const int nSamplesPerPixel = readDicomValue<int>(DCM_SamplesPerPixel, srcDset);
+  unsigned short nSamplesPerPixel = 0;
+  srcDset->findAndGetUint16(DCM_SamplesPerPixel, nSamplesPerPixel);
 
   _pimpl->nBytesP = nSamplesPerPixel * _pimpl->nBitsAllocated / 8;
   _pimpl->nFrameSize = _pimpl->nCols * _pimpl->nRows * _pimpl->nBytesP;
